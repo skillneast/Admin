@@ -1,77 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Free Courses</title>
+  <title>📚 Free Courses Library</title>
   <style>
-    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
-    .category { font-size: 24px; font-weight: bold; margin-top: 30px; }
-    .course { margin-left: 20px; font-size: 20px; font-weight: bold; margin-top: 10px; }
-    .folder { margin-left: 40px; font-size: 18px; font-weight: bold; margin-top: 5px; }
-    .video { margin-left: 60px; margin-bottom: 5px; }
-    iframe { width: 100%; max-width: 500px; height: 280px; border: none; margin-top: 5px; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h1 { text-align: center; color: #2c3e50; }
+    .course { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .folder { margin-left: 20px; color: #34495e; }
+    .video { margin-left: 40px; color: #7f8c8d; }
+    iframe { width: 100%; max-width: 600px; height: 315px; border: none; border-radius: 10px; margin-top: 10px; }
   </style>
 </head>
 <body>
 
 <h1>📚 Free Courses Library</h1>
-<div id="content">Loading courses...</div>
+<div id="course-container">Loading...</div>
 
 <script>
-const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREEN5wx3lBn6KfDRsuAy7ZuuIbFdJsvn04rEVsF1FGRWDz3hfr0N2QhHLbiv03o3gFQMQ0BZOqMPsw/pubhtml"; // Replace with your Sheet's published CSV link
+const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREEN5wx3lBn6KfDRsuAy7ZuuIbFdJsvn04rEVsF1FGRWDz3hfr0N2QhHLbiv03o3gFQMQ0BZOqMPsw/pub?output=csv";
 
 fetch(sheetUrl)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.trim().split("\n").slice(1);
-    const data = rows.map(r => r.split(","));
-
-    const grouped = {};
-
-    data.forEach(([category, course, folder, title, link, thumb]) => {
-      if (!grouped[category]) grouped[category] = {};
-      if (!grouped[category][course]) grouped[category][course] = {};
-      if (!grouped[category][course][folder]) grouped[category][course][folder] = [];
-      grouped[category][course][folder].push({ title, link });
-    });
-
-    const container = document.getElementById("content");
+  .then(response => response.text())
+  .then(data => {
+    const rows = data.split("\n").map(row => row.split(","));
+    const container = document.getElementById("course-container");
     container.innerHTML = "";
 
-    for (const [category, courses] of Object.entries(grouped)) {
-      const catDiv = document.createElement("div");
-      catDiv.className = "category";
-      catDiv.textContent = `📁 ${category}`;
-      container.appendChild(catDiv);
+    let currentCategory = "", currentCourse = "", currentFolder = "";
+    rows.slice(1).forEach(row => {
+      const [category, course, folder, title, link] = row;
 
-      for (const [course, folders] of Object.entries(courses)) {
+      if (category && category !== currentCategory) {
+        const catEl = document.createElement("h2");
+        catEl.textContent = "🗂 " + category;
+        container.appendChild(catEl);
+        currentCategory = category;
+        currentCourse = "";
+      }
+
+      if (course && course !== currentCourse) {
         const courseDiv = document.createElement("div");
         courseDiv.className = "course";
-        courseDiv.textContent = `📚 ${course}`;
-        catDiv.appendChild(courseDiv);
-
-        for (const [folder, videos] of Object.entries(folders)) {
-          const folderDiv = document.createElement("div");
-          folderDiv.className = "folder";
-          folderDiv.textContent = `📂 ${folder}`;
-          courseDiv.appendChild(folderDiv);
-
-          videos.forEach(video => {
-            const videoDiv = document.createElement("div");
-            videoDiv.className = "video";
-            videoDiv.innerHTML = `
-              <strong>▶️ ${video.title}</strong><br>
-              <iframe src="${video.link.replace('/view', '/preview')}" allowfullscreen></iframe>
-            `;
-            folderDiv.appendChild(videoDiv);
-          });
-        }
+        courseDiv.innerHTML = `<h3>📘 ${course}</h3>`;
+        container.appendChild(courseDiv);
+        currentCourse = course;
       }
-    }
+
+      if (folder && folder !== currentFolder) {
+        const folderEl = document.createElement("div");
+        folderEl.className = "folder";
+        folderEl.innerHTML = `<strong>📁 ${folder}</strong>`;
+        container.lastChild.appendChild(folderEl);
+        currentFolder = folder;
+      }
+
+      const videoDiv = document.createElement("div");
+      videoDiv.className = "video";
+      videoDiv.innerHTML = `
+        ▶️ ${title}<br>
+        <iframe src="${link.replace("/view", "/preview")}" allowfullscreen></iframe>
+      `;
+      container.lastChild.lastChild.appendChild(videoDiv);
+    });
   })
-  .catch(err => {
-    document.getElementById("content").innerHTML = "Failed to load data.";
-    console.error(err);
+  .catch(error => {
+    document.getElementById("course-container").innerHTML = "❌ Failed to load data.";
+    console.error("CSV Load Error:", error);
   });
 </script>
 
