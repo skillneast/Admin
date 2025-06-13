@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Free Courses</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+    .category { font-size: 24px; font-weight: bold; margin-top: 30px; }
+    .course { margin-left: 20px; font-size: 20px; font-weight: bold; margin-top: 10px; }
+    .folder { margin-left: 40px; font-size: 18px; font-weight: bold; margin-top: 5px; }
+    .video { margin-left: 60px; margin-bottom: 5px; }
+    iframe { width: 100%; max-width: 500px; height: 280px; border: none; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<h1>📚 Free Courses Library</h1>
+<div id="content">Loading courses...</div>
+
+<script>
+const sheetUrl = "https://docs.google.com/spreadsheets/d/1EZ7qxMMJN4_VzFd6CfWuMD0m9n6kP8bcI0Qg65MSFxs/edit?usp=sharing"; // Replace with your Sheet's published CSV link
+
+fetch(sheetUrl)
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.trim().split("\n").slice(1);
+    const data = rows.map(r => r.split(","));
+
+    const grouped = {};
+
+    data.forEach(([category, course, folder, title, link, thumb]) => {
+      if (!grouped[category]) grouped[category] = {};
+      if (!grouped[category][course]) grouped[category][course] = {};
+      if (!grouped[category][course][folder]) grouped[category][course][folder] = [];
+      grouped[category][course][folder].push({ title, link });
+    });
+
+    const container = document.getElementById("content");
+    container.innerHTML = "";
+
+    for (const [category, courses] of Object.entries(grouped)) {
+      const catDiv = document.createElement("div");
+      catDiv.className = "category";
+      catDiv.textContent = `📁 ${category}`;
+      container.appendChild(catDiv);
+
+      for (const [course, folders] of Object.entries(courses)) {
+        const courseDiv = document.createElement("div");
+        courseDiv.className = "course";
+        courseDiv.textContent = `📚 ${course}`;
+        catDiv.appendChild(courseDiv);
+
+        for (const [folder, videos] of Object.entries(folders)) {
+          const folderDiv = document.createElement("div");
+          folderDiv.className = "folder";
+          folderDiv.textContent = `📂 ${folder}`;
+          courseDiv.appendChild(folderDiv);
+
+          videos.forEach(video => {
+            const videoDiv = document.createElement("div");
+            videoDiv.className = "video";
+            videoDiv.innerHTML = `
+              <strong>▶️ ${video.title}</strong><br>
+              <iframe src="${video.link.replace('/view', '/preview')}" allowfullscreen></iframe>
+            `;
+            folderDiv.appendChild(videoDiv);
+          });
+        }
+      }
+    }
+  })
+  .catch(err => {
+    document.getElementById("content").innerHTML = "Failed to load data.";
+    console.error(err);
+  });
+</script>
+
+</body>
+</html>
