@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>body { padding: 10px; }</style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center mb-4">Course Admin Panel</h2>
+    <div id="alerts"></div>
+
+    <!-- Add Category -->
+    <div class="mb-3">
+      <h5>Create Category</h5>
+      <input id="categoryName" type="text" class="form-control" placeholder="Category Name">
+      <button id="addCategory" class="btn btn-primary mt-2">Add Category</button>
+    </div>
+
+    <!-- Show Categories -->
+    <div id="categoriesList"></div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import './firebase-config.js';
+    import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const db = getDatabase();
+
+    // Utility
+    const msg = (text, type='success') => {
+      const el = document.createElement('div');
+      el.className = `alert alert-${type}`;
+      el.textContent = text;
+      document.getElementById('alerts').append(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    // Load and display categories
+    const loadCategories = () => {
+      const catRef = ref(db, 'categories');
+      onValue(catRef, snapshot => {
+        const data = snapshot.val() || {};
+        renderCategories(data);
+      });
+    };
+
+    const renderCategories = (cats) => {
+      const container = document.getElementById('categoriesList');
+      container.innerHTML = '';
+      Object.entries(cats).forEach(([catId, cat]) => {
+        const card = document.createElement('div');
+        card.className = "card mb-3";
+        card.innerHTML = `
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h5 contenteditable="true" data-id="${catId}" class="cat-name">${cat.name}</h5>
+              <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete</button>
+            </div>
+            <hr>
+            <div>
+              <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Batch</button>
+              <div class="batches-list"></div>
+            </div>
+          </div>`;
+        setupCategoryEvents(card);
+        container.append(card);
+      });
+      setupAddBatchButtons();
+    };
+
+    const setupCategoryEvents = (card) => {
+      const nameEl = card.querySelector('.cat-name');
+      const catId = nameEl.dataset.id;
+      nameEl.addEventListener('blur', () => {
+        update(ref(db, `categories/${catId}/name`), nameEl.textContent);
+        msg('Category name updated');
+      });
+      card.querySelector('.delete-cat').addEventListener('click', () => {
+        if (confirm('Delete this category?')) {
+          remove(ref(db, `categories/${catId}`));
+          msg('Category deleted');
+        }
+      });
+      const batchesList = card.querySelector('.batches-list');
+      onValue(ref(db, `categories/${catId}/batches`), snapshot => {
+        batchesList.innerHTML = '';
+        const batchData = snapshot.val() || {};
+        Object.entries(batchData).forEach(([bId, batch]) => {
+          const item = createBatchItem(catId, bId, batch);
+          batchesList.append(item);
+        });
+      });
+    };
+
+    const setupAddBatchButtons = () => {
+      document.querySelectorAll('.add-batch').forEach(btn => {
+        const catId = btn.dataset.id;
+        btn.onclick = () => {
+          const title = prompt('Batch title?');
+          const thumb = prompt('Thumbnail URL?');
+          if (title && thumb) {
+            const newRef = push(ref(db, `categories/${catId}/batches`));
+            set(newRef, { title, thumbnail: thumb });
+            msg('Batch added');
+          }
+        };
+      });
+    };
+
+    const createBatchItem = (catId, bId, batch) => {
+      const div = document.createElement('div');
+      div.className = 'mb-2';
+      div.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center">
+          <img src="${batch.thumbnail}" width="60" height="40" />
+          <div>
+            <input class="form-control form-control-sm d-inline-block batch-title" data-cat="${catId}" data-bid="${bId}" value="${batch.title}" style="width:160px">
+          </div>
+          <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
+          <button class="btn btn-sm btn-primary add-module" data-cat="${catId}" data-bid="${bId}">+ Module</button>
+        </div>
+        <div class="modules-list mt-2"></div>`;
+      setupBatchEvents(div);
+      return div;
+    };
+
+    const setupBatchEvents = (div) => {
+      div.querySelector('.batch-title').addEventListener('change', e => {
+        const { cat, bid } = e.target.dataset;
+        update(ref(db, `categories/${cat}/batches/${bid}/title`), e.target.value);
+        msg('Batch title updated');
+      });
+      div.querySelector('.delete-batch').onclick = e => {
+        const { cat, bid } = e.target.dataset;
+        if (confirm('Delete this batch?')) {
+          remove(ref(db, `categories/${cat}/batches/${bid}`));
+          msg('Batch deleted');
+        }
+      };
+      // Module section
+      const ml = div.querySelector('.modules-list');
+      const { cat, bid } = div.querySelector('.add-module').dataset;
+      div.querySelector('.add-module').onclick = () => {
+        const moduleName = prompt('Module name?');
+        if (moduleName) {
+          const newMod = push(ref(db, `categories/${cat}/batches/${bid}/modules`));
+          set(newMod, { name: moduleName });
+          msg('Module added');
+        }
+      };
+      onValue(ref(db, `categories/${cat}/batches/${bid}/modules`), snap => {
+        ml.innerHTML = '';
+        const mods = snap.val() || {};
+        Object.entries(mods).forEach(([mId, mod]) => {
+          const modEl = createModuleItem(cat, bid, mId, mod);
+          ml.append(modEl);
+        });
+      });
+    };
+
+    const createModuleItem = (cat, bid, mid, mod) => {
+      const d = document.createElement('div');
+      d.className = 'ps-4 mb-2';
+      d.innerHTML = `
+        <div class="d-flex">
+          <input class="form-control form-control-sm module-name" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name}" style="width:160px">
+          <button class="btn btn-sm btn-danger delete-module ms-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">X</button>
+          <button class="btn btn-sm btn-success add-lecture ms-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Lecture</button>
+        </div>
+        <div class="lectures-list mt-1"></div>`;
+      setupModuleEvents(d);
+      return d;
+    };
+
+    const setupModuleEvents = (d) => {
+      const inp = d.querySelector('.module-name');
+      const { cat, bid, mid } = inp.dataset;
+      inp.addEventListener('change', () => {
+        update(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/name`), inp.value);
+        msg('Module name updated');
+      });
+      d.querySelector('.delete-module').onclick = () => {
+        if (confirm('Delete module?')) {
+          remove(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
+          msg('Module deleted');
+        }
+      };
+      const ll = d.querySelector('.lectures-list');
+      d.querySelector('.add-lecture').onclick = () => {
+        const lname = prompt('Lecture name?');
+        const link = prompt('GDrive link?');
+        if (lname && link) {
+          const newL = push(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
+          set(newL, { name: lname, link });
+          msg('Lecture added');
+        }
+      };
+      onValue(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
+        ll.innerHTML = '';
+        const lcs = snap.val() || {};
+        Object.entries(lcs).forEach(([lId, lec]) => {
+          const item = document.createElement('div');
+          item.className = 'ps-4 d-flex align-items-center';
+          item.innerHTML = `
+            <span>${lec.name}</span>
+            <a href="${lec.link}" target="_blank" class="mx-2">🔗</a>
+            <button class="btn btn-sm btn-danger delete-lecture ms-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">X</button>
+          `;
+          item.querySelector('.delete-lecture').onclick = e => {
+            const ds = e.target.dataset;
+            if (confirm('Delete lecture?')) {
+              remove(ref(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`));
+              msg('Lecture deleted');
+            }
+          };
+          ll.append(item);
+        });
+      });
+    };
+
+    // Add Category event
+    document.getElementById('addCategory').onclick = () => {
+      const name = document.getElementById('categoryName').value.trim();
+      if (!name) return msg('Category name required', 'warning');
+      const newRef = push(ref(db, 'categories'));
+      set(newRef, { name }).then(() => {
+        msg('Category added');
+        document.getElementById('categoryName').value = '';
+      });
+    };
+
+    loadCategories();
+  </script>
+</body>
+</html>
