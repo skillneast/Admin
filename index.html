@@ -3,114 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkillNeast Admin Panel</title>
+  <title>Admin Panel</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { padding: 10px; background-color: #f8f9fa; } /* हल्का बैकग्राउंड */
-    .container { max-width: 900px; margin-top: 20px; }
-    .card { border: 1px solid #dee2e6; margin-bottom: 20px; }
-    .card-body { padding: 1.25rem; }
-    .form-control { border-radius: .25rem; }
-    .btn { border-radius: .25rem; }
-    .alert { margin-top: 15px; } /* अलर्ट के ऊपर थोड़ी जगह */
-
-    /* Nested items को बेहतर दिखाने के लिए स्टाइलिंग */
-    .modules-list, .lectures-list {
-      border-left: 2px solid #e9ecef; /* हल्के रंग का बॉर्डर */
-      padding-left: 15px;
-      margin-top: 10px;
-      padding-top: 5px;
+    body { padding: 10px; background-color: #f8f9fa; }
+    .container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .batch-title, .module-name, .lecture-name {
-        min-width: 150px; /* इनपुट फ़ील्ड्स को विज़िबल रखने के लिए */
-        flex-grow: 1; /* ताकि वे उपलब्ध जगह ले सकें */
-    }
-    .d-flex button { /* बटनों के बीच थोड़ी जगह */
-      margin-left: 5px;
-      white-space: nowrap; /* ताकि बटन एक लाइन में रहें */
-    }
-    .d-flex button:first-child {
-        margin-left: 0;
-    }
-    .cat-name, .batch-title, .module-name, .lecture-name {
-        font-weight: 600;
-    }
-    .cat-name:focus, .batch-title:focus, .module-name:focus, .lecture-name:focus {
-        outline: 1px solid #007bff; /* फोकस पर ब्लू आउटलाइन */
-        background-color: #e2f2ff; /* फोकस पर हल्का नीला बैकग्राउंड */
-    }
-    img.rounded {
-        object-fit: cover; /* इमेज को सही से फिट करने के लिए */
-    }
-    .text-muted {
-        font-style: italic;
-        font-size: 0.9em;
-    }
+    h2, h5 { color: #007bff; }
+    .btn-primary { background-color: #007bff; border-color: #007bff; }
+    .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
+    .btn-danger { background-color: #dc3545; border-color: #dc3545; }
+    .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
+    .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
+    .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; }
+    .btn-success { background-color: #28a745; border-color: #28a745; }
+    .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
+    .form-control { border-radius: 5px; }
+    .alert { margin-top: 10px; border-radius: 5px; }
+    .card { border-radius: 8px; border: 1px solid #e9ecef; }
+    .card-body { padding: 15px; }
+    .cat-name { cursor: pointer; } /* Make contenteditable more obvious */
+    .batches-list, .modules-list, .lectures-list { margin-left: 20px; padding-left: 10px; border-left: 2px solid #e9ecef; }
+    img { border-radius: 4px; object-fit: cover; }
+    input.form-control-sm { max-width: 250px; } /* Adjust width for inputs */
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="text-center mb-4 text-primary">SkillNeast Course Admin Panel</h2>
+    <h2 class="text-center mb-4">Course Admin Panel</h2>
     <div id="alerts"></div>
 
-    <div class="card mb-4 p-3 shadow-sm">
-      <h5 class="card-title text-success">नई Category बनाएँ</h5>
-      <div class="mb-3">
-        <label for="categoryName" class="form-label">Category का नाम:</label>
-        <input id="categoryName" type="text" class="form-control" placeholder="Category का नाम (जैसे: Editing, Programming)">
-      </div>
-      <button id="addCategory" class="btn btn-success mt-2 w-100">Category जोड़ें</button>
+    <div class="mb-3 p-3 border rounded bg-light">
+      <h5>Create Category</h5>
+      <input id="categoryName" type="text" class="form-control" placeholder="Category Name">
+      <button id="addCategory" class="btn btn-primary mt-2">Add Category</button>
     </div>
 
-    <div class="card mb-4 p-3 shadow-sm">
-        <h5 class="card-title text-primary">नया Batch जोड़ें</h5>
-        <div class="mb-3">
-            <label for="newBatchCategory" class="form-label">Category चुनें:</label>
-            <select id="newBatchCategory" class="form-select" disabled>
-                <option value="">-- कैटेगरी लोड हो रही है --</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="newBatchTitle" class="form-label">Batch का Title:</label>
-            <input id="newBatchTitle" type="text" class="form-control" placeholder="Batch का Title (जैसे: Advanced Editing Batch)">
-        </div>
-        <div class="mb-3">
-            <label for="newBatchThumbnail" class="form-label">Thumbnail URL:</label>
-            <input id="newBatchThumbnail" type="text" class="form-control" placeholder="Thumbnail URL (जैसे: https://example.com/image.png)">
-        </div>
-        <button id="addGlobalBatch" class="btn btn-primary mt-2 w-100">नया Batch जोड़ें</button>
-    </div>
-
-    <h4 class="mb-3 text-info">मौजूदा Categories मैनेज करें</h4>
-    <div id="categoriesList"></div>
+    <div id="categoriesList" class="mt-4"></div>
   </div>
 
   <script type="module">
-    // 'firebase-config.js' फ़ाइल से 'db' को इम्पोर्ट करें
-    // सुनिश्चित करें कि firebase-config.js उसी डायरेक्टरी में है जहाँ यह HTML फ़ाइल है
-    import { db } from './firebase-config.js';
-    import { ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import './firebase-config.js'; // Ensure this path is correct for your setup
+    import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    // अलर्ट मैसेज के लिए यूटिलिटी फ़ंक्शन
+    const db = getDatabase();
+
+    // Utility function for messages
     const msg = (text, type = 'success') => {
+      const alertsDiv = document.getElementById('alerts');
       const el = document.createElement('div');
-      el.className = `alert alert-${type} alert-dismissible fade show`;
-      el.setAttribute('role', 'alert');
-      el.innerHTML = `
-        ${text}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      `;
-      document.getElementById('alerts').append(el);
-      setTimeout(() => el.remove(), 4000); // 4 सेकंड बाद हटा दें
-    };
+      el.className = `alert alert-${type} fade show`; // Added fade show for Bootstrap animation
+      el.textContent = text;
+      alertsDiv.append(el);
+      setTimeout(() => {
+        el.classList.remove('show');
+        el.classList.add('fade');
+        el.addEventListener('transitionend', () => el.remove(), { once: true });
+      }, 3000);
+    }
 
-    // Categories को लोड और डिस्प्ले करें
+    // Load and display categories
     const loadCategories = () => {
       const catRef = ref(db, 'categories');
       onValue(catRef, snapshot => {
         const data = snapshot.val() || {};
-        renderCategories(data); // मौजूदा कैटेगरी लिस्ट को रेंडर करता है
-        populateCategoryDropdown(data); // नया ड्रॉपडाउन पॉपुलेट करता है
+        renderCategories(data);
       });
     };
 
@@ -118,305 +79,228 @@
       const container = document.getElementById('categoriesList');
       container.innerHTML = '';
       if (Object.keys(cats).length === 0) {
-          container.innerHTML = '<p class="text-muted text-center mt-3">अभी तक कोई category नहीं जोड़ी गई है.</p>';
-          return;
+        container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
+        return;
       }
       Object.entries(cats).forEach(([catId, cat]) => {
         const card = document.createElement('div');
-        card.className = "card mb-3 shadow-sm";
+        card.className = "card mb-3";
         card.innerHTML = `
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name || 'Untitled Category'}</h5>
-              <button class="btn btn-outline-danger btn-sm delete-cat" data-id="${catId}">Category मिटाएँ</button>
+              <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
+              <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
             </div>
             <hr>
+            <h6 class="mb-2 text-muted">Batches:</h6>
             <div>
-              <button class="btn btn-secondary btn-sm mb-2 add-batch-in-category w-100" data-id="${catId}">इस कैटेगरी में Batch जोड़ें</button>
-              <div class="batches-list"></div>
+              <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
+              <div class="batches-list" id="batches-list-${catId}"></div>
             </div>
           </div>`;
-        setupCategoryEvents(card);
+        setupCategoryEvents(card, catId);
         container.append(card);
       });
     };
 
-    const setupCategoryEvents = (card) => {
+    const setupCategoryEvents = (card, catId) => {
       const nameEl = card.querySelector('.cat-name');
-      const catId = nameEl.dataset.id;
-
-      // जब नाम एडिट करके फ़ोकस हटे, तो अपडेट करें
       nameEl.addEventListener('blur', () => {
-        if (nameEl.textContent.trim() !== (nameEl.dataset.originalName || '')) {
-            update(ref(db, `categories/${catId}`), { name: nameEl.textContent.trim() })
-                .then(() => msg('Category का नाम अपडेट हो गया'))
-                .catch(error => msg(`Category अपडेट करने में error: ${error.message}`, 'danger'));
+        const newName = nameEl.textContent.trim();
+        if (newName && newName !== nameEl.dataset.originalName) { // Check if name actually changed
+          update(ref(db, `categories/${catId}/name`), newName);
+          msg('Category name updated', 'info');
         }
+        nameEl.dataset.originalName = newName; // Update original name for future comparison
       });
-      // फ़ोकस आने पर ओरिजिनल नाम स्टोर करें
-      nameEl.addEventListener('focus', () => {
-          nameEl.dataset.originalName = nameEl.textContent.trim();
-      });
+      nameEl.dataset.originalName = nameEl.textContent.trim(); // Store original name on load
 
-      // Category मिटाएँ
       card.querySelector('.delete-cat').addEventListener('click', () => {
-        if (confirm(`क्या आप वाकई "${nameEl.textContent}" Category और उसके सभी contents मिटाना चाहते हैं? यह undo नहीं किया जा सकता.`)) {
-          remove(ref(db, `categories/${catId}`))
-            .then(() => msg('Category और उसके contents सफलतापूर्वक मिटा दिए गए!'))
-            .catch(error => msg(`Category मिटाने में error: ${error.message}`, 'danger'));
+        if (confirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?')) {
+          remove(ref(db, `categories/${catId}`));
+          msg('Category and its contents deleted!', 'danger');
         }
       });
 
-      // Batches लिस्ट को मैनेज करें
-      const batchesList = card.querySelector('.batches-list');
+      // Add Batch button handler
+      card.querySelector('.add-batch').onclick = () => {
+        const title = prompt('Enter Batch title:');
+        if (!title) { msg('Batch title is required!', 'warning'); return; }
+        const thumb = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
+        if (!thumb) { msg('Thumbnail URL is required!', 'warning'); return; }
+        
+        const newRef = push(ref(db, `categories/${catId}/batches`));
+        set(newRef, { title, thumbnail: thumb })
+          .then(() => msg('Batch added successfully!', 'success'))
+          .catch(error => msg(`Error adding batch: ${error.message}`, 'danger'));
+      };
+
+      // Listen for batches changes for this category
+      const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
       onValue(ref(db, `categories/${catId}/batches`), snapshot => {
-        batchesList.innerHTML = '';
+        batchesListContainer.innerHTML = '';
         const batchData = snapshot.val() || {};
         if (Object.keys(batchData).length === 0) {
-            batchesList.innerHTML = '<p class="text-muted text-center mt-2 mb-0">इस category में कोई batch नहीं है.</p>';
+            batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
         }
         Object.entries(batchData).forEach(([bId, batch]) => {
           const item = createBatchItem(catId, bId, batch);
-          batchesList.append(item);
+          batchesListContainer.append(item);
         });
       });
-
-      // इस कैटेगरी में Batch जोड़ने का बटन इवेंट
-      card.querySelector('.add-batch-in-category').onclick = () => {
-        const title = prompt('Batch का Title दर्ज करें:');
-        const thumb = prompt('Thumbnail URL दर्ज करें (उदाहरण: https://example.com/image.png):');
-        if (title && thumb) {
-          const newRef = push(ref(db, `categories/${catId}/batches`));
-          set(newRef, { title, thumbnail: thumb })
-            .then(() => msg('Batch सफलतापूर्वक जोड़ दिया गया!'))
-            .catch(error => msg(`Batch जोड़ने में error: ${error.message}`, 'danger'));
-        } else {
-            msg('Batch का Title और Thumbnail दोनों ज़रूरी हैं!', 'warning');
-        }
-      };
     };
 
-    // Batch आइटम बनाएँ
     const createBatchItem = (catId, bId, batch) => {
       const div = document.createElement('div');
-      div.className = 'card card-body bg-light mb-2 p-2'; // नेस्टेड कार्ड जैसा दिखने के लिए
+      div.className = 'card mb-2 bg-light'; // Nested card for batches
       div.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-          <img src="${batch.thumbnail || 'https://via.placeholder.com/60x40?text=No+Img'}" width="60" height="40" class="me-2 rounded" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40?text=Error';" />
-          <input class="form-control form-control-sm me-2 batch-title" data-cat="${catId}" data-bid="${bId}" value="${batch.title || 'Untitled Batch'}">
-          <button class="btn btn-sm btn-danger delete-batch me-2" data-cat="${catId}" data-bid="${bId}">Batch मिटाएँ</button>
-          <button class="btn btn-sm btn-primary add-module" data-cat="${catId}" data-bid="${bId}">+ Module</button>
-        </div>
-        <div class="modules-list mt-2"></div>`;
+        <div class="card-body p-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="me-2" />
+            <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
+            <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
+          </div>
+          <hr class="my-2">
+          <h6 class="mb-2 text-muted">Modules:</h6>
+          <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+          <div class="modules-list" id="modules-list-${bId}"></div>
+        </div>`;
       setupBatchEvents(div);
       return div;
     };
 
-    // Batch इवेंट्स सेट अप करें
     const setupBatchEvents = (div) => {
-      const titleInput = div.querySelector('.batch-title');
-      const { cat, bid } = titleInput.dataset;
+      const batchTitleInput = div.querySelector('.batch-title');
+      const { cat, bid } = batchTitleInput.dataset;
 
-      titleInput.addEventListener('change', e => {
-        update(ref(db, `categories/${cat}/batches/${bid}`), { title: e.target.value })
-          .then(() => msg('Batch का Title अपडेट हो गया'))
-          .catch(error => msg(`Batch Title अपडेट करने में error: ${error.message}`, 'danger'));
+      batchTitleInput.addEventListener('change', e => {
+        update(ref(db, `categories/${cat}/batches/${bid}/title`), e.target.value);
+        msg('Batch title updated', 'info');
       });
 
-      div.querySelector('.delete-batch').onclick = () => {
-        if (confirm(`क्या आप वाकई "${titleInput.value}" Batch और उसके सभी modules/lectures मिटाना चाहते हैं?`)) {
-          remove(ref(db, `categories/${cat}/batches/${bid}`))
-            .then(() => msg('Batch सफलतापूर्वक मिटा दिया गया!'))
-            .catch(error => msg(`Batch मिटाने में error: ${error.message}`, 'danger'));
+      div.querySelector('.delete-batch').onclick = e => {
+        if (confirm('Delete this batch and all its modules/lectures?')) {
+          remove(ref(db, `categories/${cat}/batches/${bid}`));
+          msg('Batch deleted!', 'danger');
         }
       };
 
-      // Module सेक्शन
-      const modulesList = div.querySelector('.modules-list');
+      // Add Module button handler
       div.querySelector('.add-module').onclick = () => {
-        const moduleName = prompt('Module का नाम दर्ज करें:');
-        if (moduleName) {
-          const newMod = push(ref(db, `categories/${cat}/batches/${bid}/modules`));
-          set(newMod, { name: moduleName })
-            .then(() => msg('Module सफलतापूर्वक जोड़ दिया गया!'))
-            .catch(error => msg(`Module जोड़ने में error: ${error.message}`, 'danger'));
-        } else {
-            msg('Module का नाम ज़रूरी है!', 'warning');
-        }
+        const moduleName = prompt('Enter Module name:');
+        if (!moduleName) { msg('Module name is required!', 'warning'); return; }
+        
+        const newModRef = push(ref(db, `categories/${cat}/batches/${bid}/modules`));
+        set(newModRef, { name: moduleName })
+          .then(() => msg('Module added successfully!', 'success'))
+          .catch(error => msg(`Error adding module: ${error.message}`, 'danger'));
       };
 
+      // Listen for modules changes for this batch
+      const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
       onValue(ref(db, `categories/${cat}/batches/${bid}/modules`), snap => {
-        modulesList.innerHTML = '';
+        modulesListContainer.innerHTML = '';
         const mods = snap.val() || {};
         if (Object.keys(mods).length === 0) {
-            modulesList.innerHTML = '<p class="text-muted text-center mt-2 mb-0">इस Batch में कोई module नहीं है.</p>';
+            modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
         }
         Object.entries(mods).forEach(([mId, mod]) => {
           const modEl = createModuleItem(cat, bid, mId, mod);
-          modulesList.append(modEl);
+          modulesListContainer.append(modEl);
         });
       });
     };
 
-    // Module आइटम बनाएँ
     const createModuleItem = (cat, bid, mid, mod) => {
       const d = document.createElement('div');
-      d.className = 'card card-body bg-white mb-2 ps-4 p-2 shadow-sm-sm'; /* कार्ड स्टाइलिंग जोड़ी गई */
+      d.className = 'card mb-1 bg-white'; // Nested card for modules
       d.innerHTML = `
-        <div class="d-flex align-items-center mb-2">
-          <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name || 'Untitled Module'}">
-          <button class="btn btn-sm btn-danger delete-module me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Module मिटाएँ</button>
-          <button class="btn btn-sm btn-info add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Lecture</button>
-        </div>
-        <div class="lectures-list mt-1"></div>`;
+        <div class="card-body p-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name}">
+            <button class="btn btn-sm btn-danger delete-module me-1" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Delete</button>
+            <button class="btn btn-sm btn-success add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Add Lecture</button>
+          </div>
+          <div class="lectures-list mt-2" id="lectures-list-${mid}"></div>
+        </div>`;
       setupModuleEvents(d);
       return d;
     };
 
-    // Module इवेंट्स सेट अप करें
     const setupModuleEvents = (d) => {
-      const inp = d.querySelector('.module-name');
-      const { cat, bid, mid } = inp.dataset;
+      const moduleNameInput = d.querySelector('.module-name');
+      const { cat, bid, mid } = moduleNameInput.dataset;
 
-      inp.addEventListener('change', () => {
-        update(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}`), { name: inp.value })
-          .then(() => msg('Module का नाम अपडेट हो गया'))
-          .catch(error => msg(`Module नाम अपडेट करने में error: ${error.message}`, 'danger'));
+      moduleNameInput.addEventListener('change', () => {
+        update(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/name`), moduleNameInput.value);
+        msg('Module name updated', 'info');
       });
 
       d.querySelector('.delete-module').onclick = () => {
-        if (confirm(`क्या आप वाकई "${inp.value}" Module और उसके सभी lectures मिटाना चाहते हैं?`)) {
-          remove(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}`))
-            .then(() => msg('Module सफलतापूर्वक मिटा दिया गया!'))
-            .catch(error => msg(`Module मिटाने में error: ${error.message}`, 'danger'));
+        if (confirm('Delete this module and all its lectures?')) {
+          remove(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
+          msg('Module deleted!', 'danger');
         }
       };
 
-      // Lectures लिस्ट
-      const lecturesList = d.querySelector('.lectures-list');
+      // Add Lecture button handler
       d.querySelector('.add-lecture').onclick = () => {
-        const lname = prompt('Lecture का नाम दर्ज करें:');
-        const link = prompt('Google Drive / YouTube लिंक दर्ज करें (उदाहरण: https://drive.google.com/file/d/ID/preview या https://www.youtube.com/watch?v=ID):');
-        if (lname && link) {
-          const newL = push(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
-          set(newL, { name: lname, link })
-            .then(() => msg('Lecture सफलतापूर्वक जोड़ दिया गया!'))
-            .catch(error => msg(`Lecture जोड़ने में error: ${error.message}`, 'danger'));
-        } else {
-            msg('Lecture का नाम और लिंक दोनों ज़रूरी हैं!', 'warning');
-        }
+        const lname = prompt('Enter Lecture name:');
+        if (!lname) { msg('Lecture name is required!', 'warning'); return; }
+        const link = prompt('Enter Google Drive or YouTube Link (e.g., https://drive.google.com/file/d/YOUR_ID/preview or https://www.youtube.com/watch?v=YOUR_ID):');
+        if (!link) { msg('Lecture link is required!', 'warning'); return; }
+        
+        const newLRef = push(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
+        set(newLRef, { name: lname, link })
+          .then(() => msg('Lecture added successfully!', 'success'))
+          .catch(error => msg(`Error adding lecture: ${error.message}`, 'danger'));
       };
 
+      // Listen for lectures changes for this module
+      const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
       onValue(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
-        lecturesList.innerHTML = '';
+        lecturesListContainer.innerHTML = '';
         const lcs = snap.val() || {};
         if (Object.keys(lcs).length === 0) {
-            lecturesList.innerHTML = '<p class="text-muted text-center mt-2 mb-0">इस Module में कोई lecture नहीं है.</p>';
+            lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
         }
         Object.entries(lcs).forEach(([lId, lec]) => {
           const item = document.createElement('div');
-          item.className = 'd-flex align-items-center mb-1 bg-light p-2 rounded shadow-sm-sm'; /* लेक्चर आइटम्स के लिए स्टाइलिंग जोड़ी गई */
+          item.className = 'd-flex align-items-center bg-light p-1 rounded mb-1';
           item.innerHTML = `
-            <input class="form-control form-control-sm me-2 lecture-name" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}" value="${lec.name || 'Untitled Lecture'}">
-            <a href="${lec.link}" target="_blank" class="btn btn-sm btn-secondary me-2" title="लिंक खोलें">🔗</a>
-            <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">मिटाएँ</button>
+            <span class="flex-grow-1">${lec.name}</span>
+            <a href="${lec.link}" target="_blank" class="btn btn-sm btn-info mx-1" title="View Lecture">🔗</a>
+            <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">X</button>
           `;
-
-          // लेक्चर का नाम बदलने पर अपडेट करें
-          item.querySelector('.lecture-name').addEventListener('change', e => {
-              const ds = e.target.dataset;
-              update(ref(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`), { name: e.target.value })
-                  .then(() => msg('Lecture का नाम अपडेट हो गया'))
-                  .catch(error => msg(`Lecture नाम अपडेट करने में error: ${error.message}`, 'danger'));
-          });
-
           item.querySelector('.delete-lecture').onclick = e => {
             const ds = e.target.dataset;
-            if (confirm(`क्या आप वाकई "${item.querySelector('.lecture-name').value}" Lecture मिटाना चाहते हैं?`)) {
+            if (confirm('Delete this lecture?')) {
               remove(ref(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`))
-                .then(() => msg('Lecture सफलतापूर्वक मिटा दिया गया!'))
-                .catch(error => msg(`Lecture मिटाने में error: ${error.message}`, 'danger'));
+                .then(() => msg('Lecture deleted!', 'danger'))
+                .catch(error => msg(`Error deleting lecture: ${error.message}`, 'danger'));
             }
           };
-          lecturesList.append(item);
+          lecturesListContainer.append(item);
         });
       });
     };
 
-    // Category जोड़ने वाले बटन का इवेंट लिसनर
+    // Add Category event
     document.getElementById('addCategory').onclick = () => {
       const name = document.getElementById('categoryName').value.trim();
-      if (!name) {
-        return msg('Category का नाम खाली नहीं हो सकता!', 'warning');
-      }
+      if (!name) return msg('Category name required!', 'warning');
+      
       const newRef = push(ref(db, 'categories'));
       set(newRef, { name })
         .then(() => {
-          msg('Category सफलतापूर्वक जोड़ दी गई!');
-          document.getElementById('categoryName').value = ''; // इनपुट फ़ील्ड खाली करें
+          msg('Category added!', 'success');
+          document.getElementById('categoryName').value = '';
         })
-        .catch(error => msg(`Category जोड़ने में error: ${error.message}`, 'danger'));
+        .catch(error => msg(`Error adding category: ${error.message}`, 'danger'));
     };
 
-    // नया बैच जोड़ने वाले ग्लोबल बटन का इवेंट लिसनर
-    const populateCategoryDropdown = (categoriesData) => {
-        const dropdown = document.getElementById('newBatchCategory');
-        dropdown.innerHTML = ''; // पुराने ऑप्शंस हटा दें
-
-        if (Object.keys(categoriesData).length === 0) {
-            dropdown.innerHTML = '<option value="">कोई कैटेगरी उपलब्ध नहीं</option>';
-            dropdown.disabled = true;
-            return;
-        }
-        dropdown.disabled = false;
-
-        // एक डिफ़ॉल्ट ऑप्शन जोड़ें
-        const defaultOption = document.createElement('option');
-        defaultOption.value = "";
-        defaultOption.textContent = "-- कैटेगरी चुनें --";
-        defaultOption.selected = true;
-        defaultOption.disabled = true;
-        dropdown.appendChild(defaultOption);
-
-        Object.entries(categoriesData).forEach(([catId, cat]) => {
-            const option = document.createElement('option');
-            option.value = catId;
-            option.textContent = cat.name;
-            dropdown.appendChild(option);
-        });
-    };
-
-    document.getElementById('addGlobalBatch').onclick = () => {
-        const selectedCatId = document.getElementById('newBatchCategory').value;
-        const batchTitle = document.getElementById('newBatchTitle').value.trim();
-        const batchThumbnail = document.getElementById('newBatchThumbnail').value.trim();
-
-        if (!selectedCatId) {
-            return msg('कृपया बैच के लिए एक कैटेगरी चुनें!', 'warning');
-        }
-        if (!batchTitle) {
-            return msg('बैच का टाइटल ज़रूरी है!', 'warning');
-        }
-        if (!batchThumbnail) {
-            return msg('बैच के लिए थंबनेल URL ज़रूरी है!', 'warning');
-        }
-
-        const newRef = push(ref(db, `categories/${selectedCatId}/batches`));
-        set(newRef, { title: batchTitle, thumbnail: batchThumbnail })
-            .then(() => {
-                msg('नया बैच सफलतापूर्वक जोड़ दिया गया!');
-                document.getElementById('newBatchTitle').value = '';
-                document.getElementById('newBatchThumbnail').value = '';
-                // ड्रॉपडाउन को डिफ़ॉल्ट पर रीसेट करें
-                document.getElementById('newBatchCategory').value = "";
-            })
-            .catch(error => msg(`बैच जोड़ने में error: ${error.message}`, 'danger'));
-    };
-
-
-    // पेज लोड होने पर Categories को इनिशियली लोड करें
+    // Initial load
     loadCategories();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
