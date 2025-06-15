@@ -6,38 +6,88 @@
   <title>SkillNeast Admin Panel</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { padding: 10px; }
-    /* Nested items को बेहतर दिखाने के लिए कुछ बेसिक स्टाइलिंग */
+    body { padding: 10px; background-color: #f8f9fa; } /* हल्का बैकग्राउंड */
+    .container { max-width: 900px; margin-top: 20px; }
+    .card { border: 1px solid #dee2e6; margin-bottom: 20px; }
+    .card-body { padding: 1.25rem; }
+    .form-control { border-radius: .25rem; }
+    .btn { border-radius: .25rem; }
+    .alert { margin-top: 15px; } /* अलर्ट के ऊपर थोड़ी जगह */
+
+    /* Nested items को बेहतर दिखाने के लिए स्टाइलिंग */
     .modules-list, .lectures-list {
-      border-left: 2px solid #eee;
-      padding-left: 10px;
-      margin-top: 5px;
+      border-left: 2px solid #e9ecef; /* हल्के रंग का बॉर्डर */
+      padding-left: 15px;
+      margin-top: 10px;
+      padding-top: 5px;
     }
     .batch-title, .module-name, .lecture-name {
         min-width: 150px; /* इनपुट फ़ील्ड्स को विज़िबल रखने के लिए */
+        flex-grow: 1; /* ताकि वे उपलब्ध जगह ले सकें */
     }
-    .alert {
-        margin-top: 15px; /* अलर्ट के ऊपर थोड़ी जगह */
+    .d-flex button { /* बटनों के बीच थोड़ी जगह */
+      margin-left: 5px;
+      white-space: nowrap; /* ताकि बटन एक लाइन में रहें */
+    }
+    .d-flex button:first-child {
+        margin-left: 0;
+    }
+    .cat-name, .batch-title, .module-name, .lecture-name {
+        font-weight: 600;
+    }
+    .cat-name:focus, .batch-title:focus, .module-name:focus, .lecture-name:focus {
+        outline: 1px solid #007bff; /* फोकस पर ब्लू आउटलाइन */
+        background-color: #e2f2ff; /* फोकस पर हल्का नीला बैकग्राउंड */
+    }
+    img.rounded {
+        object-fit: cover; /* इमेज को सही से फिट करने के लिए */
+    }
+    .text-muted {
+        font-style: italic;
+        font-size: 0.9em;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="text-center mb-4">SkillNeast Course Admin Panel</h2>
+    <h2 class="text-center mb-4 text-primary">SkillNeast Course Admin Panel</h2>
     <div id="alerts"></div>
 
     <div class="card mb-4 p-3 shadow-sm">
-      <h5>नई Category बनाएँ</h5>
-      <input id="categoryName" type="text" class="form-control" placeholder="Category का नाम (जैसे: Editing, Programming)">
-      <button id="addCategory" class="btn btn-primary mt-3 w-100">Category जोड़ें</button>
+      <h5 class="card-title text-success">नई Category बनाएँ</h5>
+      <div class="mb-3">
+        <label for="categoryName" class="form-label">Category का नाम:</label>
+        <input id="categoryName" type="text" class="form-control" placeholder="Category का नाम (जैसे: Editing, Programming)">
+      </div>
+      <button id="addCategory" class="btn btn-success mt-2 w-100">Category जोड़ें</button>
     </div>
 
-    <h4 class="mb-3">मौजूदा Categories</h4>
+    <div class="card mb-4 p-3 shadow-sm">
+        <h5 class="card-title text-primary">नया Batch जोड़ें</h5>
+        <div class="mb-3">
+            <label for="newBatchCategory" class="form-label">Category चुनें:</label>
+            <select id="newBatchCategory" class="form-select" disabled>
+                <option value="">-- कैटेगरी लोड हो रही है --</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="newBatchTitle" class="form-label">Batch का Title:</label>
+            <input id="newBatchTitle" type="text" class="form-control" placeholder="Batch का Title (जैसे: Advanced Editing Batch)">
+        </div>
+        <div class="mb-3">
+            <label for="newBatchThumbnail" class="form-label">Thumbnail URL:</label>
+            <input id="newBatchThumbnail" type="text" class="form-control" placeholder="Thumbnail URL (जैसे: https://example.com/image.png)">
+        </div>
+        <button id="addGlobalBatch" class="btn btn-primary mt-2 w-100">नया Batch जोड़ें</button>
+    </div>
+
+    <h4 class="mb-3 text-info">मौजूदा Categories मैनेज करें</h4>
     <div id="categoriesList"></div>
   </div>
 
   <script type="module">
     // 'firebase-config.js' फ़ाइल से 'db' को इम्पोर्ट करें
+    // सुनिश्चित करें कि firebase-config.js उसी डायरेक्टरी में है जहाँ यह HTML फ़ाइल है
     import { db } from './firebase-config.js';
     import { ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
@@ -59,7 +109,8 @@
       const catRef = ref(db, 'categories');
       onValue(catRef, snapshot => {
         const data = snapshot.val() || {};
-        renderCategories(data);
+        renderCategories(data); // मौजूदा कैटेगरी लिस्ट को रेंडर करता है
+        populateCategoryDropdown(data); // नया ड्रॉपडाउन पॉपुलेट करता है
       });
     };
 
@@ -81,7 +132,7 @@
             </div>
             <hr>
             <div>
-              <button class="btn btn-secondary btn-sm mb-2 add-batch w-100" data-id="${catId}">नया Batch जोड़ें</button>
+              <button class="btn btn-secondary btn-sm mb-2 add-batch-in-category w-100" data-id="${catId}">इस कैटेगरी में Batch जोड़ें</button>
               <div class="batches-list"></div>
             </div>
           </div>`;
@@ -130,8 +181,8 @@
         });
       });
 
-      // Batch जोड़ने का बटन इवेंट
-      card.querySelector('.add-batch').onclick = () => {
+      // इस कैटेगरी में Batch जोड़ने का बटन इवेंट
+      card.querySelector('.add-batch-in-category').onclick = () => {
         const title = prompt('Batch का Title दर्ज करें:');
         const thumb = prompt('Thumbnail URL दर्ज करें (उदाहरण: https://example.com/image.png):');
         if (title && thumb) {
@@ -210,12 +261,12 @@
     // Module आइटम बनाएँ
     const createModuleItem = (cat, bid, mid, mod) => {
       const d = document.createElement('div');
-      d.className = 'card card-body bg-light mb-2 ps-4 p-2'; /* कार्ड स्टाइलिंग जोड़ी गई */
+      d.className = 'card card-body bg-white mb-2 ps-4 p-2 shadow-sm-sm'; /* कार्ड स्टाइलिंग जोड़ी गई */
       d.innerHTML = `
         <div class="d-flex align-items-center mb-2">
           <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name || 'Untitled Module'}">
           <button class="btn btn-sm btn-danger delete-module me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Module मिटाएँ</button>
-          <button class="btn btn-sm btn-success add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Lecture</button>
+          <button class="btn btn-sm btn-info add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Lecture</button>
         </div>
         <div class="lectures-list mt-1"></div>`;
       setupModuleEvents(d);
@@ -264,13 +315,13 @@
         }
         Object.entries(lcs).forEach(([lId, lec]) => {
           const item = document.createElement('div');
-          item.className = 'd-flex align-items-center mb-1 bg-white p-2 rounded shadow-sm'; /* लेक्चर आइटम्स के लिए स्टाइलिंग जोड़ी गई */
+          item.className = 'd-flex align-items-center mb-1 bg-light p-2 rounded shadow-sm-sm'; /* लेक्चर आइटम्स के लिए स्टाइलिंग जोड़ी गई */
           item.innerHTML = `
             <input class="form-control form-control-sm me-2 lecture-name" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}" value="${lec.name || 'Untitled Lecture'}">
-            <a href="${lec.link}" target="_blank" class="btn btn-sm btn-info me-2" title="लिंक खोलें">🔗</a>
+            <a href="${lec.link}" target="_blank" class="btn btn-sm btn-secondary me-2" title="लिंक खोलें">🔗</a>
             <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">मिटाएँ</button>
           `;
-          
+
           // लेक्चर का नाम बदलने पर अपडेट करें
           item.querySelector('.lecture-name').addEventListener('change', e => {
               const ds = e.target.dataset;
@@ -302,10 +353,66 @@
       set(newRef, { name })
         .then(() => {
           msg('Category सफलतापूर्वक जोड़ दी गई!');
-          document.getElementById('categoryName').value = '';
+          document.getElementById('categoryName').value = ''; // इनपुट फ़ील्ड खाली करें
         })
         .catch(error => msg(`Category जोड़ने में error: ${error.message}`, 'danger'));
     };
+
+    // नया बैच जोड़ने वाले ग्लोबल बटन का इवेंट लिसनर
+    const populateCategoryDropdown = (categoriesData) => {
+        const dropdown = document.getElementById('newBatchCategory');
+        dropdown.innerHTML = ''; // पुराने ऑप्शंस हटा दें
+
+        if (Object.keys(categoriesData).length === 0) {
+            dropdown.innerHTML = '<option value="">कोई कैटेगरी उपलब्ध नहीं</option>';
+            dropdown.disabled = true;
+            return;
+        }
+        dropdown.disabled = false;
+
+        // एक डिफ़ॉल्ट ऑप्शन जोड़ें
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "-- कैटेगरी चुनें --";
+        defaultOption.selected = true;
+        defaultOption.disabled = true;
+        dropdown.appendChild(defaultOption);
+
+        Object.entries(categoriesData).forEach(([catId, cat]) => {
+            const option = document.createElement('option');
+            option.value = catId;
+            option.textContent = cat.name;
+            dropdown.appendChild(option);
+        });
+    };
+
+    document.getElementById('addGlobalBatch').onclick = () => {
+        const selectedCatId = document.getElementById('newBatchCategory').value;
+        const batchTitle = document.getElementById('newBatchTitle').value.trim();
+        const batchThumbnail = document.getElementById('newBatchThumbnail').value.trim();
+
+        if (!selectedCatId) {
+            return msg('कृपया बैच के लिए एक कैटेगरी चुनें!', 'warning');
+        }
+        if (!batchTitle) {
+            return msg('बैच का टाइटल ज़रूरी है!', 'warning');
+        }
+        if (!batchThumbnail) {
+            return msg('बैच के लिए थंबनेल URL ज़रूरी है!', 'warning');
+        }
+
+        const newRef = push(ref(db, `categories/${selectedCatId}/batches`));
+        set(newRef, { title: batchTitle, thumbnail: batchThumbnail })
+            .then(() => {
+                msg('नया बैच सफलतापूर्वक जोड़ दिया गया!');
+                document.getElementById('newBatchTitle').value = '';
+                document.getElementById('newBatchThumbnail').value = '';
+                // ड्रॉपडाउन को डिफ़ॉल्ट पर रीसेट करें
+                document.getElementById('newBatchCategory').value = "";
+            })
+            .catch(error => msg(`बैच जोड़ने में error: ${error.message}`, 'danger'));
+    };
+
 
     // पेज लोड होने पर Categories को इनिशियली लोड करें
     loadCategories();
