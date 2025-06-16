@@ -145,45 +145,7 @@
         </div>
 
         <!-- Links & Profile Assets Section -->
-        <div class="mb-3 p-3 border rounded bg-light">
-            <h5 class="mb-3" data-bs-toggle="collapse" href="#linksProfilesCollapse" role="button" aria-expanded="false" aria-controls="linksProfilesCollapse" style="cursor: pointer;">
-                Links & Profile Assets <i class="fas fa-chevron-down float-end"></i>
-            </h5>
-            <div class="collapse show" id="linksProfilesCollapse">
-                <div class="mb-3">
-                    <h6>Social & External Links</h6>
-                    <label for="telegramChannelLink" class="form-label">Telegram Channel Link</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="telegramChannelLink" data-key="telegramChannelLink" placeholder="https://t.me/your_channel">
-                    
-                    <label for="telegramGroupLink" class="form-label">Telegram Group Link</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="telegramGroupLink" data-key="telegramGroupLink" placeholder="https://t.me/your_group">
-                    
-                    <label for="youtubeLink" class="form-label">YouTube Link</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="youtubeLink" data-key="youtubeLink" placeholder="https://youtube.com/your_channel">
-                    
-                    <label for="instagramLink" class="form-label">Instagram Link</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="instagramLink" data-key="instagramLink" placeholder="https://instagram.com/your_profile">
-                    
-                    <label for="requestCoursesLink" class="form-label">Request Courses Link</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="requestCoursesLink" data-key="requestCoursesLink" placeholder="https://forms.gle/request_form">
-                </div>
-
-                <div class="mb-3 mt-4">
-                    <h6>Image Assets URLs</h6>
-                    <label for="profilePictureUrl" class="form-label">Profile Picture URL (About Me)</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="profilePictureUrl" data-key="profilePictureUrl" placeholder="https://example.com/profile.jpg">
-                    
-                    <label for="skillNeastLogoUrl" class="form-label">SkillNeast Logo URL (Top Nav)</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="skillNeastLogoUrl" data-key="skillNeastLogoUrl" placeholder="https://example.com/skillneast_logo.png">
-                    
-                    <label for="sliderHeaderPictureUrl" class="form-label">Slider Header Picture URL</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="sliderHeaderPictureUrl" data-key="sliderHeaderPictureUrl" placeholder="https://example.com/slider_header.jpg">
-                    
-                    <label for="pwLogoUrl" class="form-label">PW Logo URL (Lectures)</label>
-                    <input type="url" class="form-control mb-2 site-config-input" id="pwLogoUrl" data-key="pwLogoUrl" placeholder="https://example.com/pw_logo.png">
-                </div>
-            </div>
-        </div>
+        <!-- Removed Links & Profile Assets Section as per request -->
 
         <div id="categoriesList" class="mt-4"></div>
     </div>
@@ -223,17 +185,14 @@
           appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
           measurementId: "G-PCH99BDF1S"
         };
-        // Ensure __app_id is accessible. Provide a fallback if not in Canvas environment.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // Realtime Database
-        const auth = getAuth(app); // Firebase Auth
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // Global variable to hold authentication status
         let isAuthenticated = false;
 
-        // Authenticate Firebase
         const authenticateFirebase = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined') {
@@ -253,7 +212,6 @@
         };
 
 
-        // Utility function for messages (modal like UI to replace alert/confirm)
         const msg = (text, type = 'success') => {
             const alertsDiv = document.getElementById('alerts');
             const el = document.createElement('div');
@@ -267,7 +225,6 @@
             }, 3000);
         };
 
-        // Custom Confirmation Modal
         const showConfirm = (message) => {
             return new Promise((resolve) => {
                 const modalOverlay = document.getElementById('customConfirmModal');
@@ -297,7 +254,6 @@
             });
         };
 
-        // Show/Hide Loading Overlay
         const showLoading = (message = "Processing...") => {
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.querySelector('.loading-message').textContent = message;
@@ -309,45 +265,6 @@
             loadingOverlay.classList.remove('active');
         };
 
-        // --- Site Configuration (Links & Profile Assets) Management ---
-        const loadSiteConfig = () => {
-            const configRef = dbRef(db, 'siteConfig');
-            onValue(configRef, (snapshot) => {
-                const config = snapshot.val() || {};
-                // Populate input fields with current config values
-                document.querySelectorAll('.site-config-input').forEach(input => {
-                    const key = input.dataset.key;
-                    if (config[key]) {
-                        input.value = config[key];
-                    } else {
-                        input.value = ''; // Clear if no value in DB
-                    }
-                });
-            }, (error) => {
-                msg(`Error loading site config: ${error.message}`, 'danger');
-            });
-        };
-
-        const setupSiteConfigEvents = () => {
-            document.querySelectorAll('.site-config-input').forEach(input => {
-                input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
-                    const key = e.target.dataset.key;
-                    const value = e.target.value.trim();
-                    try {
-                        showLoading('Updating site config...');
-                        await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
-                        msg(`${key} updated!`, 'info');
-                    } catch (error) {
-                        msg(`Error updating ${key}: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                });
-            });
-        };
-
-
-        // Load and display categories
         const loadCategories = () => {
             const catRef = dbRef(db, 'categories');
             onValue(catRef, snapshot => {
@@ -423,7 +340,6 @@
                 if (confirmDelete) {
                     try {
                         showLoading('Deleting category and content...');
-                        // No image deletion from storage needed as it's URL-based now.
                         await remove(dbRef(db, `categories/${catId}`));
                         msg('Category and its contents deleted!', 'danger');
                     } catch (error) {
@@ -464,7 +380,8 @@
                         originalPrice: originalPrice,
                         discountedPrice: discountedPrice,
                         isFree: isFree,
-                        isNew: true 
+                        isNew: true,
+                        isCompleted: false // Default to not completed
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -528,14 +445,16 @@
                         <input class="form-check-input batch-is-completed" type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
                         <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
                     </div>
-                    <div class="text-end fw-bold">
+                    <div class="text-end fw-bold mb-2">
                         Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
 
                     <hr class="my-2">
                     <h6 class="mb-2 text-muted">Modules:</h6>
-                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                    <div class="modules-list" id="modules-list-${bId}"></div>
+                    <button class="btn btn-sm btn-info toggle-modules-btn" data-bs-toggle="collapse" data-bs-target="#modules-list-${bId}" aria-expanded="${!batch.isCompleted}" aria-controls="modules-list-${bId}">
+                        ${batch.isCompleted ? 'View Modules' : 'Hide Modules'} <i class="fas ${batch.isCompleted ? 'fa-chevron-down' : 'fa-chevron-up'}"></i>
+                    </button>
+                    <div class="modules-list collapse ${batch.isCompleted ? '' : 'show'}" id="modules-list-${bId}"></div>
                 </div>`;
             setupBatchEvents(div);
             return div;
@@ -547,7 +466,9 @@
             const batchOriginalPriceInput = div.querySelector('.batch-original-price');
             const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
-            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); // New switch
+            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); 
+            const toggleModulesBtn = div.querySelector('.toggle-modules-btn');
+            const modulesListContainer = div.querySelector('.modules-list');
 
             const { cat, bid } = batchTitleInput.dataset;
 
@@ -559,7 +480,7 @@
             batchDescriptionInput.addEventListener('change', async e => {
                 if (e.target.value.split(/\s+/).length > 100) {
                     msg('Description exceeds 100 words! Changes not saved.', 'warning');
-                    return; // Do not save if over limit
+                    return; 
                 }
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
                 msg('Batch description updated', 'info');
@@ -577,7 +498,7 @@
                     discountedPrice: newDiscountedPrice || null,
                     isFree: isFree
                 });
-                batchIsFreeSwitch.checked = isFree; // Update switch based on price
+                batchIsFreeSwitch.checked = isFree; 
                 msg('Batch discounted price updated', 'info');
             });
 
@@ -585,13 +506,12 @@
                 const isFree = e.target.checked;
                 let updateData = { isFree: isFree };
                 if (isFree) {
-                    updateData.discountedPrice = 0; // Set discountedPrice to 0 if marked free
-                    batchDiscountedPriceInput.value = '0'; // Update input field
+                    updateData.discountedPrice = 0; 
+                    batchDiscountedPriceInput.value = '0'; 
                     msg('Batch marked as FREE', 'info');
                 } else {
-                    // If unchecked, set discountedPrice back to its previous value or null
-                    if (parseFloat(batchDiscountedPriceInput.value) === 0) { // If it was 0 because it was free
-                        updateData.discountedPrice = null; // Reset it
+                    if (parseFloat(batchDiscountedPriceInput.value) === 0) {
+                        updateData.discountedPrice = null; 
                         batchDiscountedPriceInput.value = '';
                     }
                     msg('Batch FREE status updated', 'info');
@@ -599,11 +519,34 @@
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
             });
 
+            // Handle isCompleted switch change
             batchIsCompletedSwitch.addEventListener('change', async e => {
                 const isCompleted = e.target.checked;
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isCompleted: isCompleted });
                 msg(`Batch marked as ${isCompleted ? 'Completed' : 'Incomplete'}`, 'info');
+
+                // Toggle visibility/collapse of modules list
+                if (isCompleted) {
+                    modulesListContainer.classList.remove('show');
+                    toggleModulesBtn.innerHTML = 'View Modules <i class="fas fa-chevron-down"></i>';
+                    toggleModulesBtn.setAttribute('aria-expanded', 'false');
+                } else {
+                    modulesListContainer.classList.add('show');
+                    toggleModulesBtn.innerHTML = 'Hide Modules <i class="fas fa-chevron-up"></i>';
+                    toggleModulesBtn.setAttribute('aria-expanded', 'true');
+                }
             });
+
+            // Initial state for toggle button based on isCompleted
+            if (batchIsCompletedSwitch.checked) {
+                modulesListContainer.classList.remove('show'); // Hide if completed
+                toggleModulesBtn.innerHTML = 'View Modules <i class="fas fa-chevron-down"></i>';
+                toggleModulesBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                modulesListContainer.classList.add('show'); // Show if not completed
+                toggleModulesBtn.innerHTML = 'Hide Modules <i class="fas fa-chevron-up"></i>';
+                toggleModulesBtn.setAttribute('aria-expanded', 'true');
+            }
 
 
             div.querySelector('.delete-batch').onclick = async e => {
@@ -611,7 +554,6 @@
                 if (confirmDelete) {
                     try {
                         showLoading('Deleting batch and content...');
-                        // No image deletion from storage needed as it's URL-based now.
                         await remove(dbRef(db, `categories/${cat}/batches/${bid}`));
                         msg('Batch deleted!', 'danger');
                     } catch (error) {
@@ -640,9 +582,8 @@
                 }
             };
 
-            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
             onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snap => {
-                modulesListContainer.innerHTML = '';
+                modulesListContainer.innerHTML = ''; // Clear content before rendering modules
                 const mods = snap.val() || {};
                 if (Object.keys(mods).length === 0) {
                     modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
@@ -689,7 +630,6 @@
                 }
             };
 
-            // Add Lecture button handler
             d.querySelector('.add-lecture').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
@@ -710,7 +650,6 @@
                 }
             };
 
-            // Listen for lectures changes for this module
             const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
             onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
                 lecturesListContainer.innerHTML = '';
@@ -749,7 +688,7 @@
             const name = document.getElementById('categoryName').value.trim();
             if (!name) return msg('Category name required!', 'warning');
             
-            const imageUrl = document.getElementById('categoryImageUrl').value.trim(); // Get URL from input
+            const imageUrl = document.getElementById('categoryImageUrl').value.trim();
             if (!imageUrl) { msg('Category Image URL is required!', 'warning'); return; }
 
             showLoading('Adding category...');
@@ -758,7 +697,7 @@
                 await set(newRef, { name, imageUrl: imageUrl });
                 msg('Category added!', 'success');
                 document.getElementById('categoryName').value = '';
-                document.getElementById('categoryImageUrl').value = ''; // Clear URL input
+                document.getElementById('categoryImageUrl').value = '';
             } catch (error) {
                 msg(`Error adding category: ${error.message}`, 'danger');
             } finally {
@@ -769,8 +708,8 @@
         // Initial load
         authenticateFirebase().then(() => {
             loadCategories();
-            loadSiteConfig(); // Load site config on startup
-            setupSiteConfigEvents(); // Setup event listeners for site config
+            loadSiteConfig();
+            setupSiteConfigEvents();
         });
     </script>
 </body>
