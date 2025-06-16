@@ -136,6 +136,10 @@
                 <label for="categoryName" class="form-label">Category Name</label>
                 <input id="categoryName" type="text" class="form-control" placeholder="e.g., JEE Mains, NEET, Editing">
             </div>
+            <div class="mb-3">
+                <label for="categoryImage" class="form-label">Category Image</label>
+                <input type="file" class="form-control" id="categoryImage" accept="image/*">
+            </div>
             <button id="addCategory" class="btn btn-primary mt-2 w-100">Add Category</button>
         </div>
 
@@ -161,13 +165,22 @@
 
     <script type="module">
         // Firebase configuration and initialization (copied from firebase-config.js)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const firebaseConfig = {
+          apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
+          authDomain: "adminneast.firebaseapp.com",
+          databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
+          projectId: "adminneast",
+          storageBucket: "adminneast.appspot.com", // Corrected storageBucket if it was .firebasestorage.app
+          messagingSenderId: "883877553418",
+          appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
+          measurementId: "G-PCH99BDF1S"
+        };
         // Ensure __app_id is accessible. Provide a fallback if not in Canvas environment.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
@@ -179,21 +192,23 @@
         // Global variable to hold authentication status
         let isAuthenticated = false;
 
-        // Authenticate Firebase (anonymous for public site)
+        // Authenticate Firebase
         const authenticateFirebase = async () => {
             try {
+                // Try to sign in with custom token first (for Canvas environment)
                 if (typeof __initial_auth_token !== 'undefined') {
                     await signInWithCustomToken(auth, __initial_auth_token);
                     isAuthenticated = true;
                     console.log("Admin Panel: Signed in with custom token.");
                 } else {
+                    // Fallback to anonymous sign-in for direct browser access
                     await signInAnonymously(auth);
                     isAuthenticated = true;
                     console.log("Admin Panel: Signed in anonymously.");
                 }
             } catch (error) {
                 console.error("Admin Panel Firebase authentication error:", error);
-                msg(`Authentication failed: ${error.message}`, 'danger');
+                msg(`Authentication failed: ${error.message}. Please check Firebase config & authorized domains.`, 'danger');
                 isAuthenticated = false;
             }
         };
@@ -285,8 +300,9 @@
 
         const deleteImageFromStorage = async (imageURL) => {
             if (!isAuthenticated) {
-                msg('Authentication required to delete images.', 'danger');
-                throw new Error('Not authenticated');
+                // If not authenticated, we can't delete from storage. Log and skip.
+                console.warn('Not authenticated, skipping image deletion from storage.');
+                return;
             }
             if (!imageURL || !imageURL.includes('firebasestorage.googleapis.com')) {
                 console.warn('Not a Firebase Storage URL or invalid URL, skipping deletion:', imageURL);
@@ -296,10 +312,15 @@
             try {
                 // Extract path from download URL
                 const decodedUrl = decodeURIComponent(imageURL);
-                const pathStartIndex = decodedUrl.indexOf('/o/') + 3;
-                const pathEndIndex = decodedUrl.indexOf('?alt=media');
-                const filePath = decodedUrl.substring(pathStartIndex, pathEndIndex);
-
+                // Regex to extract path correctly: starts after /o/ and ends before ?alt=media or the end of the string
+                const filePathMatch = decodedUrl.match(/\/o\/(.+?)(?:\?alt=media|$)/);
+                if (!filePathMatch || !filePathMatch[1]) {
+                    console.error("Could not extract file path from URL:", decodedUrl);
+                    msg('Error: Could not determine image path for deletion.', 'danger');
+                    return;
+                }
+                const filePath = filePathMatch[1];
+                
                 const imageRef = storageRef(storage, filePath);
                 await deleteObject(imageRef);
                 msg('Old image deleted from storage.', 'info');
@@ -334,11 +355,11 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
-                            <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
+                            <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}" data-image-url="${cat.imageUrl || ''}">Delete Category</button>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Category Image (Current):</label>
-                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image</p>'}
+                            <label class="form-label">Category Image:</label>
+                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
                             <input type="file" class="form-control form-control-sm mt-2 category-image-upload" data-id="${catId}">
                         </div>
                         <hr>
@@ -374,25 +395,36 @@
                 const file = e.target.files[0];
                 if (file) {
                     try {
-                        // Delete old image if it exists
-                        if (currentImageUrl) {
+                        showLoading('Uploading category image...');
+                        const imageUrl = await uploadImageAndGetURL(file, 'category_images');
+                        
+                        // Delete old image if it exists and is different from new
+                        if (currentImageUrl && currentImageUrl !== imageUrl) {
                             await deleteImageFromStorage(currentImageUrl);
                         }
-                        const imageUrl = await uploadImageAndGetURL(file, 'category_images');
                         await update(dbRef(db, `categories/${catId}`), { imageUrl: imageUrl });
                         msg('Category image updated successfully!', 'success');
                     } catch (error) {
                         console.error("Error updating category image:", error);
+                    } finally {
+                        hideLoading();
                     }
                 }
             });
 
-            card.querySelector('.delete-cat').addEventListener('click', async () => {
+            card.querySelector('.delete-cat').addEventListener('click', async (e) => {
+                const imageUrlToDelete = e.target.dataset.imageUrl;
                 const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
                 if (confirmDelete) {
                     try {
-                        // Delete associated images in batches first
-                        const batchesSnapshot = await new Promise(resolve => onValue(dbRef(db, `categories/${catId}/batches`), resolve, {onlyOnce: true}));
+                        showLoading('Deleting category and content...');
+                        // Delete category image if it exists
+                        if (imageUrlToDelete) {
+                            await deleteImageFromStorage(imageUrlToDelete);
+                        }
+
+                        // Delete all batch thumbnails associated with this category
+                        const batchesSnapshot = await new Promise(resolve => onValue(dbRef(db, `categories/${catId}/batches`), snapshot => resolve(snapshot), {onlyOnce: true}));
                         const batchesData = batchesSnapshot.val();
                         if (batchesData) {
                             for (const bId in batchesData) {
@@ -401,22 +433,23 @@
                                 }
                             }
                         }
-                        // Delete category image
-                        if (currentImageUrl) {
-                            await deleteImageFromStorage(currentImageUrl);
-                        }
 
                         await remove(dbRef(db, `categories/${catId}`));
                         msg('Category and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting category: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
                     }
                 }
             });
 
             card.querySelector('.add-batch').onclick = async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
                 const title = prompt('Enter Batch title:');
                 if (!title) { msg('Batch title is required!', 'warning'); return; }
+                
                 const thumbFile = await new Promise(resolve => {
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -428,25 +461,35 @@
 
                 const description = prompt('Enter Batch description (max 100 words):');
                 if (!description) { msg('Batch description is required!', 'warning'); return; }
-                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words!', 'warning'); return; }
+                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
 
-                const originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty for Free):');
-                const discountedPrice = prompt('Enter Discounted Price (e.g., 499 or leave empty for Free):');
+                let originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
+                let discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
                 
+                originalPrice = originalPrice ? parseFloat(originalPrice) : null;
+                discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
+                const isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
+
                 try {
+                    showLoading('Uploading batch thumbnail...');
                     const thumbnailUrl = await uploadImageAndGetURL(thumbFile, 'batch_thumbnails');
+                    
                     const newRef = push(dbRef(db, `categories/${catId}/batches`));
                     await set(newRef, { 
                         title, 
                         thumbnail: thumbnailUrl, 
                         description,
-                        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-                        discountedPrice: discountedPrice ? parseFloat(discountedPrice) : null,
-                        isFree: discountedPrice === '0' || (!originalPrice && !discountedPrice) // Mark as free if discounted price is 0 or both prices are empty
+                        originalPrice: originalPrice,
+                        discountedPrice: discountedPrice,
+                        isFree: isFree,
+                        // Add isNew if you want to display 'NEW' badge
+                        isNew: true 
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding batch: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
                 }
             };
 
@@ -469,9 +512,10 @@
         const createBatchItem = (catId, bId, batch) => {
             const div = document.createElement('div');
             div.className = 'card mb-2 bg-light';
-            const displayPrice = (batch.isFree || (!batch.originalPrice && !batch.discountedPrice)) ? 'FREE' :
-                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : `₹${batch.originalPrice}`);
-            const originalPriceDisplay = (batch.originalPrice !== null && !batch.isFree) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
+            
+            const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ? '<span class="fw-bold text-success">FREE</span>' :
+                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
+            const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
 
 
             div.innerHTML = `
@@ -488,16 +532,19 @@
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="w-50 me-2">
                             <label class="form-label">Original Price</label>
-                            <input type="number" class="form-control form-control-sm batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice || ''}" placeholder="e.g., 999">
+                            <input type="number" class="form-control form-control-sm batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
                         </div>
                         <div class="w-50">
                             <label class="form-label">Discounted Price</label>
-                            <input type="number" class="form-control form-control-sm batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice || ''}" placeholder="e.g., 499 (0 for FREE)">
+                            <input type="number" class="form-control form-control-sm batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for FREE)">
                         </div>
                     </div>
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
                         <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
+                    </div>
+                    <div class="text-end fw-bold">
+                        Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
 
                     <hr class="my-2">
@@ -527,11 +574,22 @@
                 if (e.target.value.split(/\s+/).length > 100) {
                     msg('Description exceeds 100 words! Changes not saved.', 'warning');
                     // Optionally revert to last saved description
+                    // Revert by fetching current description from DB or batch object
+                    const currentDesc = batchDescriptionInput.dataset.originalDesc || '';
+                    if (e.target.value !== currentDesc) { // Only revert if user changed it
+                         batchDescriptionInput.value = currentDesc;
+                    }
                     return;
                 }
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
                 msg('Batch description updated', 'info');
+                batchDescriptionInput.dataset.originalDesc = e.target.value; // Update original desc
             });
+            // Store original description on load/creation
+            if (batchDescriptionInput) {
+                batchDescriptionInput.dataset.originalDesc = batchDescriptionInput.value;
+            }
+
 
             batchOriginalPriceInput.addEventListener('change', async e => {
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
@@ -539,9 +597,10 @@
             });
 
             batchDiscountedPriceInput.addEventListener('change', async e => {
-                const isFree = parseFloat(e.target.value) === 0;
+                const newDiscountedPrice = parseFloat(e.target.value);
+                const isFree = newDiscountedPrice === 0;
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
-                    discountedPrice: parseFloat(e.target.value) || null,
+                    discountedPrice: newDiscountedPrice || null,
                     isFree: isFree
                 });
                 batchIsFreeSwitch.checked = isFree; // Update switch based on price
@@ -550,16 +609,21 @@
 
             batchIsFreeSwitch.addEventListener('change', async e => {
                 const isFree = e.target.checked;
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
-                    isFree: isFree,
-                    discountedPrice: isFree ? 0 : (batchDiscountedPriceInput.value ? parseFloat(batchDiscountedPriceInput.value) : null)
-                });
+                let updateData = { isFree: isFree };
                 if (isFree) {
-                    batchDiscountedPriceInput.value = '0';
+                    updateData.discountedPrice = 0; // Set discountedPrice to 0 if marked free
+                    batchDiscountedPriceInput.value = '0'; // Update input field
                     msg('Batch marked as FREE', 'info');
                 } else {
+                    // If unchecked, set discountedPrice back to its previous value or null
+                    // If it was 0 due to 'FREE' switch, clear it.
+                    if (parseFloat(batchDiscountedPriceInput.value) === 0) {
+                        updateData.discountedPrice = null;
+                        batchDiscountedPriceInput.value = '';
+                    }
                     msg('Batch FREE status updated', 'info');
                 }
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
             });
 
 
@@ -567,6 +631,7 @@
                 const confirmDelete = await showConfirm('Delete this batch and all its modules/lectures?');
                 if (confirmDelete) {
                     try {
+                        showLoading('Deleting batch and content...');
                         // Delete associated thumbnail image
                         const thumbnailUrlToDelete = e.target.dataset.thumb;
                         if (thumbnailUrlToDelete) {
@@ -578,18 +643,28 @@
                         msg('Batch deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting batch: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
                     }
                 }
             };
 
             div.querySelector('.add-module').onclick = async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
                 const moduleName = prompt('Enter Module name:');
                 if (!moduleName) { msg('Module name is required!', 'warning'); return; }
                 
-                const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
-                await set(newModRef, { name: moduleName })
-                    .then(() => msg('Module added successfully!', 'success'))
-                    .catch(error => msg(`Error adding module: ${error.message}`, 'danger'));
+                showLoading('Adding module...');
+                try {
+                    const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
+                    await set(newModRef, { name: moduleName });
+                    msg('Module added successfully!', 'success');
+                } catch (error) {
+                    msg(`Error adding module: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
             };
 
             const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
@@ -643,15 +718,23 @@
 
             // Add Lecture button handler
             d.querySelector('.add-lecture').onclick = async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
                 const lname = prompt('Enter Lecture name:');
                 if (!lname) { msg('Lecture name is required!', 'warning'); return; }
                 const link = prompt('Enter Google Drive or YouTube Link (e.g., https://drive.google.com/file/d/YOUR_ID/preview or https://www.youtube.com/watch?v=YOUR_ID):');
                 if (!link) { msg('Lecture link is required!', 'warning'); return; }
                 
-                const newLRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
-                await set(newLRef, { name: lname, link })
-                    .then(() => msg('Lecture added successfully!', 'success'))
-                    .catch(error => msg(`Error adding lecture: ${error.message}`, 'danger'));
+                showLoading('Adding lecture...');
+                try {
+                    const newLRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
+                    await set(newLRef, { name: lname, link });
+                    msg('Lecture added successfully!', 'success');
+                } catch (error) {
+                    msg(`Error adding lecture: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
             };
 
             // Listen for lectures changes for this module
@@ -688,14 +771,28 @@
 
         // Add Category event
         document.getElementById('addCategory').onclick = async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
             const name = document.getElementById('categoryName').value.trim();
             if (!name) return msg('Category name required!', 'warning');
             
+            const imageFile = document.getElementById('categoryImage').files[0];
+            let imageUrl = null;
+            if (imageFile) {
+                try {
+                    imageUrl = await uploadImageAndGetURL(imageFile, 'category_images');
+                } catch (error) {
+                    console.error("Failed to upload category image:", error);
+                    return; // Stop if image upload fails
+                }
+            }
+
             const newRef = push(dbRef(db, 'categories'));
-            await set(newRef, { name })
+            await set(newRef, { name, imageUrl: imageUrl })
                 .then(() => {
                     msg('Category added!', 'success');
                     document.getElementById('categoryName').value = '';
+                    document.getElementById('categoryImage').value = ''; // Clear file input
                 })
                 .catch(error => msg(`Error adding category: ${error.message}`, 'danger'));
         };
