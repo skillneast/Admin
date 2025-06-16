@@ -1,306 +1,709 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { padding: 10px; background-color: #f8f9fa; }
-    .container {
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2, h5 { color: #007bff; }
-    .btn-primary { background-color: #007bff; border-color: #007bff; }
-    .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
-    .btn-danger { background-color: #dc3545; border-color: #dc3545; }
-    .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
-    .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
-    .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; }
-    .btn-success { background-color: #28a745; border-color: #28a745; }
-    .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
-    .form-control { border-radius: 5px; }
-    .alert { margin-top: 10px; border-radius: 5px; }
-    .card { border-radius: 8px; border: 1px solid #e9ecef; }
-    .card-body { padding: 15px; }
-    .cat-name { cursor: pointer; } /* Make contenteditable more obvious */
-    .batches-list, .modules-list, .lectures-list { margin-left: 20px; padding-left: 10px; border-left: 2px solid #e9ecef; }
-    img { border-radius: 4px; object-fit: cover; }
-    input.form-control-sm { max-width: 250px; } /* Adjust width for inputs */
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkillNeast Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { padding: 10px; background-color: #f0f2f5; font-family: 'Open Sans', sans-serif; color: #333; }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h2, h5 { color: #007bff; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+        .btn-primary { background-color: #007bff; border-color: #007bff; border-radius: 20px; padding: 8px 20px; }
+        .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
+        .btn-danger { background-color: #dc3545; border-color: #dc3545; border-radius: 15px; padding: 5px 12px; }
+        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; border-radius: 15px; padding: 5px 12px; }
+        .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; }
+        .btn-success { background-color: #28a745; border-color: #28a745; border-radius: 15px; padding: 5px 12px; }
+        .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
+        .btn-info { background-color: #17a2b8; border-color: #17a2b8; border-radius: 15px; padding: 5px 12px; }
+        .btn-info:hover { background-color: #138496; border-color: #117a8b; }
+        .form-control { border-radius: 8px; border: 1px solid #ced4da; padding: 10px; }
+        .form-label { font-weight: 600; margin-bottom: 5px; }
+        .alert { margin-top: 15px; border-radius: 8px; }
+        .card { border-radius: 10px; border: 1px solid #e9ecef; margin-bottom: 20px; background-color: #fdfdfd; }
+        .card-body { padding: 20px; }
+        .cat-name, .batch-title, .module-name { cursor: text; font-weight: 600; } 
+        .batches-list, .modules-list, .lectures-list { margin-left: 20px; padding-left: 15px; border-left: 3px solid #e9ecef; margin-top: 10px; }
+        img.thumbnail-preview { border-radius: 8px; object-fit: cover; width: 100px; height: 70px; margin-right: 15px; border: 1px solid #ddd; }
+        input.form-control-sm { max-width: 300px; } 
+        textarea.form-control { min-height: 80px; resize: vertical; }
+
+        /* Custom Modal Styling (for alert/confirm replacements) */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1060; /* Higher than Bootstrap modals */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .custom-modal-overlay.active .custom-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .custom-modal-content h5 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            color: #343a40;
+        }
+        .custom-modal-content .modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1070;
+            color: white;
+            font-size: 1.2em;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .loading-spinner-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-message {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="text-center mb-4">Course Admin Panel</h2>
-    <div id="alerts"></div>
+    <div class="container">
+        <h2 class="text-center mb-4">SkillNeast Admin Panel</h2>
+        <div id="alerts"></div>
 
-    <div class="mb-3 p-3 border rounded bg-light">
-      <h5>Create Category</h5>
-      <input id="categoryName" type="text" class="form-control" placeholder="Category Name">
-      <button id="addCategory" class="btn btn-primary mt-2">Add Category</button>
+        <div class="mb-3 p-3 border rounded bg-light">
+            <h5>Create Category</h5>
+            <div class="mb-3">
+                <label for="categoryName" class="form-label">Category Name</label>
+                <input id="categoryName" type="text" class="form-control" placeholder="e.g., JEE Mains, NEET, Editing">
+            </div>
+            <button id="addCategory" class="btn btn-primary mt-2 w-100">Add Category</button>
+        </div>
+
+        <div id="categoriesList" class="mt-4"></div>
     </div>
 
-    <div id="categoriesList" class="mt-4"></div>
-  </div>
-
-  <script type="module">
-    import './firebase-config.js'; // Ensure this path is correct for your setup
-    import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-    const db = getDatabase();
-
-    // Utility function for messages
-    const msg = (text, type = 'success') => {
-      const alertsDiv = document.getElementById('alerts');
-      const el = document.createElement('div');
-      el.className = `alert alert-${type} fade show`; // Added fade show for Bootstrap animation
-      el.textContent = text;
-      alertsDiv.append(el);
-      setTimeout(() => {
-        el.classList.remove('show');
-        el.classList.add('fade');
-        el.addEventListener('transitionend', () => el.remove(), { once: true });
-      }, 3000);
-    }
-
-    // Load and display categories
-    const loadCategories = () => {
-      const catRef = ref(db, 'categories');
-      onValue(catRef, snapshot => {
-        const data = snapshot.val() || {};
-        renderCategories(data);
-      });
-    };
-
-    const renderCategories = (cats) => {
-      const container = document.getElementById('categoriesList');
-      container.innerHTML = '';
-      if (Object.keys(cats).length === 0) {
-        container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
-        return;
-      }
-      Object.entries(cats).forEach(([catId, cat]) => {
-        const card = document.createElement('div');
-        card.className = "card mb-3";
-        card.innerHTML = `
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
-              <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
+    <!-- Custom Confirmation Modal -->
+    <div class="custom-modal-overlay" id="customConfirmModal">
+        <div class="custom-modal-content">
+            <h5 id="customConfirmMessage"></h5>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="customConfirmCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="customConfirmOK">OK</button>
             </div>
-            <hr>
-            <h6 class="mb-2 text-muted">Batches:</h6>
-            <div>
-              <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
-              <div class="batches-list" id="batches-list-${catId}"></div>
-            </div>
-          </div>`;
-        setupCategoryEvents(card, catId);
-        container.append(card);
-      });
-    };
+        </div>
+    </div>
 
-    const setupCategoryEvents = (card, catId) => {
-      const nameEl = card.querySelector('.cat-name');
-      nameEl.addEventListener('blur', () => {
-        const newName = nameEl.textContent.trim();
-        if (newName && newName !== nameEl.dataset.originalName) { // Check if name actually changed
-          update(ref(db, `categories/${catId}/name`), newName);
-          msg('Category name updated', 'info');
-        }
-        nameEl.dataset.originalName = newName; // Update original name for future comparison
-      });
-      nameEl.dataset.originalName = nameEl.textContent.trim(); // Store original name on load
+    <!-- Loading Spinner Overlay -->
+    <div class="loading-spinner-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-message">Uploading image...</p>
+    </div>
 
-      card.querySelector('.delete-cat').addEventListener('click', () => {
-        if (confirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?')) {
-          remove(ref(db, `categories/${catId}`));
-          msg('Category and its contents deleted!', 'danger');
-        }
-      });
+    <script type="module">
+        // Firebase configuration and initialization (copied from firebase-config.js)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-      // Add Batch button handler
-      card.querySelector('.add-batch').onclick = () => {
-        const title = prompt('Enter Batch title:');
-        if (!title) { msg('Batch title is required!', 'warning'); return; }
-        const thumb = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
-        if (!thumb) { msg('Thumbnail URL is required!', 'warning'); return; }
-        
-        const newRef = push(ref(db, `categories/${catId}/batches`));
-        set(newRef, { title, thumbnail: thumb })
-          .then(() => msg('Batch added successfully!', 'success'))
-          .catch(error => msg(`Error adding batch: ${error.message}`, 'danger'));
-      };
 
-      // Listen for batches changes for this category
-      const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
-      onValue(ref(db, `categories/${catId}/batches`), snapshot => {
-        batchesListContainer.innerHTML = '';
-        const batchData = snapshot.val() || {};
-        if (Object.keys(batchData).length === 0) {
-            batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
-        }
-        Object.entries(batchData).forEach(([bId, batch]) => {
-          const item = createBatchItem(catId, bId, batch);
-          batchesListContainer.append(item);
-        });
-      });
-    };
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // Ensure __app_id is accessible. Provide a fallback if not in Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    const createBatchItem = (catId, bId, batch) => {
-      const div = document.createElement('div');
-      div.className = 'card mb-2 bg-light'; // Nested card for batches
-      div.innerHTML = `
-        <div class="card-body p-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="me-2" />
-            <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
-            <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
-          </div>
-          <hr class="my-2">
-          <h6 class="mb-2 text-muted">Modules:</h6>
-          <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-          <div class="modules-list" id="modules-list-${bId}"></div>
-        </div>`;
-      setupBatchEvents(div);
-      return div;
-    };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); // Realtime Database
+        const storage = getStorage(app); // Firebase Storage
+        const auth = getAuth(app); // Firebase Auth
 
-    const setupBatchEvents = (div) => {
-      const batchTitleInput = div.querySelector('.batch-title');
-      const { cat, bid } = batchTitleInput.dataset;
+        // Global variable to hold authentication status
+        let isAuthenticated = false;
 
-      batchTitleInput.addEventListener('change', e => {
-        update(ref(db, `categories/${cat}/batches/${bid}/title`), e.target.value);
-        msg('Batch title updated', 'info');
-      });
-
-      div.querySelector('.delete-batch').onclick = e => {
-        if (confirm('Delete this batch and all its modules/lectures?')) {
-          remove(ref(db, `categories/${cat}/batches/${bid}`));
-          msg('Batch deleted!', 'danger');
-        }
-      };
-
-      // Add Module button handler
-      div.querySelector('.add-module').onclick = () => {
-        const moduleName = prompt('Enter Module name:');
-        if (!moduleName) { msg('Module name is required!', 'warning'); return; }
-        
-        const newModRef = push(ref(db, `categories/${cat}/batches/${bid}/modules`));
-        set(newModRef, { name: moduleName })
-          .then(() => msg('Module added successfully!', 'success'))
-          .catch(error => msg(`Error adding module: ${error.message}`, 'danger'));
-      };
-
-      // Listen for modules changes for this batch
-      const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
-      onValue(ref(db, `categories/${cat}/batches/${bid}/modules`), snap => {
-        modulesListContainer.innerHTML = '';
-        const mods = snap.val() || {};
-        if (Object.keys(mods).length === 0) {
-            modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
-        }
-        Object.entries(mods).forEach(([mId, mod]) => {
-          const modEl = createModuleItem(cat, bid, mId, mod);
-          modulesListContainer.append(modEl);
-        });
-      });
-    };
-
-    const createModuleItem = (cat, bid, mid, mod) => {
-      const d = document.createElement('div');
-      d.className = 'card mb-1 bg-white'; // Nested card for modules
-      d.innerHTML = `
-        <div class="card-body p-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name}">
-            <button class="btn btn-sm btn-danger delete-module me-1" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Delete</button>
-            <button class="btn btn-sm btn-success add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Add Lecture</button>
-          </div>
-          <div class="lectures-list mt-2" id="lectures-list-${mid}"></div>
-        </div>`;
-      setupModuleEvents(d);
-      return d;
-    };
-
-    const setupModuleEvents = (d) => {
-      const moduleNameInput = d.querySelector('.module-name');
-      const { cat, bid, mid } = moduleNameInput.dataset;
-
-      moduleNameInput.addEventListener('change', () => {
-        update(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/name`), moduleNameInput.value);
-        msg('Module name updated', 'info');
-      });
-
-      d.querySelector('.delete-module').onclick = () => {
-        if (confirm('Delete this module and all its lectures?')) {
-          remove(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
-          msg('Module deleted!', 'danger');
-        }
-      };
-
-      // Add Lecture button handler
-      d.querySelector('.add-lecture').onclick = () => {
-        const lname = prompt('Enter Lecture name:');
-        if (!lname) { msg('Lecture name is required!', 'warning'); return; }
-        const link = prompt('Enter Google Drive or YouTube Link (e.g., https://drive.google.com/file/d/YOUR_ID/preview or https://www.youtube.com/watch?v=YOUR_ID):');
-        if (!link) { msg('Lecture link is required!', 'warning'); return; }
-        
-        const newLRef = push(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
-        set(newLRef, { name: lname, link })
-          .then(() => msg('Lecture added successfully!', 'success'))
-          .catch(error => msg(`Error adding lecture: ${error.message}`, 'danger'));
-      };
-
-      // Listen for lectures changes for this module
-      const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
-      onValue(ref(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
-        lecturesListContainer.innerHTML = '';
-        const lcs = snap.val() || {};
-        if (Object.keys(lcs).length === 0) {
-            lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
-        }
-        Object.entries(lcs).forEach(([lId, lec]) => {
-          const item = document.createElement('div');
-          item.className = 'd-flex align-items-center bg-light p-1 rounded mb-1';
-          item.innerHTML = `
-            <span class="flex-grow-1">${lec.name}</span>
-            <a href="${lec.link}" target="_blank" class="btn btn-sm btn-info mx-1" title="View Lecture">🔗</a>
-            <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">X</button>
-          `;
-          item.querySelector('.delete-lecture').onclick = e => {
-            const ds = e.target.dataset;
-            if (confirm('Delete this lecture?')) {
-              remove(ref(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`))
-                .then(() => msg('Lecture deleted!', 'danger'))
-                .catch(error => msg(`Error deleting lecture: ${error.message}`, 'danger'));
+        // Authenticate Firebase (anonymous for public site)
+        const authenticateFirebase = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in with custom token.");
+                } else {
+                    await signInAnonymously(auth);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in anonymously.");
+                }
+            } catch (error) {
+                console.error("Admin Panel Firebase authentication error:", error);
+                msg(`Authentication failed: ${error.message}`, 'danger');
+                isAuthenticated = false;
             }
-          };
-          lecturesListContainer.append(item);
+        };
+
+
+        // Utility function for messages (modal like UI to replace alert/confirm)
+        const msg = (text, type = 'success') => {
+            const alertsDiv = document.getElementById('alerts');
+            const el = document.createElement('div');
+            el.className = `alert alert-${type} fade show`;
+            el.textContent = text;
+            alertsDiv.append(el);
+            setTimeout(() => {
+                el.classList.remove('show');
+                el.classList.add('fade');
+                el.addEventListener('transitionend', () => el.remove(), { once: true });
+            }, 3000);
+        };
+
+        // Custom Confirmation Modal
+        const showConfirm = (message) => {
+            return new Promise((resolve) => {
+                const modalOverlay = document.getElementById('customConfirmModal');
+                const modalMessage = document.getElementById('customConfirmMessage');
+                const okButton = document.getElementById('customConfirmOK');
+                const cancelButton = document.getElementById('customConfirmCancel');
+
+                modalMessage.textContent = message;
+                modalOverlay.classList.add('active');
+
+                const handleConfirm = () => {
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+
+                okButton.addEventListener('click', handleConfirm);
+                cancelButton.addEventListener('click', handleCancel);
+            });
+        };
+
+        // Show/Hide Loading Overlay
+        const showLoading = (message = "Please wait...") => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.querySelector('.loading-message').textContent = message;
+            loadingOverlay.classList.add('active');
+        };
+
+        const hideLoading = () => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('active');
+        };
+
+        // --- Image Upload Utility ---
+        const uploadImageAndGetURL = async (file, pathPrefix = 'images') => {
+            if (!isAuthenticated) {
+                msg('Authentication required to upload images.', 'danger');
+                throw new Error('Not authenticated');
+            }
+            if (!file) {
+                throw new Error('No file selected.');
+            }
+
+            const uniqueFileName = `${pathPrefix}/${appId}/${Date.now()}_${file.name}`;
+            const imageRef = storageRef(storage, uniqueFileName);
+            
+            showLoading('Uploading image...');
+            try {
+                const snapshot = await uploadBytes(imageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                msg('Image uploaded successfully!', 'success');
+                return downloadURL;
+            } catch (error) {
+                console.error("Image upload failed:", error);
+                msg(`Image upload failed: ${error.message}`, 'danger');
+                throw error;
+            } finally {
+                hideLoading();
+            }
+        };
+
+        const deleteImageFromStorage = async (imageURL) => {
+            if (!isAuthenticated) {
+                msg('Authentication required to delete images.', 'danger');
+                throw new Error('Not authenticated');
+            }
+            if (!imageURL || !imageURL.includes('firebasestorage.googleapis.com')) {
+                console.warn('Not a Firebase Storage URL or invalid URL, skipping deletion:', imageURL);
+                return;
+            }
+
+            try {
+                // Extract path from download URL
+                const decodedUrl = decodeURIComponent(imageURL);
+                const pathStartIndex = decodedUrl.indexOf('/o/') + 3;
+                const pathEndIndex = decodedUrl.indexOf('?alt=media');
+                const filePath = decodedUrl.substring(pathStartIndex, pathEndIndex);
+
+                const imageRef = storageRef(storage, filePath);
+                await deleteObject(imageRef);
+                msg('Old image deleted from storage.', 'info');
+            } catch (error) {
+                console.error("Error deleting old image:", error);
+                msg(`Error deleting old image: ${error.message}`, 'danger');
+            }
+        };
+
+        // Load and display categories
+        const loadCategories = () => {
+            const catRef = dbRef(db, 'categories');
+            onValue(catRef, snapshot => {
+                const data = snapshot.val() || {};
+                renderCategories(data);
+            }, (error) => {
+                msg(`Error loading categories: ${error.message}`, 'danger');
+            });
+        };
+
+        const renderCategories = (cats) => {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = '';
+            if (Object.keys(cats).length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
+                return;
+            }
+            Object.entries(cats).forEach(([catId, cat]) => {
+                const card = document.createElement('div');
+                card.className = "card mb-3";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
+                            <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category Image (Current):</label>
+                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image</p>'}
+                            <input type="file" class="form-control form-control-sm mt-2 category-image-upload" data-id="${catId}">
+                        </div>
+                        <hr>
+                        <h6 class="mb-2 text-muted">Batches:</h6>
+                        <div>
+                            <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
+                            <div class="batches-list" id="batches-list-${catId}"></div>
+                        </div>
+                    </div>`;
+                setupCategoryEvents(card, catId, cat.imageUrl);
+                container.append(card);
+            });
+        };
+
+        const setupCategoryEvents = (card, catId, currentImageUrl) => {
+            const nameEl = card.querySelector('.cat-name');
+            nameEl.addEventListener('blur', async () => {
+                const newName = nameEl.textContent.trim();
+                if (newName && newName !== nameEl.dataset.originalName) {
+                    try {
+                        await update(dbRef(db, `categories/${catId}`), { name: newName });
+                        msg('Category name updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating category name: ${error.message}`, 'danger');
+                    }
+                }
+                nameEl.dataset.originalName = newName;
+            });
+            nameEl.dataset.originalName = nameEl.textContent.trim();
+
+            const imageUploadInput = card.querySelector('.category-image-upload');
+            imageUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        // Delete old image if it exists
+                        if (currentImageUrl) {
+                            await deleteImageFromStorage(currentImageUrl);
+                        }
+                        const imageUrl = await uploadImageAndGetURL(file, 'category_images');
+                        await update(dbRef(db, `categories/${catId}`), { imageUrl: imageUrl });
+                        msg('Category image updated successfully!', 'success');
+                    } catch (error) {
+                        console.error("Error updating category image:", error);
+                    }
+                }
+            });
+
+            card.querySelector('.delete-cat').addEventListener('click', async () => {
+                const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
+                if (confirmDelete) {
+                    try {
+                        // Delete associated images in batches first
+                        const batchesSnapshot = await new Promise(resolve => onValue(dbRef(db, `categories/${catId}/batches`), resolve, {onlyOnce: true}));
+                        const batchesData = batchesSnapshot.val();
+                        if (batchesData) {
+                            for (const bId in batchesData) {
+                                if (batchesData[bId].thumbnail) {
+                                    await deleteImageFromStorage(batchesData[bId].thumbnail);
+                                }
+                            }
+                        }
+                        // Delete category image
+                        if (currentImageUrl) {
+                            await deleteImageFromStorage(currentImageUrl);
+                        }
+
+                        await remove(dbRef(db, `categories/${catId}`));
+                        msg('Category and its contents deleted!', 'danger');
+                    } catch (error) {
+                        msg(`Error deleting category: ${error.message}`, 'danger');
+                    }
+                }
+            });
+
+            card.querySelector('.add-batch').onclick = async () => {
+                const title = prompt('Enter Batch title:');
+                if (!title) { msg('Batch title is required!', 'warning'); return; }
+                const thumbFile = await new Promise(resolve => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = () => resolve(input.files[0]);
+                    input.click();
+                });
+                if (!thumbFile) { msg('Thumbnail image is required!', 'warning'); return; }
+
+                const description = prompt('Enter Batch description (max 100 words):');
+                if (!description) { msg('Batch description is required!', 'warning'); return; }
+                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words!', 'warning'); return; }
+
+                const originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty for Free):');
+                const discountedPrice = prompt('Enter Discounted Price (e.g., 499 or leave empty for Free):');
+                
+                try {
+                    const thumbnailUrl = await uploadImageAndGetURL(thumbFile, 'batch_thumbnails');
+                    const newRef = push(dbRef(db, `categories/${catId}/batches`));
+                    await set(newRef, { 
+                        title, 
+                        thumbnail: thumbnailUrl, 
+                        description,
+                        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+                        discountedPrice: discountedPrice ? parseFloat(discountedPrice) : null,
+                        isFree: discountedPrice === '0' || (!originalPrice && !discountedPrice) // Mark as free if discounted price is 0 or both prices are empty
+                    });
+                    msg('Batch added successfully!', 'success');
+                } catch (error) {
+                    msg(`Error adding batch: ${error.message}`, 'danger');
+                }
+            };
+
+            const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
+            onValue(dbRef(db, `categories/${catId}/batches`), snapshot => {
+                batchesListContainer.innerHTML = '';
+                const batchData = snapshot.val() || {};
+                if (Object.keys(batchData).length === 0) {
+                    batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
+                }
+                Object.entries(batchData).forEach(([bId, batch]) => {
+                    const item = createBatchItem(catId, bId, batch);
+                    batchesListContainer.append(item);
+                });
+            }, (error) => {
+                msg(`Error loading batches: ${error.message}`, 'danger');
+            });
+        };
+
+        const createBatchItem = (catId, bId, batch) => {
+            const div = document.createElement('div');
+            div.className = 'card mb-2 bg-light';
+            const displayPrice = (batch.isFree || (!batch.originalPrice && !batch.discountedPrice)) ? 'FREE' :
+                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : `₹${batch.originalPrice}`);
+            const originalPriceDisplay = (batch.originalPrice !== null && !batch.isFree) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
+
+
+            div.innerHTML = `
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';" />
+                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
+                        <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}" data-thumb="${batch.thumbnail}">Delete</button>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label visually-hidden">Description</label>
+                        <textarea class="form-control form-control-sm batch-description" data-cat="${catId}" data-bid="${bId}" placeholder="Batch Description (max 100 words)">${batch.description || ''}</textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="w-50 me-2">
+                            <label class="form-label">Original Price</label>
+                            <input type="number" class="form-control form-control-sm batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice || ''}" placeholder="e.g., 999">
+                        </div>
+                        <div class="w-50">
+                            <label class="form-label">Discounted Price</label>
+                            <input type="number" class="form-control form-control-sm batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice || ''}" placeholder="e.g., 499 (0 for FREE)">
+                        </div>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
+                        <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
+                    </div>
+
+                    <hr class="my-2">
+                    <h6 class="mb-2 text-muted">Modules:</h6>
+                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                    <div class="modules-list" id="modules-list-${bId}"></div>
+                </div>`;
+            setupBatchEvents(div, batch.thumbnail);
+            return div;
+        };
+
+        const setupBatchEvents = (div, currentThumbnailUrl) => {
+            const batchTitleInput = div.querySelector('.batch-title');
+            const batchDescriptionInput = div.querySelector('.batch-description');
+            const batchOriginalPriceInput = div.querySelector('.batch-original-price');
+            const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
+            const batchIsFreeSwitch = div.querySelector('.batch-is-free');
+
+            const { cat, bid } = batchTitleInput.dataset;
+
+            batchTitleInput.addEventListener('change', async e => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value });
+                msg('Batch title updated', 'info');
+            });
+
+            batchDescriptionInput.addEventListener('change', async e => {
+                if (e.target.value.split(/\s+/).length > 100) {
+                    msg('Description exceeds 100 words! Changes not saved.', 'warning');
+                    // Optionally revert to last saved description
+                    return;
+                }
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
+                msg('Batch description updated', 'info');
+            });
+
+            batchOriginalPriceInput.addEventListener('change', async e => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
+                msg('Batch original price updated', 'info');
+            });
+
+            batchDiscountedPriceInput.addEventListener('change', async e => {
+                const isFree = parseFloat(e.target.value) === 0;
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
+                    discountedPrice: parseFloat(e.target.value) || null,
+                    isFree: isFree
+                });
+                batchIsFreeSwitch.checked = isFree; // Update switch based on price
+                msg('Batch discounted price updated', 'info');
+            });
+
+            batchIsFreeSwitch.addEventListener('change', async e => {
+                const isFree = e.target.checked;
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
+                    isFree: isFree,
+                    discountedPrice: isFree ? 0 : (batchDiscountedPriceInput.value ? parseFloat(batchDiscountedPriceInput.value) : null)
+                });
+                if (isFree) {
+                    batchDiscountedPriceInput.value = '0';
+                    msg('Batch marked as FREE', 'info');
+                } else {
+                    msg('Batch FREE status updated', 'info');
+                }
+            });
+
+
+            div.querySelector('.delete-batch').onclick = async e => {
+                const confirmDelete = await showConfirm('Delete this batch and all its modules/lectures?');
+                if (confirmDelete) {
+                    try {
+                        // Delete associated thumbnail image
+                        const thumbnailUrlToDelete = e.target.dataset.thumb;
+                        if (thumbnailUrlToDelete) {
+                            await deleteImageFromStorage(thumbnailUrlToDelete);
+                        }
+
+                        // Delete batch from DB
+                        await remove(dbRef(db, `categories/${cat}/batches/${bid}`));
+                        msg('Batch deleted!', 'danger');
+                    } catch (error) {
+                        msg(`Error deleting batch: ${error.message}`, 'danger');
+                    }
+                }
+            };
+
+            div.querySelector('.add-module').onclick = async () => {
+                const moduleName = prompt('Enter Module name:');
+                if (!moduleName) { msg('Module name is required!', 'warning'); return; }
+                
+                const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
+                await set(newModRef, { name: moduleName })
+                    .then(() => msg('Module added successfully!', 'success'))
+                    .catch(error => msg(`Error adding module: ${error.message}`, 'danger'));
+            };
+
+            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
+            onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snap => {
+                modulesListContainer.innerHTML = '';
+                const mods = snap.val() || {};
+                if (Object.keys(mods).length === 0) {
+                    modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
+                }
+                Object.entries(mods).forEach(([mId, mod]) => {
+                    const modEl = createModuleItem(cat, bid, mId, mod);
+                    modulesListContainer.append(modEl);
+                });
+            }, (error) => {
+                msg(`Error loading modules: ${error.message}`, 'danger');
+            });
+        };
+
+        const createModuleItem = (cat, bid, mid, mod) => {
+            const d = document.createElement('div');
+            d.className = 'card mb-1 bg-white';
+            d.innerHTML = `
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name}">
+                        <button class="btn btn-sm btn-danger delete-module me-1" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Delete</button>
+                        <button class="btn btn-sm btn-success add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Add Lecture</button>
+                    </div>
+                    <div class="lectures-list mt-2" id="lectures-list-${mid}"></div>
+                </div>`;
+            setupModuleEvents(d);
+            return d;
+        };
+
+        const setupModuleEvents = (d) => {
+            const moduleNameInput = d.querySelector('.module-name');
+            const { cat, bid, mid } = moduleNameInput.dataset;
+
+            moduleNameInput.addEventListener('change', async () => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`), { name: moduleNameInput.value });
+                msg('Module name updated', 'info');
+            });
+
+            d.querySelector('.delete-module').onclick = async () => {
+                const confirmDelete = await showConfirm('Delete this module and all its lectures?');
+                if (confirmDelete) {
+                    await remove(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
+                    msg('Module deleted!', 'danger');
+                }
+            };
+
+            // Add Lecture button handler
+            d.querySelector('.add-lecture').onclick = async () => {
+                const lname = prompt('Enter Lecture name:');
+                if (!lname) { msg('Lecture name is required!', 'warning'); return; }
+                const link = prompt('Enter Google Drive or YouTube Link (e.g., https://drive.google.com/file/d/YOUR_ID/preview or https://www.youtube.com/watch?v=YOUR_ID):');
+                if (!link) { msg('Lecture link is required!', 'warning'); return; }
+                
+                const newLRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
+                await set(newLRef, { name: lname, link })
+                    .then(() => msg('Lecture added successfully!', 'success'))
+                    .catch(error => msg(`Error adding lecture: ${error.message}`, 'danger'));
+            };
+
+            // Listen for lectures changes for this module
+            const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
+            onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
+                lecturesListContainer.innerHTML = '';
+                const lcs = snap.val() || {};
+                if (Object.keys(lcs).length === 0) {
+                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
+                }
+                Object.entries(lcs).forEach(([lId, lec]) => {
+                    const item = document.createElement('div');
+                    item.className = 'd-flex align-items-center bg-light p-1 rounded mb-1';
+                    item.innerHTML = `
+                        <span class="flex-grow-1">${lec.name}</span>
+                        <a href="${lec.link}" target="_blank" class="btn btn-sm btn-info mx-1" title="View Lecture">🔗</a>
+                        <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">X</button>
+                    `;
+                    item.querySelector('.delete-lecture').onclick = async e => {
+                        const ds = e.target.dataset;
+                        const confirmDelete = await showConfirm('Delete this lecture?');
+                        if (confirmDelete) {
+                            await remove(dbRef(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`))
+                                .then(() => msg('Lecture deleted!', 'danger'))
+                                .catch(error => msg(`Error deleting lecture: ${error.message}`, 'danger'));
+                        }
+                    };
+                    lecturesListContainer.append(item);
+                });
+            }, (error) => {
+                msg(`Error loading lectures: ${error.message}`, 'danger');
+            });
+        };
+
+        // Add Category event
+        document.getElementById('addCategory').onclick = async () => {
+            const name = document.getElementById('categoryName').value.trim();
+            if (!name) return msg('Category name required!', 'warning');
+            
+            const newRef = push(dbRef(db, 'categories'));
+            await set(newRef, { name })
+                .then(() => {
+                    msg('Category added!', 'success');
+                    document.getElementById('categoryName').value = '';
+                })
+                .catch(error => msg(`Error adding category: ${error.message}`, 'danger'));
+        };
+
+        // Initial load
+        authenticateFirebase().then(() => {
+            loadCategories();
         });
-      });
-    };
-
-    // Add Category event
-    document.getElementById('addCategory').onclick = () => {
-      const name = document.getElementById('categoryName').value.trim();
-      if (!name) return msg('Category name required!', 'warning');
-      
-      const newRef = push(ref(db, 'categories'));
-      set(newRef, { name })
-        .then(() => {
-          msg('Category added!', 'success');
-          document.getElementById('categoryName').value = '';
-        })
-        .catch(error => msg(`Error adding category: ${error.message}`, 'danger'));
-    };
-
-    // Initial load
-    loadCategories();
-  </script>
+    </script>
 </body>
 </html>
