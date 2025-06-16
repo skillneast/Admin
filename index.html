@@ -210,7 +210,6 @@
         // Firebase configuration and initialization (copied from firebase-config.js)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-        // Removed storage imports as image upload is now URL-based
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 
@@ -331,12 +330,12 @@
 
         const setupSiteConfigEvents = () => {
             document.querySelectorAll('.site-config-input').forEach(input => {
-                input.addEventListener('change', async (e) => {
+                input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
                     const key = e.target.dataset.key;
                     const value = e.target.value.trim();
                     try {
                         showLoading('Updating site config...');
-                        await update(dbRef(db, `siteConfig/${key}`), value);
+                        await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
                         msg(`${key} updated!`, 'info');
                     } catch (error) {
                         msg(`Error updating ${key}: ${error.message}`, 'danger');
@@ -525,6 +524,10 @@
                         <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
                         <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
                     </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input batch-is-completed" type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
+                        <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
+                    </div>
                     <div class="text-end fw-bold">
                         Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
@@ -544,6 +547,7 @@
             const batchOriginalPriceInput = div.querySelector('.batch-original-price');
             const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
+            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); // New switch
 
             const { cat, bid } = batchTitleInput.dataset;
 
@@ -555,19 +559,11 @@
             batchDescriptionInput.addEventListener('change', async e => {
                 if (e.target.value.split(/\s+/).length > 100) {
                     msg('Description exceeds 100 words! Changes not saved.', 'warning');
-                    const originalDesc = e.target.dataset.originalDesc || ''; // Revert to original
-                    e.target.value = originalDesc;
-                    return;
+                    return; // Do not save if over limit
                 }
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
                 msg('Batch description updated', 'info');
-                e.target.dataset.originalDesc = e.target.value; // Update original desc
             });
-            // Set initial originalDesc for comparison
-            if (batchDescriptionInput) {
-                batchDescriptionInput.dataset.originalDesc = batchDescriptionInput.value;
-            }
-
 
             batchOriginalPriceInput.addEventListener('change', async e => {
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
@@ -593,13 +589,20 @@
                     batchDiscountedPriceInput.value = '0'; // Update input field
                     msg('Batch marked as FREE', 'info');
                 } else {
-                    if (parseFloat(batchDiscountedPriceInput.value) === 0) {
-                        updateData.discountedPrice = null;
+                    // If unchecked, set discountedPrice back to its previous value or null
+                    if (parseFloat(batchDiscountedPriceInput.value) === 0) { // If it was 0 because it was free
+                        updateData.discountedPrice = null; // Reset it
                         batchDiscountedPriceInput.value = '';
                     }
                     msg('Batch FREE status updated', 'info');
                 }
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
+            });
+
+            batchIsCompletedSwitch.addEventListener('change', async e => {
+                const isCompleted = e.target.checked;
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isCompleted: isCompleted });
+                msg(`Batch marked as ${isCompleted ? 'Completed' : 'Incomplete'}`, 'info');
             });
 
 
