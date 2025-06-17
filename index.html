@@ -185,12 +185,12 @@
             projectId: "adminneast",
             storageBucket: "adminneast.firebasestorage.app",
             messagingSenderId: "883877553418",
-            appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
+            appId: "1:883877553418:web:84ce8200f4b471bfffc6f3-admin", // **यहाँ बदला गया है**
             measurementId: "G-PCH99BDF1S"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        // Initialize Firebase (एक विशिष्ट नाम के साथ)
+        const app = initializeApp(firebaseConfig, "adminPanelApp"); // **यहाँ बदला गया है**
         const db = getDatabase(app);
         const auth = getAuth(app);
 
@@ -249,20 +249,23 @@
         });
 
         // Authentication logic
-        // This function will handle showing/hiding content based on auth state
+        // यह फंक्शन Firebase Authentication की स्थिति के आधार पर UI (लॉगिन स्क्रीन या मुख्य कंटेंट) को दिखाएगा/छिपाएगा।
+        // डेटा लोड करने का काम अब 'loginButton' के क्लिक पर होगा।
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // यूजर लॉग इन है
                 isAuthenticated = true;
-                document.getElementById('authSection').classList.add('d-none');
-                document.getElementById('mainContent').classList.remove('d-none');
-                document.getElementById('logoutButton').classList.remove('d-none');
-                // msg('Logged in successfully!', 'success'); // Moved to loginButton click
+                document.getElementById('authSection').classList.add('d-none'); // लॉगिन सेक्शन छिपाओ
+                document.getElementById('mainContent').classList.remove('d-none'); // मुख्य कंटेंट दिखाओ
+                document.getElementById('logoutButton').classList.remove('d-none'); // लॉगआउट बटन दिखाओ
+                // 'msg' और डेटा लोडिंग फंक्शन यहाँ से हटा दिए गए हैं, वे अब केवल 'loginButton' क्लिक पर होंगे
             } else {
+                // यूजर लॉग इन नहीं है
                 isAuthenticated = false;
-                document.getElementById('authSection').classList.remove('d-none');
-                document.getElementById('mainContent').classList.add('d-none');
-                document.getElementById('logoutButton').classList.add('d-none');
-                // msg('Please log in to manage content.', 'info'); // Moved for initial load only or logout
+                document.getElementById('authSection').classList.remove('d-none'); // लॉगिन सेक्शन दिखाओ
+                document.getElementById('mainContent').classList.add('d-none'); // मुख्य कंटेंट छिपाओ
+                document.getElementById('logoutButton').classList.add('d-none'); // लॉगआउट बटन छिपाओ
+                // 'msg' और डेटा लोडिंग फंक्शन यहाँ से हटा दिए गए हैं
             }
         });
 
@@ -278,13 +281,13 @@
             showLoading('Logging in...');
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Successful login
-                msg('Logged in successfully!', 'success');
-                loadCategories(); // Load data after successful login
-                loadSiteConfig();
-                setupSiteConfigEvents();
+                // केवल सफलतापूर्वक लॉग इन होने पर ही मैसेज दिखाएं और डेटा लोड करें
+                msg('Logged in successfully!', 'success'); // अब यहां मैसेज दिखाएं
+                loadCategories(); // अब यहां कैटेगरी लोड करें
+                loadSiteConfig(); // अब यहां साइट कॉन्फ़िग लोड करें
+                setupSiteConfigEvents(); // अब यहां साइट कॉन्फ़िग इवेंट सेट करें
             } catch (error) {
-                msg(`Login failed: ${error.message}`, 'danger');
+                msg(`Login failed: ${error.message}`, 'danger'); // लॉगिन फेल होने पर मैसेज दिखाएं
             } finally {
                 hideLoading();
             }
@@ -479,7 +482,6 @@
         };
 
         const loadBatches = (catId) => {
-            const batchesRef = dbRef(db, `categories/${catId}/batches`);
             onValue(batchesRef, (snapshot) => {
                 const batches = snapshot.val();
                 const batchesList = document.getElementById(`batches-list-${catId}`);
@@ -515,7 +517,7 @@
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"
- />
+/>
                         <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
                         <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
                     </div>
@@ -786,14 +788,6 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                 }
             };
         };
-
-        // Initial load for authentication (this will display login screen or content if already authenticated)
-        // Data loading is now tied to successful login.
-        // The `onAuthStateChanged` listener above handles the initial UI state (login vs main content).
-        // `loadCategories()`, `loadSiteConfig()`, `setupSiteConfigEvents()` are called ONLY on successful manual login now.
-        // This ensures the main content elements are present BEFORE data is loaded into them, preventing "Cannot set properties of null" errors.
-        // No explicit call needed here as onAuthStateChanged is listening from start.
-        // You might want to display an initial 'Please log in' message here if it's not handled by the first `onAuthStateChanged` execution.
     </script>
 </body>
 </html>
