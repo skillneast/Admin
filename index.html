@@ -121,27 +121,6 @@
         </div>
 
         <div id="mainContent" class="d-none">
-            <div class="site-config-section mb-4">
-                <h5 class="mb-3">Site Configuration</h5>
-                <div class="mb-3">
-                    <label for="siteName" class="form-label">Site Name</label>
-                    <input type="text" class="form-control" id="siteName" placeholder="e.g., SkillNeast">
-                </div>
-                <div class="mb-3">
-                    <label for="telegramLink" class="form-label">Telegram Link</label>
-                    <input type="url" class="form-control" id="telegramLink" placeholder="e.g., https://t.me/yourskillneast">
-                </div>
-                <div class="mb-3">
-                    <label for="contactEmail" class="form-label">Contact Email</label>
-                    <input type="email" class="form-control" id="contactEmail" placeholder="e.g., info@skillneast.com">
-                </div>
-                <div class="mb-3">
-                    <label for="instagramLink" class="form-label">Instagram Link</label>
-                    <input type="url" class="form-control" id="instagramLink" placeholder="e.g., https://instagram.com/skillneast">
-                </div>
-                <button id="saveSiteConfig" class="btn btn-primary">Save Site Config</button>
-            </div>
-
             <h5 class="mb-3">Category Management</h5>
             <div class="mb-3 d-flex">
                 <input type="text" class="form-control me-2" id="categoryName" placeholder="New Category Name">
@@ -260,19 +239,15 @@
                 document.getElementById('logoutButton').classList.remove('d-none'); // लॉगआउट बटन दिखाओ
                 
                 // डेटा को लोड करें जब भी यूजर की स्थिति 'लॉग इन' हो
-                loadCategories();
-                loadSiteConfig();
-                setupSiteConfigEvents();
-
-                // 'msg' यहां से हटा दिया गया है क्योंकि यह हर पेज लोड पर भी दिखेगा अगर सेशन है।
-                // msg('Logged in successfully!', 'success'); // अब यह केवल loginButton के क्लिक पर ही दिखेगा।
+                loadCategories(); // Categories will trigger loading of batches, modules, lectures
+                // loadSiteConfig(); // Removed Site Config
+                // setupSiteConfigEvents(); // Removed Site Config
             } else {
                 // यूजर लॉग इन नहीं है
                 isAuthenticated = false;
                 document.getElementById('authSection').classList.remove('d-none'); // लॉगिन सेक्शन दिखाओ
                 document.getElementById('mainContent').classList.add('d-none'); // मुख्य कंटेंट छिपाओ
                 document.getElementById('logoutButton').classList.add('d-none'); // लॉगआउट बटन छिपाओ
-                // msg('Please log in to manage content.', 'info'); // अब यह केवल लॉगआउट होने पर दिखेगा।
             }
         });
 
@@ -289,12 +264,12 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 // केवल सफलतापूर्वक लॉग इन होने पर ही मैसेज दिखाएं और डेटा लोड करें
-                msg('Logged in successfully!', 'success'); // अब यहां मैसेज दिखाएं
-                // डेटा को यहां फिर से लोड करने की आवश्यकता नहीं है, क्योंकि onAuthStateChanged हैंडलर इसे संभाल रहा है।
+                msg('Logged in successfully!', 'success');
+                // डेटा को यहां फिर से लोड करने की आवश्यकता नहीं है, onAuthStateChanged हैंडलर इसे संभाल रहा है।
                 // हालांकि, यह सुनिश्चित करने के लिए कि पहली बार लॉगिन पर भी सब कुछ लोड हो, इन्हें यहां रखना सुरक्षित है।
-                loadCategories(); 
-                loadSiteConfig(); 
-                setupSiteConfigEvents(); 
+                loadCategories(); // Categories will trigger loading of batches, modules, lectures
+                // loadSiteConfig(); // Removed Site Config
+                // setupSiteConfigEvents(); // Removed Site Config
             } catch (error) {
                 msg(`Login failed: ${error.message}`, 'danger'); // लॉगिन फेल होने पर मैसेज दिखाएं
             } finally {
@@ -314,46 +289,10 @@
             }
         };
 
-        // Site Config Management
-        const siteConfigRef = dbRef(db, 'siteConfig');
-
-        const loadSiteConfig = () => {
-            onValue(siteConfigRef, (snapshot) => {
-                const config = snapshot.val();
-                if (config) {
-                    document.getElementById('siteName').value = config.siteName || '';
-                    document.getElementById('telegramLink').value = config.telegramLink || '';
-                    document.getElementById('contactEmail').value = config.contactEmail || '';
-                    document.getElementById('instagramLink').value = config.instagramLink || '';
-                }
-            });
-        };
-
-        const setupSiteConfigEvents = () => {
-            document.getElementById('saveSiteConfig').onclick = async () => {
-                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-
-                const siteName = document.getElementById('siteName').value.trim();
-                const telegramLink = document.getElementById('telegramLink').value.trim();
-                const contactEmail = document.getElementById('contactEmail').value.trim();
-                const instagramLink = document.getElementById('instagramLink').value.trim();
-
-                showLoading('Saving site configuration...');
-                try {
-                    await set(siteConfigRef, {
-                        siteName: siteName,
-                        telegramLink: telegramLink,
-                        contactEmail: contactEmail,
-                        instagramLink: instagramLink
-                    });
-                    msg('Site configuration saved!', 'success');
-                } catch (error) {
-                    msg(`Error saving config: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                }
-            };
-        };
+        // Site Config Management (Removed)
+        // const siteConfigRef = dbRef(db, 'siteConfig'); // Removed
+        // const loadSiteConfig = () => { /* ... */ }; // Removed
+        // const setupSiteConfigEvents = () => { /* ... */ }; // Removed
 
         // Category & Batch Management
         const categoriesRef = dbRef(db, 'categories');
@@ -387,10 +326,13 @@
                         `;
                         categoriesList.appendChild(categoryDiv);
 
-                        loadBatches(catId);
+                        loadBatches(catId); // This will load and setup batches for this category
                         setupCategoryEvents(categoryDiv, catId);
                     });
                 }
+            }, (error) => { // <-- error handler
+                console.error("Error loading categories:", error);
+                msg(`Error loading categories: ${error.message}`, 'danger');
             });
         };
 
@@ -448,7 +390,8 @@
                     try {
                         await remove(dbRef(db, `categories/${catId}`));
                         msg('Category deleted!', 'success');
-                    } catch (error) {
+                    }
+                     catch (error) {
                         msg(`Error deleting category: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
@@ -502,6 +445,9 @@
                         batchesList.appendChild(div);
                     });
                 }
+            }, (error) => { // <-- error handler
+                console.error(`Error loading batches for category ${catId}:`, error);
+                msg(`Error loading batches: ${error.message}`, 'danger');
             });
         };
 
@@ -572,7 +518,6 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                     <hr class="my-2">
                     <h6 class="mb-2 text-muted">Modules:</h6>
                     <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-  
                     <div class="modules-list" id="modules-list-${bId}"></div>
                 </div>`;
             setupBatchEvents(div);
@@ -660,7 +605,7 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                     hideLoading();
                 }
             };
-            loadModules(cat, bid);
+            loadModules(cat, bid); // Ensure loadModules is called here
         };
 
         const loadModules = (catId, bId) => {
@@ -675,6 +620,9 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                         modulesList.appendChild(div);
                     });
                 }
+            }, (error) => { // <-- error handler
+                console.error(`Error loading modules for batch ${bId}:`, error);
+                msg(`Error loading modules: ${error.message}`, 'danger');
             });
         };
 
@@ -739,7 +687,7 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                     hideLoading();
                 }
             };
-            loadLectures(cat, bid, mid);
+            loadLectures(cat, bid, mid); // Ensure loadLectures is called here
         };
 
         const loadLectures = (catId, bId, mId) => {
@@ -754,49 +702,10 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                         lecturesList.appendChild(div);
                     });
                 }
+            }, (error) => { // <-- error handler
+                console.error(`Error loading lectures for module ${mId}:`, error);
+                msg(`Error loading lectures: ${error.message}`, 'danger');
             });
-        };
-
-        const createLectureItem = (catId, bId, mId, lId, lecture) => {
-            const div = document.createElement('div');
-            div.className = 'list-group-item d-flex justify-content-between align-items-center p-2';
-            div.innerHTML = `
-                <input class="form-control form-control-sm lecture-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}" value="${lecture.title}">
-                <input type="url" class="form-control form-control-sm lecture-url flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}" value="${lecture.url}">
-                <button class="btn btn-sm btn-danger delete-lecture" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}">Delete</button>`;
-            setupLectureEvents(div);
-            return div;
-        };
-
-        const setupLectureEvents = (div) => {
-            const lectureTitleInput = div.querySelector('.lecture-title');
-            const lectureUrlInput = div.querySelector('.lecture-url');
-            const { cat, bid, mid, lid } = lectureTitleInput.dataset;
-
-            lectureTitleInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures/${lid}`), { title: e.target.value.trim() });
-                msg('Lecture title updated!', 'info');
-            });
-
-            lectureUrlInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures/${lid}`), { url: e.target.value.trim() });
-                msg('Lecture URL updated!', 'info');
-            });
-
-            div.querySelector('.delete-lecture').onclick = async () => {
-                const confirmDelete = await showConfirm('Delete this lecture?');
-                if (confirmDelete) {
-                    showLoading('Deleting lecture...');
-                    try {
-                        await remove(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures/${lid}`));
-                        msg('Lecture deleted!', 'success');
-                    } catch (error) {
-                        msg(`Error deleting lecture: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                }
-            };
         };
     </script>
 </body>
