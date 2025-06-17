@@ -256,16 +256,13 @@
                 document.getElementById('authSection').classList.add('d-none');
                 document.getElementById('mainContent').classList.remove('d-none');
                 document.getElementById('logoutButton').classList.remove('d-none');
-                msg('Logged in successfully!', 'success');
-                loadCategories(); // User logged in, now load data
-                loadSiteConfig();
-                setupSiteConfigEvents();
+                // msg('Logged in successfully!', 'success'); // Moved to loginButton click
             } else {
                 isAuthenticated = false;
                 document.getElementById('authSection').classList.remove('d-none');
                 document.getElementById('mainContent').classList.add('d-none');
                 document.getElementById('logoutButton').classList.add('d-none');
-                msg('Please log in to manage content.', 'info');
+                // msg('Please log in to manage content.', 'info'); // Moved for initial load only or logout
             }
         });
 
@@ -281,7 +278,11 @@
             showLoading('Logging in...');
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Auth state change listener will handle UI update
+                // Successful login
+                msg('Logged in successfully!', 'success');
+                loadCategories(); // Load data after successful login
+                loadSiteConfig();
+                setupSiteConfigEvents();
             } catch (error) {
                 msg(`Login failed: ${error.message}`, 'danger');
             } finally {
@@ -786,6 +787,13 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
             };
         };
 
+        // Initial load for authentication (this will display login screen or content if already authenticated)
+        // Data loading is now tied to successful login.
+        // The `onAuthStateChanged` listener above handles the initial UI state (login vs main content).
+        // `loadCategories()`, `loadSiteConfig()`, `setupSiteConfigEvents()` are called ONLY on successful manual login now.
+        // This ensures the main content elements are present BEFORE data is loaded into them, preventing "Cannot set properties of null" errors.
+        // No explicit call needed here as onAuthStateChanged is listening from start.
+        // You might want to display an initial 'Please log in' message here if it's not handled by the first `onAuthStateChanged` execution.
     </script>
 </body>
 </html>
