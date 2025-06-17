@@ -249,26 +249,25 @@
         });
 
         // Authentication logic
-        const authenticateFirebase = async () => {
-            return new Promise((resolve) => {
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        isAuthenticated = true;
-                        document.getElementById('authSection').classList.add('d-none');
-                        document.getElementById('mainContent').classList.remove('d-none');
-                        document.getElementById('logoutButton').classList.remove('d-none');
-                        msg('Logged in successfully!', 'success');
-                    } else {
-                        isAuthenticated = false;
-                        document.getElementById('authSection').classList.remove('d-none');
-                        document.getElementById('mainContent').classList.add('d-none');
-                        document.getElementById('logoutButton').classList.add('d-none');
-                        msg('Please log in to manage content.', 'info');
-                    }
-                    resolve();
-                });
-            });
-        };
+        // This function will handle showing/hiding content based on auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                isAuthenticated = true;
+                document.getElementById('authSection').classList.add('d-none');
+                document.getElementById('mainContent').classList.remove('d-none');
+                document.getElementById('logoutButton').classList.remove('d-none');
+                msg('Logged in successfully!', 'success');
+                loadCategories(); // User logged in, now load data
+                loadSiteConfig();
+                setupSiteConfigEvents();
+            } else {
+                isAuthenticated = false;
+                document.getElementById('authSection').classList.remove('d-none');
+                document.getElementById('mainContent').classList.add('d-none');
+                document.getElementById('logoutButton').classList.add('d-none');
+                msg('Please log in to manage content.', 'info');
+            }
+        });
 
         document.getElementById('loginButton').onclick = async () => {
             const email = document.getElementById('adminEmail').value;
@@ -787,12 +786,6 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
             };
         };
 
-        // Initial load
-        authenticateFirebase().then(() => {
-            loadCategories();
-            loadSiteConfig(); // Load site config on startup
-            setupSiteConfigEvents(); // Setup event listeners for site config
-        });
     </script>
 </body>
 </html>
