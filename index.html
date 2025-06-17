@@ -240,8 +240,6 @@
                 
                 // डेटा को लोड करें जब भी यूजर की स्थिति 'लॉग इन' हो
                 loadCategories(); // Categories will trigger loading of batches, modules, lectures
-                // loadSiteConfig(); // Removed Site Config
-                // setupSiteConfigEvents(); // Removed Site Config
             } else {
                 // यूजर लॉग इन नहीं है
                 isAuthenticated = false;
@@ -268,8 +266,6 @@
                 // डेटा को यहां फिर से लोड करने की आवश्यकता नहीं है, onAuthStateChanged हैंडलर इसे संभाल रहा है।
                 // हालांकि, यह सुनिश्चित करने के लिए कि पहली बार लॉगिन पर भी सब कुछ लोड हो, इन्हें यहां रखना सुरक्षित है।
                 loadCategories(); // Categories will trigger loading of batches, modules, lectures
-                // loadSiteConfig(); // Removed Site Config
-                // setupSiteConfigEvents(); // Removed Site Config
             } catch (error) {
                 msg(`Login failed: ${error.message}`, 'danger'); // लॉगिन फेल होने पर मैसेज दिखाएं
             } finally {
@@ -300,10 +296,12 @@
         const loadCategories = () => {
             onValue(categoriesRef, (snapshot) => {
                 const categories = snapshot.val();
+                console.log("Categories loaded:", categories); // Debugging
                 const categoriesList = document.getElementById('categoriesList');
                 categoriesList.innerHTML = '';
                 if (categories) {
                     Object.entries(categories).forEach(([catId, category]) => {
+                        console.log("Rendering Category:", catId, category); // Debugging
                         const categoryDiv = document.createElement('div');
                         categoryDiv.className = 'card mb-3';
                         categoryDiv.innerHTML = `
@@ -437,10 +435,12 @@
             const batchesRef = dbRef(db, `categories/${catId}/batches`);
             onValue(batchesRef, (snapshot) => {
                 const batches = snapshot.val();
+                console.log("Batches loaded for category", catId, ":", batches); // Debugging
                 const batchesList = document.getElementById(`batches-list-${catId}`);
                 batchesList.innerHTML = '';
                 if (batches) {
                     Object.entries(batches).forEach(([bId, batch]) => {
+                        console.log("Rendering Batch:", bId, batch); // Debugging
                         const div = createBatchItem(catId, bId, batch);
                         batchesList.appendChild(div);
                     });
@@ -612,10 +612,12 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
             const modulesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules`);
             onValue(modulesRef, (snapshot) => {
                 const modules = snapshot.val();
+                console.log("Modules loaded for batch", bId, ":", modules); // Debugging
                 const modulesList = document.getElementById(`modules-list-${bId}`);
                 modulesList.innerHTML = '';
                 if (modules) {
                     Object.entries(modules).forEach(([mId, module]) => {
+                        console.log("Rendering Module:", mId, module); // Debugging
                         const div = createModuleItem(catId, bId, mId, module);
                         modulesList.appendChild(div);
                     });
@@ -694,10 +696,12 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
             const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`);
             onValue(lecturesRef, (snapshot) => {
                 const lectures = snapshot.val();
+                console.log("Lectures loaded for module", mId, ":", lectures); // Debugging
                 const lecturesList = document.getElementById(`lectures-list-${mId}`);
                 lecturesList.innerHTML = '';
                 if (lectures) {
                     Object.entries(lectures).forEach(([lId, lecture]) => {
+                        console.log("Rendering Lecture:", lId, lecture); // Debugging
                         const div = createLectureItem(catId, bId, mId, lId, lecture);
                         lecturesList.appendChild(div);
                     });
