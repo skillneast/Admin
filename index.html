@@ -306,11 +306,11 @@
                         categoryDiv.className = 'card mb-3';
                         categoryDiv.innerHTML = `
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <span class="category-name-display">${category.name}</span>
-                                <input type="text" class="form-control form-control-sm category-name-input d-none flex-grow-1 me-2" value="${category.name}" data-cat="${catId}">
+                                <span class="category-name-display">${category.name || ''}</span>
+                                <input type="text" class="form-control form-control-sm category-name-input d-none flex-grow-1 me-2" value="${category.name || ''}" data-cat="${catId}">
                                 <div class="d-flex align-items-center">
-                                    <img src="${category.imageUrl}" alt="Category Thumbnail" width="40" height="25" class="thumbnail-preview me-2" onerror="this.onerror=null;this.src='https://via.placeholder.com/40x25/cccccc/333333?text=NoImg';"/>
-                                    <input type="url" class="form-control form-control-sm category-image-input d-none me-2" value="${category.imageUrl}" data-cat="${catId}" placeholder="Image URL">
+                                    <img src="${category.imageUrl || 'https://via.placeholder.com/40x25/cccccc/333333?text=NoImg'}" alt="Category Thumbnail" width="40" height="25" class="thumbnail-preview me-2" onerror="this.onerror=null;this.src='https://via.placeholder.com/40x25/cccccc/333333?text=NoImg';"/>
+                                    <input type="url" class="form-control form-control-sm category-image-input d-none me-2" value="${category.imageUrl || ''}" data-cat="${catId}" placeholder="Image URL">
                                     <button class="btn btn-sm btn-info edit-category-image me-2" data-cat="${catId}">Edit Img</button>
                                     <button class="btn btn-sm btn-warning edit-category me-2" data-cat="${catId}">Edit</button>
                                     <button class="btn btn-sm btn-danger delete-category" data-cat="${catId}">Delete</button>
@@ -324,7 +324,14 @@
                         `;
                         categoriesList.appendChild(categoryDiv);
 
-                        loadBatches(catId); // This will load and setup batches for this category
+                        // Pass the created batches-list div directly to loadBatchesForCategory
+                        const batchesListElement = categoryDiv.querySelector(`#batches-list-${catId}`);
+                        if(batchesListElement) { // Ensure the element exists before calling
+                            loadBatchesForCategory(catId, batchesListElement); 
+                        } else {
+                            console.error(`Error: batches-list-${catId} not found in categoryDiv immediately after append.`);
+                        }
+                        
                         setupCategoryEvents(categoryDiv, catId);
                     });
                 }
@@ -431,18 +438,29 @@
             };
         };
 
-        const loadBatches = (catId) => {
+        // Modified: Now accepts batchesListElement directly
+        const loadBatchesForCategory = (catId, batchesListElement) => { 
             const batchesRef = dbRef(db, `categories/${catId}/batches`);
             onValue(batchesRef, (snapshot) => {
                 const batches = snapshot.val();
                 console.log("Batches loaded for category", catId, ":", batches); // Debugging
-                const batchesList = document.getElementById(`batches-list-${catId}`);
-                batchesList.innerHTML = '';
+                
+                // Ensure batchesListElement exists (already checked when passed)
+                batchesListElement.innerHTML = ''; // Clear previous batches
+
                 if (batches) {
                     Object.entries(batches).forEach(([bId, batch]) => {
                         console.log("Rendering Batch:", bId, batch); // Debugging
                         const div = createBatchItem(catId, bId, batch);
-                        batchesList.appendChild(div);
+                        batchesListElement.appendChild(div); // Append to the passed element
+
+                        // Pass the newly created modules-list div directly to loadModulesForBatch
+                        const modulesListElement = div.querySelector(`#modules-list-${bId}`);
+                        if(modulesListElement) { // Ensure the element exists before calling
+                            loadModulesForBatch(catId, bId, modulesListElement);
+                        } else {
+                            console.error(`Error: modules-list-${bId} not found in batchDiv immediately after append.`, {catId, bId});
+                        }
                     });
                 }
             }, (error) => { // <-- error handler
@@ -472,9 +490,9 @@
             div.innerHTML = `
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"
+                        <img src="${batch.thumbnail || 'https://via.placeholder.com/60x40/cccccc/333333?text=NoImg'}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"
  />
-                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
+                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title || ''}">
                         <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
                     </div>
                   
@@ -501,25 +519,22 @@ class="form-label">Original Price</label>
                         <input type="url" class="form-control form-control-sm seller-telegram-link" id="sellerTelegramLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.sellerTelegramLink || ''}" placeholder="e.g., https://t.me/yourusername">
                     </div>
                     <div class="form-check form-switch mb-2">
-                        <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ?
-'checked' : ''}>
+                        <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
                         <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
                     </div>
                     <div class="form-check form-switch mb-2">
-                        <input class="form-check-input batch-is-completed" 
-type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
+                        <input class="form-check-input batch-is-completed" type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
                         <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
                     </div>
                     <div class="text-end fw-bold">
-                     
-    Current Price: ${priceOrButtonHTML} ${originalPriceStrikethrough}
-                    </div>
+                    Current Price: ${priceOrButtonHTML} ${originalPriceStrikethrough}
+                   </div>
 
-                    <hr class="my-2">
-                    <h6 class="mb-2 text-muted">Modules:</h6>
-                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                    <div class="modules-list" id="modules-list-${bId}"></div>
-                </div>`;
+                   <hr class="my-2">
+                   <h6 class="mb-2 text-muted">Modules:</h6>
+                   <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                   <div class="modules-list" id="modules-list-${bId}"></div>
+               </div>`;
             setupBatchEvents(div);
             return div;
         };
@@ -605,21 +620,32 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                     hideLoading();
                 }
             };
-            loadModules(cat, bid); // Ensure loadModules is called here
+            // loadModules(cat, bid); // Removed: now called via loadBatchesForCategory passing the element
         };
 
-        const loadModules = (catId, bId) => {
+        // Modified: Now accepts modulesListElement directly
+        const loadModulesForBatch = (catId, bId, modulesListElement) => {
             const modulesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules`);
             onValue(modulesRef, (snapshot) => {
                 const modules = snapshot.val();
                 console.log("Modules loaded for batch", bId, ":", modules); // Debugging
-                const modulesList = document.getElementById(`modules-list-${bId}`);
-                modulesList.innerHTML = '';
+                
+                // modulesListElement is now directly passed, no need for getElementById here
+                modulesListElement.innerHTML = ''; // Clear previous modules
+
                 if (modules) {
                     Object.entries(modules).forEach(([mId, module]) => {
                         console.log("Rendering Module:", mId, module); // Debugging
                         const div = createModuleItem(catId, bId, mId, module);
-                        modulesList.appendChild(div);
+                        modulesListElement.appendChild(div);
+
+                        // Pass the newly created lectures-list div directly to loadLecturesForModule
+                        const lecturesListElement = div.querySelector(`#lectures-list-${mId}`);
+                        if(lecturesListElement) { // Ensure the element exists before calling
+                            loadLecturesForModule(catId, bId, mId, lecturesListElement);
+                        } else {
+                            console.error(`Error: lectures-list-${mId} not found in moduleDiv immediately after append.`, {catId, bId, mId});
+                        }
                     });
                 }
             }, (error) => { // <-- error handler
@@ -634,7 +660,7 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
             div.innerHTML = `
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" value="${module.name}">
+                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" value="${module.name || ''}">
                         <button class="btn btn-sm btn-danger delete-module" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">Delete</button>
                     </div>
                     <h6 class="mb-2 text-muted ms-2">Lectures:</h6>
@@ -689,21 +715,25 @@ type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" 
                     hideLoading();
                 }
             };
-            loadLectures(cat, bid, mid); // Ensure loadLectures is called here
+            // loadLectures(cat, bid, mid); // Removed: now called via loadModulesForBatch passing the element
         };
 
-        const loadLectures = (catId, bId, mId) => {
+        // Modified: Now accepts lecturesListElement directly
+        const loadLecturesForModule = (catId, bId, mId, lecturesListElement) => {
             const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`);
+            // lecturesListElement is now directly passed, no need for getElementById here
             onValue(lecturesRef, (snapshot) => {
                 const lectures = snapshot.val();
                 console.log("Lectures loaded for module", mId, ":", lectures); // Debugging
-                const lecturesList = document.getElementById(`lectures-list-${mId}`);
-                lecturesList.innerHTML = '';
+
+                // Ensure lecturesListElement exists (already checked when passed)
+                lecturesListElement.innerHTML = ''; // Clear previous lectures
+                
                 if (lectures) {
                     Object.entries(lectures).forEach(([lId, lecture]) => {
                         console.log("Rendering Lecture:", lId, lecture); // Debugging
                         const div = createLectureItem(catId, bId, mId, lId, lecture);
-                        lecturesList.appendChild(div);
+                        lecturesListElement.appendChild(div);
                     });
                 }
             }, (error) => { // <-- error handler
