@@ -249,23 +249,30 @@
         });
 
         // Authentication logic
-        // यह फंक्शन Firebase Authentication की स्थिति के आधार पर UI (लॉगिन स्क्रीन या मुख्य कंटेंट) को दिखाएगा/छिपाएगा।
-        // डेटा लोड करने का काम अब 'loginButton' के क्लिक पर होगा।
+        // यह फंक्शन Firebase Authentication की स्थिति के आधार पर UI (लॉगिन स्क्रीन या मुख्य कंटेंट) को दिखाएगा/छिपाएगा
+        // और यदि यूजर पहले से लॉग इन है (जैसे सेशन पर्सिस्टेंस से), तो डेटा भी लोड करेगा।
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // यूजर लॉग इन है
+                // यूजर लॉग इन है (या तो नया लॉग इन हुआ है, या सेशन से है)
                 isAuthenticated = true;
                 document.getElementById('authSection').classList.add('d-none'); // लॉगिन सेक्शन छिपाओ
                 document.getElementById('mainContent').classList.remove('d-none'); // मुख्य कंटेंट दिखाओ
                 document.getElementById('logoutButton').classList.remove('d-none'); // लॉगआउट बटन दिखाओ
-                // 'msg' और डेटा लोडिंग फंक्शन यहाँ से हटा दिए गए हैं, वे अब केवल 'loginButton' क्लिक पर होंगे
+                
+                // डेटा को लोड करें जब भी यूजर की स्थिति 'लॉग इन' हो
+                loadCategories();
+                loadSiteConfig();
+                setupSiteConfigEvents();
+
+                // 'msg' यहां से हटा दिया गया है क्योंकि यह हर पेज लोड पर भी दिखेगा अगर सेशन है।
+                // msg('Logged in successfully!', 'success'); // अब यह केवल loginButton के क्लिक पर ही दिखेगा।
             } else {
                 // यूजर लॉग इन नहीं है
                 isAuthenticated = false;
                 document.getElementById('authSection').classList.remove('d-none'); // लॉगिन सेक्शन दिखाओ
                 document.getElementById('mainContent').classList.add('d-none'); // मुख्य कंटेंट छिपाओ
                 document.getElementById('logoutButton').classList.add('d-none'); // लॉगआउट बटन छिपाओ
-                // 'msg' और डेटा लोडिंग फंक्शन यहाँ से हटा दिए गए हैं
+                // msg('Please log in to manage content.', 'info'); // अब यह केवल लॉगआउट होने पर दिखेगा।
             }
         });
 
@@ -283,9 +290,11 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 // केवल सफलतापूर्वक लॉग इन होने पर ही मैसेज दिखाएं और डेटा लोड करें
                 msg('Logged in successfully!', 'success'); // अब यहां मैसेज दिखाएं
-                loadCategories(); // अब यहां कैटेगरी लोड करें
-                loadSiteConfig(); // अब यहां साइट कॉन्फ़िग लोड करें
-                setupSiteConfigEvents(); // अब यहां साइट कॉन्फ़िग इवेंट सेट करें
+                // डेटा को यहां फिर से लोड करने की आवश्यकता नहीं है, क्योंकि onAuthStateChanged हैंडलर इसे संभाल रहा है।
+                // हालांकि, यह सुनिश्चित करने के लिए कि पहली बार लॉगिन पर भी सब कुछ लोड हो, इन्हें यहां रखना सुरक्षित है।
+                loadCategories(); 
+                loadSiteConfig(); 
+                setupSiteConfigEvents(); 
             } catch (error) {
                 msg(`Login failed: ${error.message}`, 'danger'); // लॉगिन फेल होने पर मैसेज दिखाएं
             } finally {
@@ -482,6 +491,7 @@
         };
 
         const loadBatches = (catId) => {
+            const batchesRef = dbRef(db, `categories/${catId}/batches`);
             onValue(batchesRef, (snapshot) => {
                 const batches = snapshot.val();
                 const batchesList = document.getElementById(`batches-list-${catId}`);
@@ -517,7 +527,7 @@
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"
-/>
+ />
                         <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
                         <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
                     </div>
