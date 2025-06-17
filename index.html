@@ -17,417 +17,414 @@
         h2, h5 { color: #007bff; font-family: 'Montserrat', sans-serif; font-weight: 700; }
         .btn-primary { background-color: #007bff; border-color: #007bff; border-radius: 20px; padding: 8px 20px; }
         .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; }
-        .form-label { font-weight: 500; }
-        .card { border: none; border-radius: 10px; margin-bottom: 15px; }
-        .card-header { background-color: #e9ecef; border-bottom: none; border-radius: 10px 10px 0 0; padding: 10px 15px; font-weight: 600; }
-        .card-body { padding: 15px; }
-        .list-group-item { background-color: #f8f9fa; border: 1px solid #e9ecef; margin-bottom: 5px; border-radius: 8px; }
-        .form-control-sm { border-radius: 5px; }
-        .badge { font-size: 0.8em; padding: 0.4em 0.7em; border-radius: 12px; }
-        .thumbnail-preview {
-            width: 60px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 10px;
-            border: 1px solid #ddd;
-        }
-        .loading-overlay {
+        .btn-danger { background-color: #dc3545; border-color: #dc3545; border-radius: 15px; padding: 5px 12px; }
+        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; border-radius: 15px; padding: 5px 12px; }
+        .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; }
+        .btn-success { background-color: #28a745; border-color: #28a745; border-radius: 15px; padding: 5px 12px; }
+        .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
+        .btn-info { background-color: #17a2b8; border-color: #17a2b8; border-radius: 15px; padding: 5px 12px; }
+        .btn-info:hover { background-color: #138496; border-color: #117a8b; }
+        .form-control { border-radius: 8px; border: 1px solid #ced4da; padding: 10px; }
+        .form-label { font-weight: 600; margin-bottom: 5px; }
+        .alert { margin-top: 15px; border-radius: 8px; }
+        .card { border-radius: 10px; border: 1px solid #e9ecef; margin-bottom: 20px; background-color: #fdfdfd; }
+        .card-body { padding: 20px; }
+        .cat-name, .batch-title, .module-name { cursor: text; font-weight: 600; } 
+        .batches-list, .modules-list, .lectures-list { margin-left: 20px; padding-left: 15px; border-left: 3px solid #e9ecef; margin-top: 10px; }
+        img.thumbnail-preview { border-radius: 8px; object-fit: cover; width: 100px; height: 70px; margin-right: 15px; border: 1px solid #ddd; }
+        input.form-control-sm { max-width: 300px; } 
+        textarea.form-control { min-height: 80px; resize: vertical; }
+
+        /* Custom Modal Styling (for alert/confirm replacements) */
+        .custom-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 1060; /* Higher than Bootstrap modals */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal-content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .custom-modal-overlay.active .custom-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .custom-modal-content h5 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            color: #343a40;
+        }
+        .custom-modal-content .modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             flex-direction: column;
+            z-index: 1070;
+            color: white;
+            font-size: 1.2em;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .loading-spinner-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
         .loading-spinner {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #007bff;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
+            margin-bottom: 10px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        .toast {
-            min-width: 200px;
-            background-color: #28a745; /* Success default */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-        }
-        .toast.warning { background-color: #ffc107; }
-        .toast.danger { background-color: #dc3545; }
-        .toast.info { background-color: #17a2b8; }
-        .modal-dialog { max-width: 500px; }
-        .modal-content { border-radius: 10px; }
-        .btn-outline-secondary { border-radius: 20px; }
-        .btn-success { background-color: #28a745; border-color: #28a745; border-radius: 20px; padding: 8px 20px; }
-        .btn-danger { background-color: #dc3545; border-color: #dc3545; border-radius: 20px; padding: 5px 15px; font-size: 0.9em; }
-        .site-config-section {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #e9ecef;
-        }
-        .category-card, .batch-card, .module-card, .lecture-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        .loading-message {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="container">
+        <h2 class="text-center mb-4">SkillNeast Admin Panel</h2>
+        <div id="alerts"></div>
+
+        <!-- Create Category Section -->
+        <div class="mb-3 p-3 border rounded bg-light">
+            <h5>Create Category</h5>
+            <div class="mb-3">
+                <label for="categoryName" class="form-label">Category Name</label>
+                <input id="categoryName" type="text" class="form-control" placeholder="e.g., JEE Mains, NEET, Editing">
+            </div>
+            <div class="mb-3">
+                <label for="categoryImageUrl" class="form-label">Category Image URL</label>
+                <input type="url" class="form-control" id="categoryImageUrl" placeholder="e.g., https://example.com/image.jpg">
+            </div>
+            <button id="addCategory" class="btn btn-primary mt-2 w-100">Add Category</button>
+        </div>
+
+
+        <div id="categoriesList" class="mt-4"></div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div class="custom-modal-overlay" id="customConfirmModal">
+        <div class="custom-modal-content">
+            <h5 id="customConfirmMessage"></h5>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="customConfirmCancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="customConfirmOK">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner Overlay (still needed for other async operations if any, e.g., LLM calls) -->
+    <div class="loading-spinner-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <p class="mt-3" id="loadingMessage">Loading...</p>
-    </div>
-    <div class="toast-container"></div>
-
-    <div class="container mt-4">
-        <h2 class="mb-4 text-center">SkillNeast Admin Panel</h2>
-
-        <div id="authSection" class="mb-4">
-            <h5 class="mb-3">Admin Login</h5>
-            <div class="mb-3">
-                <label for="adminEmail" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="adminEmail" placeholder="Enter email">
-            </div>
-            <div class="mb-3">
-                <label for="adminPassword" class="form-label">Password</label>
-                <input type="password" class="form-control" id="adminPassword" placeholder="Password">
-            </div>
-            <button id="loginButton" class="btn btn-primary">Login</button>
-            <button id="logoutButton" class="btn btn-outline-secondary d-none ms-2">Logout</button>
-        </div>
-
-        <div id="mainContent" class="d-none">
-            <h5 class="mb-3">Category Management</h5>
-            <div class="mb-3 d-flex">
-                <input type="text" class="form-control me-2" id="categoryName" placeholder="New Category Name">
-                <input type="url" class="form-control me-2" id="categoryImageUrl" placeholder="Category Image URL">
-                <button id="addCategory" class="btn btn-primary">Add Category</button>
-            </div>
-            <div id="categoriesList" class="mb-4">
-                </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="confirmationMessage">
-                    Are you sure you want to proceed?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmActionButton">Confirm</button>
-                </div>
-            </div>
-        </div>
+        <p class="loading-message">Processing...</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
+        // Firebase configuration and initialization (copied from firebase-config.js)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref as dbRef, onValue, set, push, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+        import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-        // Your Firebase client configuration (replace with your actual config)
+
         const firebaseConfig = {
-            apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
-            authDomain: "adminneast.firebaseapp.com",
-            databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
-            projectId: "adminneast",
-            storageBucket: "adminneast.firebasestorage.app",
-            messagingSenderId: "883877553418",
-            appId: "1:883877553418:web:84ce8200f4b471bfffc6f3-admin", // **यहाँ बदला गया है**
-            measurementId: "G-PCH99BDF1S"
+          apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
+          authDomain: "adminneast.firebaseapp.com",
+          databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
+          projectId: "adminneast",
+          storageBucket: "adminneast.appspot.com", 
+          messagingSenderId: "883877553418",
+          appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
+          measurementId: "G-PCH99BDF1S"
         };
+        // Ensure __app_id is accessible. Provide a fallback if not in Canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Initialize Firebase (एक विशिष्ट नाम के साथ)
-        const app = initializeApp(firebaseConfig, "adminPanelApp"); // **यहाँ बदला गया है**
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); // Realtime Database
+        const auth = getAuth(app); // Firebase Auth
 
+        // Global variable to hold authentication status
         let isAuthenticated = false;
-        let confirmActionResolve;
 
-        // Utility functions
-        const showLoading = (message = 'Loading...') => {
-            document.getElementById('loadingMessage').textContent = message;
-            document.getElementById('loadingOverlay').style.display = 'flex';
+        // Authenticate Firebase
+        const authenticateFirebase = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in with custom token.");
+                } else {
+                    await signInAnonymously(auth);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in anonymously.");
+                }
+            } catch (error) {
+                console.error("Admin Panel Firebase authentication error:", error);
+                msg(`Authentication failed: ${error.message}. Please check Firebase config & authorized domains.`, 'danger');
+                isAuthenticated = false;
+            }
         };
 
-        const hideLoading = () => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        };
 
-        const msg = (message, type = 'success') => {
-            const toastContainer = document.querySelector('.toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            `;
-            toastContainer.appendChild(toast);
+        // Utility function for messages (modal like UI to replace alert/confirm)
+        const msg = (text, type = 'success') => {
+            const alertsDiv = document.getElementById('alerts');
+            const el = document.createElement('div');
+            el.className = `alert alert-${type} fade show`;
+            el.textContent = text;
+            alertsDiv.append(el);
             setTimeout(() => {
-                toast.remove();
+                el.classList.remove('show');
+                el.classList.add('fade');
+                el.addEventListener('transitionend', () => el.remove(), { once: true });
             }, 3000);
         };
 
+        // Custom Confirmation Modal
         const showConfirm = (message) => {
             return new Promise((resolve) => {
-                document.getElementById('confirmationMessage').textContent = message;
-                const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-                confirmModal.show();
-                confirmActionResolve = resolve;
+                const modalOverlay = document.getElementById('customConfirmModal');
+                const modalMessage = document.getElementById('customConfirmMessage');
+                const okButton = document.getElementById('customConfirmOK');
+                const cancelButton = document.getElementById('customConfirmCancel');
+
+                modalMessage.textContent = message;
+                modalOverlay.classList.add('active');
+
+                const handleConfirm = () => {
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+
+                okButton.addEventListener('click', handleConfirm);
+                cancelButton.addEventListener('click', handleCancel);
             });
         };
 
-        document.getElementById('confirmActionButton').addEventListener('click', () => {
-            if (confirmActionResolve) {
-                confirmActionResolve(true);
-                bootstrap.Modal.getInstance(document.getElementById('confirmationModal')).hide();
-            }
-        });
-        document.getElementById('confirmationModal').addEventListener('hide.bs.modal', () => {
-            if (confirmActionResolve) {
-                confirmActionResolve(false); // Resolve with false if modal is closed without confirming
-                confirmActionResolve = null;
-            }
-        });
-
-        // Authentication logic
-        // यह फंक्शन Firebase Authentication की स्थिति के आधार पर UI (लॉगिन स्क्रीन या मुख्य कंटेंट) को दिखाएगा/छिपाएगा
-        // और यदि यूजर पहले से लॉग इन है (जैसे सेशन पर्सिस्टेंस से), तो डेटा भी लोड करेगा।
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // यूजर लॉग इन है (या तो नया लॉग इन हुआ है, या सेशन से है)
-                isAuthenticated = true;
-                document.getElementById('authSection').classList.add('d-none'); // लॉगिन सेक्शन छिपाओ
-                document.getElementById('mainContent').classList.remove('d-none'); // मुख्य कंटेंट दिखाओ
-                document.getElementById('logoutButton').classList.remove('d-none'); // लॉगआउट बटन दिखाओ
-                
-                // डेटा को लोड करें जब भी यूजर की स्थिति 'लॉग इन' हो
-                loadCategories(); // Categories will trigger loading of batches, modules, lectures
-            } else {
-                // यूजर लॉग इन नहीं है
-                isAuthenticated = false;
-                document.getElementById('authSection').classList.remove('d-none'); // लॉगिन सेक्शन दिखाओ
-                document.getElementById('mainContent').classList.add('d-none'); // मुख्य कंटेंट छिपाओ
-                document.getElementById('logoutButton').classList.add('d-none'); // लॉगआउट बटन छिपाओ
-            }
-        });
-
-        document.getElementById('loginButton').onclick = async () => {
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-
-            if (!email || !password) {
-                msg('Please enter both email and password.', 'warning');
-                return;
-            }
-
-            showLoading('Logging in...');
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                // केवल सफलतापूर्वक लॉग इन होने पर ही मैसेज दिखाएं और डेटा लोड करें
-                msg('Logged in successfully!', 'success');
-                // डेटा को यहां फिर से लोड करने की आवश्यकता नहीं है, onAuthStateChanged हैंडलर इसे संभाल रहा है।
-                // हालांकि, यह सुनिश्चित करने के लिए कि पहली बार लॉगिन पर भी सब कुछ लोड हो, इन्हें यहां रखना सुरक्षित है।
-                loadCategories(); // Categories will trigger loading of batches, modules, lectures
-            } catch (error) {
-                msg(`Login failed: ${error.message}`, 'danger'); // लॉगिन फेल होने पर मैसेज दिखाएं
-            } finally {
-                hideLoading();
-            }
+        // Show/Hide Loading Overlay
+        const showLoading = (message = "Processing...") => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.querySelector('.loading-message').textContent = message;
+            loadingOverlay.classList.add('active');
         };
 
-        document.getElementById('logoutButton').onclick = async () => {
-            showLoading('Logging out...');
-            try {
-                await signOut(auth);
-                msg('Logged out successfully!', 'info');
-            } catch (error) {
-                msg(`Logout failed: ${error.message}`, 'danger');
-            } finally {
-                hideLoading();
-            }
+        const hideLoading = () => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('active');
         };
 
-        // Site Config Management (Removed)
-        // const siteConfigRef = dbRef(db, 'siteConfig'); // Removed
-        // const loadSiteConfig = () => { /* ... */ }; // Removed
-        // const setupSiteConfigEvents = () => { /* ... */ }; // Removed
+        // --- Site Configuration (Links & Profile Assets) Management ---
+        const loadSiteConfig = () => {
+            const configRef = dbRef(db, 'siteConfig');
+            onValue(configRef, (snapshot) => {
+                const config = snapshot.val() || {};
+                // Populate input fields with current config values
+                document.querySelectorAll('.site-config-input').forEach(input => {
+                    const key = input.dataset.key;
+                    if (config[key]) {
+                        input.value = config[key];
+                    } else {
+                        input.value = ''; // Clear if no value in DB
+                    }
+                });
+            }, (error) => {
+                msg(`Error loading site config: ${error.message}`, 'danger');
+            });
+        };
 
-        // Category & Batch Management
-        const categoriesRef = dbRef(db, 'categories');
+        const setupSiteConfigEvents = () => {
+            document.querySelectorAll('.site-config-input').forEach(input => {
+                input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
+                    const key = e.target.dataset.key;
+                    const value = e.target.value.trim();
+                    try {
+                        showLoading('Updating site config...');
+                        await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
+                        msg(`${key} updated!`, 'info');
+                    } catch (error) {
+                        msg(`Error updating ${key}: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            });
+        };
 
+
+        // Load and display categories
         const loadCategories = () => {
-            onValue(categoriesRef, (snapshot) => {
-                const categories = snapshot.val();
-                console.log("Categories loaded:", categories); // Debugging
-                const categoriesList = document.getElementById('categoriesList');
-                categoriesList.innerHTML = '';
-                if (categories) {
-                    Object.entries(categories).forEach(([catId, category]) => {
-                        console.log("Rendering Category:", catId, category); // Debugging
-                        const categoryDiv = document.createElement('div');
-                        categoryDiv.className = 'card mb-3';
-                        categoryDiv.innerHTML = `
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <span class="category-name-display">${category.name || ''}</span>
-                                <input type="text" class="form-control form-control-sm category-name-input d-none flex-grow-1 me-2" value="${category.name || ''}" data-cat="${catId}">
-                                <div class="d-flex align-items-center">
-                                    <img src="${category.imageUrl || 'https://via.placeholder.com/40x25/cccccc/333333?text=NoImg'}" alt="Category Thumbnail" width="40" height="25" class="thumbnail-preview me-2" onerror="this.onerror=null;this.src='https://via.placeholder.com/40x25/cccccc/333333?text=NoImg';"/>
-                                    <input type="url" class="form-control form-control-sm category-image-input d-none me-2" value="${category.imageUrl || ''}" data-cat="${catId}" placeholder="Image URL">
-                                    <button class="btn btn-sm btn-info edit-category-image me-2" data-cat="${catId}">Edit Img</button>
-                                    <button class="btn btn-sm btn-warning edit-category me-2" data-cat="${catId}">Edit</button>
-                                    <button class="btn btn-sm btn-danger delete-category" data-cat="${catId}">Delete</button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h6 class="mb-2 text-muted">Batches:</h6>
-                                <button class="btn btn-sm btn-success add-batch mb-3" data-cat="${catId}">+ Add Batch</button>
-                                <div class="batches-list" id="batches-list-${catId}"></div>
-                            </div>
-                        `;
-                        categoriesList.appendChild(categoryDiv);
-
-                        // Pass the created batches-list div directly to loadBatchesForCategory
-                        const batchesListElement = categoryDiv.querySelector(`#batches-list-${catId}`);
-                        if(batchesListElement) { // Ensure the element exists before calling
-                            loadBatchesForCategory(catId, batchesListElement); 
-                        } else {
-                            console.error(`Error: batches-list-${catId} not found in categoryDiv immediately after append.`);
-                        }
-                        
-                        setupCategoryEvents(categoryDiv, catId);
-                    });
-                }
-            }, (error) => { // <-- error handler
-                console.error("Error loading categories:", error);
+            const catRef = dbRef(db, 'categories');
+            onValue(catRef, snapshot => {
+                const data = snapshot.val() || {};
+                renderCategories(data);
+            }, (error) => {
                 msg(`Error loading categories: ${error.message}`, 'danger');
             });
         };
 
-        const setupCategoryEvents = (div, catId) => {
-            const categoryNameDisplay = div.querySelector('.category-name-display');
-            const categoryNameInput = div.querySelector('.category-name-input');
-            const categoryImageInput = div.querySelector('.category-image-input');
-            const editButton = div.querySelector('.edit-category');
-            const editImageButton = div.querySelector('.edit-category-image');
-            const deleteButton = div.querySelector('.delete-category');
-            const addBatchButton = div.querySelector('.add-batch');
+        const renderCategories = (cats) => {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = '';
+            if (Object.keys(cats).length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
+                return;
+            }
+            Object.entries(cats).forEach(([catId, cat]) => {
+                const card = document.createElement('div');
+                card.className = "card mb-3";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
+                            <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryImageUrl-${catId}" class="form-label">Category Image URL:</label>
+                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
+                            <input type="url" class="form-control form-control-sm mt-2 category-image-url" id="categoryImageUrl-${catId}" data-id="${catId}" value="${cat.imageUrl || ''}" placeholder="e.g., https://example.com/image.jpg">
+                        </div>
+                        <hr>
+                        <h6 class="mb-2 text-muted">Batches:</h6>
+                        <div>
+                            <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
+                            <div class="batches-list" id="batches-list-${catId}"></div>
+                        </div>
+                    </div>`;
+                setupCategoryEvents(card, catId, cat.imageUrl);
+                container.append(card);
+            });
+        };
 
-            editButton.onclick = () => {
-                if (editButton.textContent === 'Edit') {
-                    categoryNameDisplay.classList.add('d-none');
-                    categoryNameInput.classList.remove('d-none');
-                    editButton.textContent = 'Save';
-                } else {
-                    const newName = categoryNameInput.value.trim();
-                    if (newName && newName !== categoryNameDisplay.textContent) {
-                        update(dbRef(db, `categories/${catId}`), { name: newName })
-                            .then(() => msg('Category name updated!', 'success'))
-                            .catch(error => msg(`Error updating category name: ${error.message}`, 'danger'));
-                    }
-                    categoryNameDisplay.textContent = newName;
-                    categoryNameDisplay.classList.remove('d-none');
-                    categoryNameInput.classList.add('d-none');
-                    editButton.textContent = 'Edit';
-                }
-            };
-
-            editImageButton.onclick = () => {
-                if (editImageButton.textContent === 'Edit Img') {
-                    div.querySelector('.thumbnail-preview').classList.add('d-none');
-                    categoryImageInput.classList.remove('d-none');
-                    editImageButton.textContent = 'Save Img';
-                } else {
-                    const newImageUrl = categoryImageInput.value.trim();
-                    if (newImageUrl) {
-                        update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl })
-                            .then(() => msg('Category image updated!', 'success'))
-                            .catch(error => msg(`Error updating category image: ${error.message}`, 'danger'));
-                    }
-                    div.querySelector('.thumbnail-preview').src = newImageUrl;
-                    div.querySelector('.thumbnail-preview').classList.remove('d-none');
-                    categoryImageInput.classList.add('d-none');
-                    editImageButton.textContent = 'Edit Img';
-                }
-            };
-
-            deleteButton.onclick = async () => {
-                const confirmDelete = await showConfirm('Delete this category and all its batches, modules, and lectures?');
-                if (confirmDelete) {
-                    showLoading('Deleting category...');
+        const setupCategoryEvents = (card, catId, currentImageUrl) => {
+            const nameEl = card.querySelector('.cat-name');
+            nameEl.addEventListener('blur', async () => {
+                const newName = nameEl.textContent.trim();
+                if (newName && newName !== nameEl.dataset.originalName) {
                     try {
-                        await remove(dbRef(db, `categories/${catId}`));
-                        msg('Category deleted!', 'success');
+                        await update(dbRef(db, `categories/${catId}`), { name: newName });
+                        msg('Category name updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating category name: ${error.message}`, 'danger');
                     }
-                     catch (error) {
+                }
+                nameEl.dataset.originalName = newName;
+            });
+            nameEl.dataset.originalName = nameEl.textContent.trim();
+
+            const imageUrlInput = card.querySelector('.category-image-url');
+            imageUrlInput.addEventListener('change', async (e) => {
+                const newImageUrl = e.target.value.trim();
+                try {
+                    await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl });
+                    msg('Category image URL updated successfully!', 'success');
+                } catch (error) {
+                    msg(`Error updating category image URL: ${error.message}`, 'danger');
+                }
+            });
+
+            card.querySelector('.delete-cat').addEventListener('click', async (e) => {
+                const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
+                if (confirmDelete) {
+                    try {
+                        showLoading('Deleting category and content...');
+                        // No image deletion from storage needed as it's URL-based now.
+                        await remove(dbRef(db, `categories/${catId}`));
+                        msg('Category and its contents deleted!', 'danger');
+                    } catch (error) {
                         msg(`Error deleting category: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
                     }
                 }
-            };
+            });
 
-            addBatchButton.onclick = async () => {
+            card.querySelector('.add-batch').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const title = prompt('Enter Batch Title:');
-                if (!title) return;
-                const thumbnail = prompt('Enter Batch Thumbnail URL:');
-                if (!thumbnail) return;
-                const headerColor = prompt('Enter Batch Header Color (e.g., #FF5733):') || '#00ADB5'; // Default color
-                const originalPrice = prompt('Enter Original Price (optional, leave blank if not applicable):');
-                const discountedPrice = prompt('Enter Discounted Price (optional, leave blank if not applicable):');
-                const isFree = confirm('Mark as FREE?');
+                const title = prompt('Enter Batch title:');
+                if (!title) { msg('Batch title is required!', 'warning'); return; }
+                
+                const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
+                if (!thumbnailUrl) { msg('Thumbnail URL is required!', 'warning'); return; }
 
-                showLoading('Adding batch...');
+                const description = prompt('Enter Batch description (max 100 words):');
+                if (!description) { msg('Batch description is required!', 'warning'); return; }
+                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
+
+                let originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
+                let discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
+                
+                originalPrice = originalPrice ? parseFloat(originalPrice) : null;
+                discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
+                const isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
+
                 try {
+                    showLoading('Adding batch...');
                     const newRef = push(dbRef(db, `categories/${catId}/batches`));
-                    await set(newRef, {
-                        title: title,
-                        thumbnail: thumbnail,
-                        headerColor: headerColor,
-                        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-                        discountedPrice: discountedPrice ? parseFloat(discountedPrice) : null,
+                    await set(newRef, { 
+                        title, 
+                        thumbnail: thumbnailUrl, 
+                        description,
+                        originalPrice: originalPrice,
+                        discountedPrice: discountedPrice,
                         isFree: isFree,
-                        isNew: true,
-                        sellerTelegramLink: prompt('Enter Seller Telegram Link (optional):') || ''
+                        isNew: true 
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -436,35 +433,19 @@
                     hideLoading();
                 }
             };
-        };
 
-        // Modified: Now accepts batchesListElement directly
-        const loadBatchesForCategory = (catId, batchesListElement) => { 
-            const batchesRef = dbRef(db, `categories/${catId}/batches`);
-            onValue(batchesRef, (snapshot) => {
-                const batches = snapshot.val();
-                console.log("Batches loaded for category", catId, ":", batches); // Debugging
-                
-                // Ensure batchesListElement exists (already checked when passed)
-                batchesListElement.innerHTML = ''; // Clear previous batches
-
-                if (batches) {
-                    Object.entries(batches).forEach(([bId, batch]) => {
-                        console.log("Rendering Batch:", bId, batch); // Debugging
-                        const div = createBatchItem(catId, bId, batch);
-                        batchesListElement.appendChild(div); // Append to the passed element
-
-                        // Pass the newly created modules-list div directly to loadModulesForBatch
-                        const modulesListElement = div.querySelector(`#modules-list-${bId}`);
-                        if(modulesListElement) { // Ensure the element exists before calling
-                            loadModulesForBatch(catId, bId, modulesListElement);
-                        } else {
-                            console.error(`Error: modules-list-${bId} not found in batchDiv immediately after append.`, {catId, bId});
-                        }
-                    });
+            const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
+            onValue(dbRef(db, `categories/${catId}/batches`), snapshot => {
+                batchesListContainer.innerHTML = '';
+                const batchData = snapshot.val() || {};
+                if (Object.keys(batchData).length === 0) {
+                    batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
                 }
-            }, (error) => { // <-- error handler
-                console.error(`Error loading batches for category ${catId}:`, error);
+                Object.entries(batchData).forEach(([bId, batch]) => {
+                    const item = createBatchItem(catId, bId, batch);
+                    batchesListContainer.append(item);
+                });
+            }, (error) => {
                 msg(`Error loading batches: ${error.message}`, 'danger');
             });
         };
@@ -473,51 +454,25 @@
             const div = document.createElement('div');
             div.className = 'card mb-2 bg-light';
             
-            // Determine the display for the price/button
-            let priceOrButtonHTML = '';
-            if (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) {
-                priceOrButtonHTML = '<span class="fw-bold text-success">FREE</span>';
-            } else if (batch.discountedPrice !== null) {
-                priceOrButtonHTML = `₹${batch.discountedPrice}`;
-            } else if (batch.originalPrice !== null) {
-                priceOrButtonHTML = `₹${batch.originalPrice}`;
-            } else {
-                priceOrButtonHTML = 'Price N/A';
-            }
-
+            const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ? '<span class="fw-bold text-success">FREE</span>' :
+                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
+
 
             div.innerHTML = `
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <img src="${batch.thumbnail || 'https://via.placeholder.com/60x40/cccccc/333333?text=NoImg'}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"
- />
-                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title || ''}">
+                        <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';" />
+                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
                         <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
+                      <label for="batchDiscountedPrice-${bId}" class="form-label">Discounted Price</label>
+                        <input type="number" class="form-control form-control-sm batch-discounted-price" id="batchDiscountedPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for FREE)">
                     </div>
-                  
-                    <div class="mb-2">
-                        <label for="batchDescription-${bId}" class="form-label visually-hidden">Description</label>
-                        <textarea class="form-control form-control-sm batch-description" id="batchDescription-${bId}" data-cat="${catId}" data-bid="${bId}" placeholder="Batch Description (max 100 words)">${batch.description ||
-''}</textarea>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="w-50 me-2">
-                            <label for="batchOriginalPrice-${bId}" 
-class="form-label">Original Price</label>
-                            <input type="number" class="form-control form-control-sm batch-original-price" id="batchOriginalPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
-                        </div>
-                        <div class="w-50">
-      
-                            <label for="batchDiscountedPrice-${bId}" class="form-label">Discounted Price</label>
-                            <input type="number" class="form-control form-control-sm batch-discounted-price" id="batchDiscountedPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for FREE)">
-                        </div>
-    
-                    </div>
-                    <div class="mb-2">
-                        <label for="sellerTelegramLink-${bId}" class="form-label">Seller Telegram Link</label>
-                        <input type="url" class="form-control form-control-sm seller-telegram-link" id="sellerTelegramLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.sellerTelegramLink || ''}" placeholder="e.g., https://t.me/yourusername">
-                    </div>
+
+            </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ?
+
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
                         <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
@@ -527,14 +482,14 @@ class="form-label">Original Price</label>
                         <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
                     </div>
                     <div class="text-end fw-bold">
-                    Current Price: ${priceOrButtonHTML} ${originalPriceStrikethrough}
-                   </div>
+                        Current Price: ${displayPrice} ${originalPriceStrikethrough}
+                    </div>
 
-                   <hr class="my-2">
-                   <h6 class="mb-2 text-muted">Modules:</h6>
-                   <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                   <div class="modules-list" id="modules-list-${bId}"></div>
-               </div>`;
+                    <hr class="my-2">
+                    <h6 class="mb-2 text-muted">Modules:</h6>
+                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                    <div class="modules-list" id="modules-list-${bId}"></div>
+                </div>`;
             setupBatchEvents(div);
             return div;
         };
@@ -545,37 +500,56 @@ class="form-label">Original Price</label>
             const batchOriginalPriceInput = div.querySelector('.batch-original-price');
             const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
-            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
-            const sellerTelegramLinkInput = div.querySelector('.seller-telegram-link'); // New input
+            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); // New switch
 
             const { cat, bid } = batchTitleInput.dataset;
 
             batchTitleInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value.trim() });
-                msg('Batch title updated!', 'info');
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value });
+                msg('Batch title updated', 'info');
             });
 
             batchDescriptionInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value.trim() });
-                msg('Batch description updated!', 'info');
+                if (e.target.value.split(/\s+/).length > 100) {
+                    msg('Description exceeds 100 words! Changes not saved.', 'warning');
+                    return; // Do not save if over limit
+                }
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
+                msg('Batch description updated', 'info');
             });
 
             batchOriginalPriceInput.addEventListener('change', async e => {
-                const price = e.target.value.trim();
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: price ? parseFloat(price) : null });
-                msg('Batch original price updated!', 'info');
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
+                msg('Batch original price updated', 'info');
             });
 
             batchDiscountedPriceInput.addEventListener('change', async e => {
-                const price = e.target.value.trim();
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { discountedPrice: price ? parseFloat(price) : null });
-                msg('Batch discounted price updated!', 'info');
+                const newDiscountedPrice = parseFloat(e.target.value);
+                const isFree = newDiscountedPrice === 0;
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
+                    discountedPrice: newDiscountedPrice || null,
+                    isFree: isFree
+                });
+                batchIsFreeSwitch.checked = isFree; // Update switch based on price
+                msg('Batch discounted price updated', 'info');
             });
 
             batchIsFreeSwitch.addEventListener('change', async e => {
                 const isFree = e.target.checked;
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isFree: isFree });
-                msg(`Batch marked as ${isFree ? 'FREE' : 'Paid'}`, 'info');
+                let updateData = { isFree: isFree };
+                if (isFree) {
+                    updateData.discountedPrice = 0; // Set discountedPrice to 0 if marked free
+                    batchDiscountedPriceInput.value = '0'; // Update input field
+                    msg('Batch marked as FREE', 'info');
+                } else {
+                    // If unchecked, set discountedPrice back to its previous value or null
+                    if (parseFloat(batchDiscountedPriceInput.value) === 0) { // If it was 0 because it was free
+                        updateData.discountedPrice = null; // Reset it
+                        batchDiscountedPriceInput.value = '';
+                    }
+                    msg('Batch FREE status updated', 'info');
+                }
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
             });
 
             batchIsCompletedSwitch.addEventListener('change', async e => {
@@ -583,17 +557,16 @@ class="form-label">Original Price</label>
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isCompleted: isCompleted });
                 msg(`Batch marked as ${isCompleted ? 'Completed' : 'Incomplete'}`, 'info');
             });
-            sellerTelegramLinkInput.addEventListener('change', async e => { // New listener
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { sellerTelegramLink: e.target.value.trim() });
-                msg('Seller Telegram Link updated', 'info');
-            });
+
+
             div.querySelector('.delete-batch').onclick = async e => {
                 const confirmDelete = await showConfirm('Delete this batch and all its modules/lectures?');
                 if (confirmDelete) {
-                    showLoading('Deleting batch...');
                     try {
+                        showLoading('Deleting batch and content...');
+                        // No image deletion from storage needed as it's URL-based now.
                         await remove(dbRef(db, `categories/${cat}/batches/${bid}`));
-                        msg('Batch deleted!', 'success');
+                        msg('Batch deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting batch: ${error.message}`, 'danger');
                     } finally {
@@ -602,145 +575,156 @@ class="form-label">Original Price</label>
                 }
             };
 
-            // Module Management
-            const addModuleButton = div.querySelector('.add-module');
-            addModuleButton.onclick = async () => {
+            div.querySelector('.add-module').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                const moduleName = prompt('Enter Module Name:');
-                if (!moduleName) return;
 
+                const moduleName = prompt('Enter Module name:');
+                if (!moduleName) { msg('Module name is required!', 'warning'); return; }
+                
                 showLoading('Adding module...');
                 try {
-                    const newRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
-                    await set(newRef, { name: moduleName });
-                    msg('Module added!', 'success');
+                    const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
+                    await set(newModRef, { name: moduleName });
+                    msg('Module added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding module: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
             };
-            // loadModules(cat, bid); // Removed: now called via loadBatchesForCategory passing the element
-        };
 
-        // Modified: Now accepts modulesListElement directly
-        const loadModulesForBatch = (catId, bId, modulesListElement) => {
-            const modulesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules`);
-            onValue(modulesRef, (snapshot) => {
-                const modules = snapshot.val();
-                console.log("Modules loaded for batch", bId, ":", modules); // Debugging
-                
-                // modulesListElement is now directly passed, no need for getElementById here
-                modulesListElement.innerHTML = ''; // Clear previous modules
-
-                if (modules) {
-                    Object.entries(modules).forEach(([mId, module]) => {
-                        console.log("Rendering Module:", mId, module); // Debugging
-                        const div = createModuleItem(catId, bId, mId, module);
-                        modulesListElement.appendChild(div);
-
-                        // Pass the newly created lectures-list div directly to loadLecturesForModule
-                        const lecturesListElement = div.querySelector(`#lectures-list-${mId}`);
-                        if(lecturesListElement) { // Ensure the element exists before calling
-                            loadLecturesForModule(catId, bId, mId, lecturesListElement);
-                        } else {
-                            console.error(`Error: lectures-list-${mId} not found in moduleDiv immediately after append.`, {catId, bId, mId});
-                        }
-                    });
+            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
+            onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snap => {
+                modulesListContainer.innerHTML = '';
+                const mods = snap.val() || {};
+                if (Object.keys(mods).length === 0) {
+                    modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
                 }
-            }, (error) => { // <-- error handler
-                console.error(`Error loading modules for batch ${bId}:`, error);
+                Object.entries(mods).forEach(([mId, mod]) => {
+                    const modEl = createModuleItem(cat, bid, mId, mod);
+                    modulesListContainer.append(modEl);
+                });
+            }, (error) => {
                 msg(`Error loading modules: ${error.message}`, 'danger');
             });
         };
 
-        const createModuleItem = (catId, bId, mId, module) => {
-            const div = document.createElement('div');
-            div.className = 'card bg-white mb-2 ms-3';
-            div.innerHTML = `
+        const createModuleItem = (cat, bid, mid, mod) => {
+            const d = document.createElement('div');
+            d.className = 'card mb-1 bg-white';
+            d.innerHTML = `
                 <div class="card-body p-2">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" value="${module.name || ''}">
-                        <button class="btn btn-sm btn-danger delete-module" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">Delete</button>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" value="${mod.name}">
+                        <button class="btn btn-sm btn-danger delete-module me-1" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">Delete</button>
+                        <button class="btn btn-sm btn-success add-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}">+ Add Lecture</button>
                     </div>
-                    <h6 class="mb-2 text-muted ms-2">Lectures:</h6>
-                    <button class="btn btn-sm btn-info add-lecture mb-2 ms-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">+ Add Lecture</button>
-                    <div class="lectures-list ms-2" id="lectures-list-${mId}"></div>
+                    <div class="lectures-list mt-2" id="lectures-list-${mid}"></div>
                 </div>`;
-            setupModuleEvents(div);
-            return div;
+            setupModuleEvents(d);
+            return d;
         };
 
-        const setupModuleEvents = (div) => {
-            const moduleNameInput = div.querySelector('.module-name');
+        const setupModuleEvents = (d) => {
+            const moduleNameInput = d.querySelector('.module-name');
             const { cat, bid, mid } = moduleNameInput.dataset;
 
-            moduleNameInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`), { name: e.target.value.trim() });
-                msg('Module name updated!', 'info');
+            moduleNameInput.addEventListener('change', async () => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`), { name: moduleNameInput.value });
+                msg('Module name updated', 'info');
             });
 
-            div.querySelector('.delete-module').onclick = async () => {
+            d.querySelector('.delete-module').onclick = async () => {
                 const confirmDelete = await showConfirm('Delete this module and all its lectures?');
                 if (confirmDelete) {
-                    showLoading('Deleting module...');
-                    try {
-                        await remove(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
-                        msg('Module deleted!', 'success');
-                    } catch (error) {
-                        msg(`Error deleting module: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
+                    await remove(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}`));
+                    msg('Module deleted!', 'danger');
                 }
             };
 
-            // Lecture Management
-            const addLectureButton = div.querySelector('.add-lecture');
-            addLectureButton.onclick = async () => {
+            // Add Lecture button handler
+            d.querySelector('.add-lecture').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                const lectureTitle = prompt('Enter Lecture Title:');
-                if (!lectureTitle) return;
-                const lectureUrl = prompt('Enter Lecture Video URL:');
-                if (!lectureUrl) return;
 
+                const lname = prompt('Enter Lecture name:');
+                if (!lname) { msg('Lecture name is required!', 'warning'); return; }
+                const link = prompt('Enter Google Drive or YouTube Link (e.g., https://drive.google.com/file/d/YOUR_ID/preview or https://www.youtube.com/watch?v=YOUR_ID):');
+                if (!link) { msg('Lecture link is required!', 'warning'); return; }
+                
                 showLoading('Adding lecture...');
                 try {
-                    const newRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
-                    await set(newRef, { title: lectureTitle, url: lectureUrl });
-                    msg('Lecture added!', 'success');
+                    const newLRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
+                    await set(newLRef, { name: lname, link });
+                    msg('Lecture added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding lecture: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
             };
-            // loadLectures(cat, bid, mid); // Removed: now called via loadModulesForBatch passing the element
-        };
 
-        // Modified: Now accepts lecturesListElement directly
-        const loadLecturesForModule = (catId, bId, mId, lecturesListElement) => {
-            const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`);
-            // lecturesListElement is now directly passed, no need for getElementById here
-            onValue(lecturesRef, (snapshot) => {
-                const lectures = snapshot.val();
-                console.log("Lectures loaded for module", mId, ":", lectures); // Debugging
-
-                // Ensure lecturesListElement exists (already checked when passed)
-                lecturesListElement.innerHTML = ''; // Clear previous lectures
-                
-                if (lectures) {
-                    Object.entries(lectures).forEach(([lId, lecture]) => {
-                        console.log("Rendering Lecture:", lId, lecture); // Debugging
-                        const div = createLectureItem(catId, bId, mId, lId, lecture);
-                        lecturesListElement.appendChild(div);
-                    });
+            // Listen for lectures changes for this module
+            const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
+            onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
+                lecturesListContainer.innerHTML = '';
+                const lcs = snap.val() || {};
+                if (Object.keys(lcs).length === 0) {
+                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
                 }
-            }, (error) => { // <-- error handler
-                console.error(`Error loading lectures for module ${mId}:`, error);
+                Object.entries(lcs).forEach(([lId, lec]) => {
+                    const item = document.createElement('div');
+                    item.className = 'd-flex align-items-center bg-light p-1 rounded mb-1';
+                    item.innerHTML = `
+                        <span class="flex-grow-1">${lec.name}</span>
+                        <a href="${lec.link}" target="_blank" class="btn btn-sm btn-info mx-1" title="View Lecture">🔗</a>
+                        <button class="btn btn-sm btn-danger delete-lecture" data-cat="${cat}" data-bid="${bid}" data-mid="${mid}" data-lid="${lId}">X</button>
+                    `;
+                    item.querySelector('.delete-lecture').onclick = async e => {
+                        const ds = e.target.dataset;
+                        const confirmDelete = await showConfirm('Delete this lecture?');
+                        if (confirmDelete) {
+                            await remove(dbRef(db, `categories/${ds.cat}/batches/${ds.bid}/modules/${ds.mid}/lectures/${ds.lid}`))
+                                .then(() => msg('Lecture deleted!', 'danger'))
+                                .catch(error => msg(`Error deleting lecture: ${error.message}`, 'danger'));
+                        }
+                    };
+                    lecturesListContainer.append(item);
+                });
+            }, (error) => {
                 msg(`Error loading lectures: ${error.message}`, 'danger');
             });
         };
+
+        // Add Category event
+        document.getElementById('addCategory').onclick = async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
+            const name = document.getElementById('categoryName').value.trim();
+            if (!name) return msg('Category name required!', 'warning');
+            
+            const imageUrl = document.getElementById('categoryImageUrl').value.trim(); // Get URL from input
+            if (!imageUrl) { msg('Category Image URL is required!', 'warning'); return; }
+
+            showLoading('Adding category...');
+            try {
+                const newRef = push(dbRef(db, 'categories'));
+                await set(newRef, { name, imageUrl: imageUrl });
+                msg('Category added!', 'success');
+                document.getElementById('categoryName').value = '';
+                document.getElementById('categoryImageUrl').value = ''; // Clear URL input
+            } catch (error) {
+                msg(`Error adding category: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // Initial load
+        authenticateFirebase().then(() => {
+            loadCategories();
+            loadSiteConfig(); // Load site config on startup
+            setupSiteConfigEvents(); // Setup event listeners for site config
+        });
     </script>
 </body>
 </html>
