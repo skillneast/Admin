@@ -123,6 +123,24 @@
         .loading-message {
             margin-top: 10px;
         }
+
+        /* New styles for how-to-use videos */
+        .how-to-use-video-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .how-to-use-video-item div {
+            flex-grow: 1;
+        }
+        .how-to-use-video-item .video-controls {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -130,6 +148,7 @@
         <h2 class="text-center mb-4">SkillNeast Admin Panel</h2>
         <div id="alerts"></div>
 
+        <!-- Site Configuration Section (NEW) -->
         <div class="mb-3 p-3 border rounded bg-light">
             <h5>Site Configuration (Global Settings)</h5>
             <div class="mb-3">
@@ -173,8 +192,32 @@
                 <label for="pwLogoUrl" class="form-label">PW Logo URL (if applicable)</label>
                 <input type="url" class="form-control site-config-input" id="pwLogoUrl" data-key="pwLogoUrl" placeholder="e.g., https://example.com/pw_logo.png">
             </div>
-            </div>
+        </div>
 
+        <!-- How to Use App Videos Section -->
+        <div class="mb-3 p-3 border rounded bg-light">
+            <h5>How to Use App Videos</h5>
+            <div class="mb-3">
+                <label for="howToUseVideoTitle" class="form-label">Video Title</label>
+                <input type="text" class="form-control" id="howToUseVideoTitle" placeholder="e.g., App Tutorial Part 1">
+            </div>
+            <div class="mb-3">
+                <label for="howToUseVideoUrl" class="form-label">YouTube/Drive Video URL</label>
+                <input type="url" class="form-control" id="howToUseVideoUrl" placeholder="e.g., https://youtu.be/VIDEO_ID or https://drive.google.com/file/d/FILE_ID/view">
+            </div>
+            <div class="mb-3">
+                <label for="howToUseVideoDescription" class="form-label">Video Description</label>
+                <textarea class="form-control" id="howToUseVideoDescription" rows="3" placeholder="Short description of the video."></textarea>
+            </div>
+            <button id="addHowToUseVideo" class="btn btn-primary mt-2 w-100">Add Video</button>
+            <hr>
+            <h6 class="mb-2 text-muted">Existing Videos:</h6>
+            <div id="howToUseVideosList">
+                <p class="text-muted fst-italic">No videos added yet.</p>
+            </div>
+        </div>
+
+        <!-- Create Category Section -->
         <div class="mb-3 p-3 border rounded bg-light">
             <h5>Create Category</h5>
             <div class="mb-3">
@@ -192,6 +235,7 @@
         <div id="categoriesList" class="mt-4"></div>
     </div>
 
+    <!-- Custom Confirmation Modal -->
     <div class="custom-modal-overlay" id="customConfirmModal">
         <div class="custom-modal-content">
             <h5 id="customConfirmMessage"></h5>
@@ -202,6 +246,7 @@
         </div>
     </div>
 
+    <!-- Loading Spinner Overlay -->
     <div class="loading-spinner-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-message">Processing...</p>
@@ -209,12 +254,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
-        // Firebase configuration and initialization (copied from firebase-config.js)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-
+        
         const firebaseConfig = {
           apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
           authDomain: "adminneast.firebaseapp.com",
@@ -225,17 +268,14 @@
           appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
           measurementId: "G-PCH99BDF1S"
         };
-        // Ensure __app_id is accessible. Provide a fallback if not in Canvas environment.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app); // Realtime Database
-        const auth = getAuth(app); // Firebase Auth
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // Global variable to hold authentication status
         let isAuthenticated = false;
 
-        // Authenticate Firebase
         const authenticateFirebase = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined') {
@@ -254,8 +294,6 @@
             }
         };
 
-
-        // Utility function for messages (modal like UI to replace alert/confirm)
         const msg = (text, type = 'success') => {
             const alertsDiv = document.getElementById('alerts');
             const el = document.createElement('div');
@@ -269,7 +307,6 @@
             }, 3000);
         };
 
-        // Custom Confirmation Modal
         const showConfirm = (message) => {
             return new Promise((resolve) => {
                 const modalOverlay = document.getElementById('customConfirmModal');
@@ -299,7 +336,6 @@
             });
         };
 
-        // Show/Hide Loading Overlay
         const showLoading = (message = "Processing...") => {
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.querySelector('.loading-message').textContent = message;
@@ -311,20 +347,19 @@
             loadingOverlay.classList.remove('active');
         };
 
-        // --- Site Configuration (Links & Profile Assets) Management ---
+        // --- Site Configuration (Global Links & Assets) Management ---
         const loadSiteConfig = () => {
             const configRef = dbRef(db, 'siteConfig');
-            // Using onValue to listen for real-time updates and populate fields
             onValue(configRef, (snapshot) => {
                 const config = snapshot.val() || {};
-                // Populate input fields with current config values
                 document.querySelectorAll('.site-config-input').forEach(input => {
                     const key = input.dataset.key;
-                    // Check if the key exists in config and has a value before populating
-                    if (config.hasOwnProperty(key) && config[key] !== null && config[key] !== undefined) {
+                    // Only update if the value exists in Firebase, otherwise keep placeholder
+                    if (config.hasOwnProperty(key) && config[key] !== null) {
                         input.value = config[key];
                     } else {
-                        input.value = ''; // Clear if no value in DB
+                        // Optionally clear if it was previously set and then removed from DB
+                        // input.value = ''; 
                     }
                 });
             }, (error) => {
@@ -334,14 +369,14 @@
 
         const setupSiteConfigEvents = () => {
             document.querySelectorAll('.site-config-input').forEach(input => {
-                // Ensure event listeners are only added once
-                if (!input.dataset.listenerAdded) { 
-                    input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
+                // Ensure listener is added only once
+                if (!input.dataset.listenerAdded) {
+                    input.addEventListener('change', async (e) => {
                         const key = e.target.dataset.key;
                         const value = e.target.value.trim();
                         try {
-                            showLoading(`Updating ${key}...`);
-                            await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
+                            showLoading('Updating site config...');
+                            await update(dbRef(db, `siteConfig`), { [key]: value });
                             msg(`${key} updated!`, 'info');
                         } catch (error) {
                             msg(`Error updating ${key}: ${error.message}`, 'danger');
@@ -349,10 +384,115 @@
                             hideLoading();
                         }
                     });
-                    input.dataset.listenerAdded = 'true'; // Mark listener as added
+                    input.dataset.listenerAdded = 'true';
                 }
             });
         };
+
+        // --- How to Use App Videos Management ---
+        const loadHowToUseVideos = () => {
+            const videosRef = dbRef(db, 'siteConfig/howToUseVideos');
+            onValue(videosRef, (snapshot) => {
+                const videos = snapshot.val() || {};
+                const listContainer = document.getElementById('howToUseVideosList');
+                listContainer.innerHTML = ''; // Clear existing list
+
+                if (Object.keys(videos).length === 0) {
+                    listContainer.innerHTML = '<p class="text-muted fst-italic">No videos added yet.</p>';
+                    return;
+                }
+
+                Object.entries(videos).forEach(([videoId, video]) => {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'how-to-use-video-item';
+                    videoItem.innerHTML = `
+                        <div>
+                            <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
+                            <strong>URL:</strong> <a href="${video.url}" target="_blank">${video.url || 'No URL'}</a><br>
+                            <strong>Description:</strong> <span contenteditable="true" data-id="${videoId}" data-field="description" class="video-description">${video.description || 'No description'}</span>
+                        </div>
+                        <div class="video-controls">
+                            <button class="btn btn-sm btn-info edit-how-to-use-video" data-id="${videoId}">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-how-to-use-video" data-id="${videoId}">Delete</button>
+                        </div>
+                    `;
+                    listContainer.appendChild(videoItem);
+
+                    // Add event listeners for editing title/description
+                    videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
+                    videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
+                    videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
+                        const newUrl = prompt('Enter new video URL:', video.url);
+                        if (newUrl !== null && newUrl.trim() !== '') {
+                            updateHowToUseVideo(videoId, 'url', newUrl.trim());
+                        } else if (newUrl === '') {
+                             updateHowToUseVideo(videoId, 'url', ''); // Allow clearing URL
+                        }
+                    });
+                    videoItem.querySelector('.delete-how-to-use-video').addEventListener('click', () => deleteHowToUseVideo(videoId));
+                });
+            }, (error) => {
+                msg(`Error loading how-to-use videos: ${error.message}`, 'danger');
+            });
+        };
+
+        const addHowToUseVideo = async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const title = document.getElementById('howToUseVideoTitle').value.trim();
+            const url = document.getElementById('howToUseVideoUrl').value.trim();
+            const description = document.getElementById('howToUseVideoDescription').value.trim();
+
+            if (!title || !url) {
+                msg('Video title and URL are required!', 'warning');
+                return;
+            }
+
+            showLoading('Adding video...');
+            try {
+                const newRef = push(dbRef(db, `siteConfig/howToUseVideos`));
+                await set(newRef, { title, url, description });
+                msg('Video added successfully!', 'success');
+                document.getElementById('howToUseVideoTitle').value = '';
+                document.getElementById('howToUseVideoUrl').value = '';
+                document.getElementById('howToUseVideoDescription').value = '';
+            } catch (error) {
+                msg(`Error adding video: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        const updateHowToUseVideo = async (videoId, field, value) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            showLoading('Updating video...');
+            try {
+                await update(dbRef(db, `siteConfig/howToUseVideos/${videoId}`), { [field]: value });
+                msg('Video updated!', 'info');
+            } catch (error) {
+                msg(`Error updating video: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        const deleteHowToUseVideo = async (videoId) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const confirm = await showConfirm('Are you sure you want to delete this video?');
+            if (confirm) {
+                showLoading('Deleting video...');
+                try {
+                    await remove(dbRef(db, `siteConfig/howToUseVideos/${videoId}`));
+                    msg('Video deleted!', 'danger');
+                } catch (error) {
+                    msg(`Error deleting video: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
+            }
+        };
+
+        // Add event listener for adding how-to-use video
+        document.getElementById('addHowToUseVideo').addEventListener('click', addHowToUseVideo);
 
 
         // Load and display categories
@@ -431,7 +571,6 @@
                 if (confirmDelete) {
                     try {
                         showLoading('Deleting category and content...');
-                        // No image deletion from storage needed as it's URL-based now.
                         await remove(dbRef(db, `categories/${catId}`));
                         msg('Category and its contents deleted!', 'danger');
                     } catch (error) {
@@ -506,7 +645,23 @@
                                  (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
 
-            // Removed the duplicate HTML part with the form-check-input for batchDiscountedPrice
+            // Conditional content based on isFree status
+            let contentHtml = '';
+            if (batch.isFree) {
+                contentHtml = `
+                    <h6 class="mb-2 text-muted">Modules:</h6>
+                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                    <div class="modules-list" id="modules-list-${bId}"></div>
+                `;
+            } else {
+                contentHtml = `
+                    <div class="mb-3">
+                        <label for="telegramCourseLink-${bId}" class="form-label">Telegram Course Link:</label>
+                        <input type="url" class="form-control form-control-sm telegram-course-link" id="telegramCourseLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/course_link">
+                    </div>
+                `;
+            }
+
             div.innerHTML = `
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -536,14 +691,10 @@
                         <input class="form-check-input batch-is-completed" type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
                         <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
                     </div>
-                    <div class="text-end fw-bold">
+                    <div class="text-end fw-bold mb-3">
                         Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
-
-                    <hr class="my-2">
-                    <h6 class="mb-2 text-muted">Modules:</h6>
-                    <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                    <div class="modules-list" id="modules-list-${bId}"></div>
+                    ${contentHtml} <!-- Conditional content injected here -->
                 </div>`;
             setupBatchEvents(div);
             return div;
@@ -555,7 +706,8 @@
             const batchOriginalPriceInput = div.querySelector('.batch-original-price');
             const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
-            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); // New switch
+            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
+            const telegramCourseLinkInput = div.querySelector('.telegram-course-link'); // New element
 
             const { cat, bid } = batchTitleInput.dataset;
 
@@ -567,7 +719,7 @@
             batchDescriptionInput.addEventListener('change', async e => {
                 if (e.target.value.split(/\s+/).length > 100) {
                     msg('Description exceeds 100 words! Changes not saved.', 'warning');
-                    return; // Do not save if over limit
+                    return;
                 }
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
                 msg('Batch description updated', 'info');
@@ -585,27 +737,29 @@
                     discountedPrice: newDiscountedPrice || null,
                     isFree: isFree
                 });
-                batchIsFreeSwitch.checked = isFree; // Update switch based on price
+                // Ensure the checkbox reflects the new free status
+                if (batchIsFreeSwitch) batchIsFreeSwitch.checked = isFree; 
                 msg('Batch discounted price updated', 'info');
             });
 
-            batchIsFreeSwitch.addEventListener('change', async e => {
-                const isFree = e.target.checked;
-                let updateData = { isFree: isFree };
-                if (isFree) {
-                    updateData.discountedPrice = 0; // Set discountedPrice to 0 if marked free
-                    batchDiscountedPriceInput.value = '0'; // Update input field
-                    msg('Batch marked as FREE', 'info');
-                } else {
-                    // If unchecked, set discountedPrice back to its previous value or null
-                    if (parseFloat(batchDiscountedPriceInput.value) === 0) { // If it was 0 because it was free
-                        updateData.discountedPrice = null; // Reset it
-                        batchDiscountedPriceInput.value = '';
+            if (batchIsFreeSwitch) { // Check if element exists before adding listener
+                batchIsFreeSwitch.addEventListener('change', async e => {
+                    const isFree = e.target.checked;
+                    let updateData = { isFree: isFree };
+                    if (isFree) {
+                        updateData.discountedPrice = 0;
+                        if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
+                        msg('Batch marked as FREE', 'info');
+                    } else {
+                        if (batchDiscountedPriceInput && parseFloat(batchDiscountedPriceInput.value) === 0) {
+                            updateData.discountedPrice = null;
+                            batchDiscountedPriceInput.value = '';
+                        }
+                        msg('Batch FREE status updated', 'info');
                     }
-                    msg('Batch FREE status updated', 'info');
-                }
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
-            });
+                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
+                });
+            }
 
             batchIsCompletedSwitch.addEventListener('change', async e => {
                 const isCompleted = e.target.checked;
@@ -613,17 +767,30 @@
                 msg(`Batch marked as ${isCompleted ? 'Completed' : 'Incomplete'}`, 'info');
             });
 
+            // New: Listener for Telegram Course Link
+            if (telegramCourseLinkInput) {
+                telegramCourseLinkInput.addEventListener('change', async e => {
+                    const newLink = e.target.value.trim();
+                    try {
+                        showLoading('Updating Telegram course link...');
+                        await update(dbRef(db, `categories/${cat}/batches/${bid}`), { telegramCourseLink: newLink });
+                        msg('Telegram course link updated!', 'info');
+                    } catch (error) {
+                        msg(`Error updating Telegram course link: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            }
 
             div.querySelector('.delete-batch').onclick = async e => {
                 const confirmDelete = await showConfirm('Delete this batch and all its modules/lectures?');
                 if (confirmDelete) {
                     try {
                         showLoading('Deleting batch and content...');
-                        // No image deletion from storage needed as it's URL-based now.
                         await remove(dbRef(db, `categories/${cat}/batches/${bid}`));
                         msg('Batch deleted!', 'danger');
-                    }
-                     catch (error) {
+                    } catch (error) {
                         msg(`Error deleting batch: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
@@ -631,38 +798,42 @@
                 }
             };
 
-            div.querySelector('.add-module').onclick = async () => {
-                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            // Only setup module events if the "Add Module" button exists
+            const addModuleButton = div.querySelector('.add-module');
+            if (addModuleButton) {
+                addModuleButton.onclick = async () => {
+                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const moduleName = prompt('Enter Module name:');
-                if (!moduleName) { msg('Module name is required!', 'warning'); return; }
-                
-                showLoading('Adding module...');
-                try {
-                    const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
-                    await set(newModRef, { name: moduleName });
-                    msg('Module added successfully!', 'success');
-                } catch (error) {
-                    msg(`Error adding module: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                }
-            };
+                    const moduleName = prompt('Enter Module name:');
+                    if (!moduleName) { msg('Module name is required!', 'warning'); return; }
+                    
+                    showLoading('Adding module...');
+                    try {
+                        const newModRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
+                        await set(newModRef, { name: moduleName });
+                        msg('Module added successfully!', 'success');
+                    } catch (error) {
+                        msg(`Error adding module: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                };
 
-            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
-            onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snap => {
-                modulesListContainer.innerHTML = '';
-                const mods = snap.val() || {};
-                if (Object.keys(mods).length === 0) {
-                    modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
-                }
-                Object.entries(mods).forEach(([mId, mod]) => {
-                    const modEl = createModuleItem(cat, bid, mId, mod);
-                    modulesListContainer.append(modEl);
+                const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
+                onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snap => {
+                    modulesListContainer.innerHTML = '';
+                    const mods = snap.val() || {};
+                    if (Object.keys(mods).length === 0) {
+                        modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
+                    }
+                    Object.entries(mods).forEach(([mId, mod]) => {
+                        const modEl = createModuleItem(cat, bid, mId, mod);
+                        modulesListContainer.append(modEl);
+                    });
+                }, (error) => {
+                    msg(`Error loading modules: ${error.message}`, 'danger');
                 });
-            }, (error) => {
-                msg(`Error loading modules: ${error.message}`, 'danger');
-            });
+            }
         };
 
         const createModuleItem = (cat, bid, mid, mod) => {
@@ -698,21 +869,19 @@
                 }
             };
 
-            // Add Lecture button handler
             d.querySelector('.add-lecture').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const title = prompt('Enter Lecture Title:'); // Changed to Title
+                const title = prompt('Enter Lecture Title:');
                 if (!title) { msg('Lecture title is required!', 'warning'); return; }
                 
-                const url = prompt('Enter Google Drive or YouTube Video URL (e.g., https://youtu.be/VIDEO_ID or https://drive.google.com/file/d/FILE_ID/view):'); // Changed prompt to URL
+                const url = prompt('Enter Google Drive or YouTube Video URL (e.g., https://youtu.be/VIDEO_ID or https://drive.google.com/file/d/FILE_ID/view):');
                 if (!url) { msg('Lecture URL is required!', 'warning'); return; }
                 
                 showLoading('Adding lecture...');
                 try {
                     const newLRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`));
-                    // Changed 'name' to 'title' and 'link' to 'url' to match Firebase structure
-                    await set(newLRef, { title, url }); 
+                    await set(newLRef, { title, url });
                     msg('Lecture added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding lecture: ${error.message}`, 'danger');
@@ -721,7 +890,6 @@
                 }
             };
 
-            // Listen for lectures changes for this module
             const lecturesListContainer = d.querySelector(`#lectures-list-${mid}`);
             onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules/${mid}/lectures`), snap => {
                 lecturesListContainer.innerHTML = '';
@@ -732,7 +900,6 @@
                 Object.entries(lcs).forEach(([lId, lec]) => {
                     const item = document.createElement('div');
                     item.className = 'd-flex align-items-center bg-light p-1 rounded mb-1';
-                    // Changed lec.name to lec.title, lec.link to lec.url
                     item.innerHTML = `
                         <span class="flex-grow-1">${lec.title || 'Untitled Lecture'}</span>
                         <a href="${lec.url}" target="_blank" class="btn btn-sm btn-info mx-1" title="View Lecture">🔗</a>
@@ -761,7 +928,7 @@
             const name = document.getElementById('categoryName').value.trim();
             if (!name) return msg('Category name required!', 'warning');
             
-            const imageUrl = document.getElementById('categoryImageUrl').value.trim(); // Get URL from input
+            const imageUrl = document.getElementById('categoryImageUrl').value.trim();
             if (!imageUrl) { msg('Category Image URL is required!', 'warning'); return; }
 
             showLoading('Adding category...');
@@ -770,7 +937,7 @@
                 await set(newRef, { name, imageUrl: imageUrl });
                 msg('Category added!', 'success');
                 document.getElementById('categoryName').value = '';
-                document.getElementById('categoryImageUrl').value = ''; // Clear URL input
+                document.getElementById('categoryImageUrl').value = '';
             } catch (error) {
                 msg(`Error adding category: ${error.message}`, 'danger');
             } finally {
@@ -778,12 +945,12 @@
             }
         };
 
-        // Initial load on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', async () => {
-            await authenticateFirebase();
-            loadCategories(); // This should now also trigger onValue for categories
-            loadSiteConfig(); // Load site config and trigger onValue for it
-            setupSiteConfigEvents(); // Set up event listeners for inputs
+        // Initial load
+        authenticateFirebase().then(() => {
+            loadCategories();
+            loadSiteConfig();
+            setupSiteConfigEvents();
+            loadHowToUseVideos(); // Load how-to-use videos on startup
         });
     </script>
 </body>
