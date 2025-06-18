@@ -134,44 +134,44 @@
             <h5>Site Configuration (Global Settings)</h5>
             <div class="mb-3">
                 <label for="surpriseButtonLink" class="form-label">Today's Surprise Link</label>
-                <input type="url" class="form-control" id="surpriseButtonLink" data-key="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="surpriseButtonLink" data-key="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise">
                 <small class="form-text text-muted">Link for the "Today's Surprise!" button on the homepage.</small>
             </div>
             <div class="mb-3">
                 <label for="telegramChannelLink" class="form-label">Telegram Channel Link</label>
-                <input type="url" class="form-control" id="telegramChannelLink" data-key="telegramChannelLink" placeholder="e.g., https://t.me/your_channel" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="telegramChannelLink" data-key="telegramChannelLink" placeholder="e.g., https://t.me/your_channel">
             </div>
             <div class="mb-3">
                 <label for="telegramGroupLink" class="form-label">Telegram Group Link</label>
-                <input type="url" class="form-control" id="telegramGroupLink" data-key="telegramGroupLink" placeholder="e.g., https://t.me/your_group" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="telegramGroupLink" data-key="telegramGroupLink" placeholder="e.g., https://t.me/your_group">
             </div>
             <div class="mb-3">
                 <label for="youtubeLink" class="form-label">YouTube Link (About Me)</label>
-                <input type="url" class="form-control" id="youtubeLink" data-key="youtubeLink" placeholder="e.g., https://youtube.com/your_channel" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="youtubeLink" data-key="youtubeLink" placeholder="e.g., https://youtube.com/your_channel">
             </div>
             <div class="mb-3">
                 <label for="instagramLink" class="form-label">Instagram Link (About Me)</label>
-                <input type="url" class="form-control" id="instagramLink" data-key="instagramLink" placeholder="e.g., https://instagram.com/your_profile" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="instagramLink" data-key="instagramLink" placeholder="e.g., https://instagram.com/your_profile">
             </div>
             <div class="mb-3">
                 <label for="requestCoursesLink" class="form-label">Request Courses Link</label>
-                <input type="url" class="form-control" id="requestCoursesLink" data-key="requestCoursesLink" placeholder="e.g., https://forms.google.com/your_form" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="requestCoursesLink" data-key="requestCoursesLink" placeholder="e.g., https://forms.google.com/your_form">
             </div>
             <div class="mb-3">
                 <label for="profilePictureUrl" class="form-label">About Me Profile Picture URL</label>
-                <input type="url" class="form-control" id="profilePictureUrl" data-key="profilePictureUrl" placeholder="e.g., https://example.com/profile.jpg" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="profilePictureUrl" data-key="profilePictureUrl" placeholder="e.g., https://example.com/profile.jpg">
             </div>
             <div class="mb-3">
                 <label for="skillNeastLogoUrl" class="form-label">SkillNeast Logo URL (Top Navbar)</label>
-                <input type="url" class="form-control" id="skillNeastLogoUrl" data-key="skillNeastLogoUrl" placeholder="e.g., https://example.com/logo.png" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="skillNeastLogoUrl" data-key="skillNeastLogoUrl" placeholder="e.g., https://example.com/logo.png">
             </div>
             <div class="mb-3">
                 <label for="sliderHeaderPictureUrl" class="form-label">Slider Menu Header Picture URL</label>
-                <input type="url" class="form-control" id="sliderHeaderPictureUrl" data-key="sliderHeaderPictureUrl" placeholder="e.g., https://example.com/slider_header.png" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="sliderHeaderPictureUrl" data-key="sliderHeaderPictureUrl" placeholder="e.g., https://example.com/slider_header.png">
             </div>
             <div class="mb-3">
                 <label for="pwLogoUrl" class="form-label">PW Logo URL (if applicable)</label>
-                <input type="url" class="form-control" id="pwLogoUrl" data-key="pwLogoUrl" placeholder="e.g., https://example.com/pw_logo.png" class="site-config-input">
+                <input type="url" class="form-control site-config-input" id="pwLogoUrl" data-key="pwLogoUrl" placeholder="e.g., https://example.com/pw_logo.png">
             </div>
             </div>
 
@@ -314,6 +314,7 @@
         // --- Site Configuration (Links & Profile Assets) Management ---
         const loadSiteConfig = () => {
             const configRef = dbRef(db, 'siteConfig');
+            // Using onValue to listen for real-time updates and populate fields
             onValue(configRef, (snapshot) => {
                 const config = snapshot.val() || {};
                 // Populate input fields with current config values
@@ -333,19 +334,23 @@
 
         const setupSiteConfigEvents = () => {
             document.querySelectorAll('.site-config-input').forEach(input => {
-                input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
-                    const key = e.target.dataset.key;
-                    const value = e.target.value.trim();
-                    try {
-                        showLoading(`Updating ${key}...`);
-                        await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
-                        msg(`${key} updated!`, 'info');
-                    } catch (error) {
-                        msg(`Error updating ${key}: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                });
+                // Ensure event listeners are only added once
+                if (!input.dataset.listenerAdded) { 
+                    input.addEventListener('change', async (e) => { // Use 'change' for instant updates on blur/enter
+                        const key = e.target.dataset.key;
+                        const value = e.target.value.trim();
+                        try {
+                            showLoading(`Updating ${key}...`);
+                            await update(dbRef(db, `siteConfig`), { [key]: value }); // Update specific key
+                            msg(`${key} updated!`, 'info');
+                        } catch (error) {
+                            msg(`Error updating ${key}: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    });
+                    input.dataset.listenerAdded = 'true'; // Mark listener as added
+                }
             });
         };
 
@@ -773,11 +778,12 @@
             }
         };
 
-        // Initial load
-        authenticateFirebase().then(() => {
-            loadCategories();
-            loadSiteConfig(); // Load site config on startup
-            setupSiteConfigEvents(); // Setup event listeners for site config
+        // Initial load on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            await authenticateFirebase();
+            loadCategories(); // This should now also trigger onValue for categories
+            loadSiteConfig(); // Load site config and trigger onValue for it
+            setupSiteConfigEvents(); // Set up event listeners for inputs
         });
     </script>
 </body>
