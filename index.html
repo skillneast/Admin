@@ -242,7 +242,7 @@
             margin-right: 10px;
             font-size: 1.2em;
             color: #666;
-            min-width: 20px; /* Ensure icon doesn't shrink */
+            min-width: 20px;
             text-align: center;
         }
         .drive-content-list-item span {
@@ -266,7 +266,7 @@
             border: 1px solid transparent;
             padding: 2px 5px;
             border-radius: 3px;
-            min-width: 50px; /* To make it visible even when empty */
+            min-width: 50px;
         }
 
         .drive-content-name-editable:focus,
@@ -392,7 +392,7 @@
           authDomain: "adminneast.firebaseapp.com",
           databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
           projectId: "adminneast",
-          storageBucket: "adminneast.appspot.com", 
+          storageBucket: "adminneast.appspot.com",
           messagingSenderId: "883877553418",
           appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
           measurementId: "G-PCH99BDF1S"
@@ -401,7 +401,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-
+        
         // --- GOOGLE DRIVE API CONFIGURATION (FOR ADMIN PANEL) ---
         // IMPORTANT: Replace with your actual API Key and Client ID from Google Cloud Console
         // Ye keys aapke Google Cloud Console se aayenge, Drive API enable honi chahiye.
@@ -519,13 +519,11 @@
 
         // --- Google Drive API Integration Functions ---
         let gapiClientInitialized = false;
-
         async function initGapiClient() {
             if (gapiClientInitialized) return;
             try {
                 // Ensure gapi client library is loaded
                 await new Promise(resolve => gapi.load('client:auth2', resolve));
-                
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
                     clientId: GOOGLE_CLIENT_ID,
@@ -537,74 +535,97 @@
             } catch (error) {
                 console.error('Error initializing gapi.client for Drive API:', error);
                 msg(`Failed to initialize Google Drive API: ${error.message}. Please check your API Key, Client ID, and enabled Drive API.`, 'danger');
-                throw error; // Propagate the error so calling functions can catch it
+                throw error;
             }
         }
 
         async function fetchDriveFolderContents(folderId) {
             if (!folderId) return [];
-
             try {
-                await initGapiClient(); // Ensure gapi client is initialized
+                await initGapiClient();
 
                 let allFiles = [];
-                let pageToken = null;
-                do {
-                    const response = await gapi.client.drive.files.list({
-                        'q': `'${folderId}' in parents and trashed = false`,
-                        'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks)',
-                        'pageSize': 100, 
-                        'pageToken': pageToken
-                    });
+                // Recursive helper function
+                async function fetchFilesRecursive(currentFolderId) {
+                    let currentPageToken = null;
+                    do {
+                        const response = await gapi.client.drive.files.list({
+                            'q': `'${currentFolderId}' in parents and trashed = false`,
+                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Added 'parents' field
+                            'pageSize': 100, 
+                            'pageToken': currentPageToken
+                        });
+                        const files = response.result.files;
+                        if (files && files.length > 0) {
+                            for (const file of files) {
+                                let type = 'file';
+                                let url = file.webViewLink;
 
-                    const files = response.result.files;
-                    if (files && files.length > 0) {
-                        for (const file of files) {
-                            let type = 'file';
-                            let url = file.webViewLink; // Default view link
+                                if (file.mimeType === 'application/vnd.google-apps.folder') {
+                                    type = 'folder';
+                                    url = file.webViewLink;
+                                    allFiles.push({ // Push folder info
+                                        id: file.id,
+                                        name: file.name,
+                                        type: type,
+                                        mimeType: file.mimeType,
+                                        url: url,
+                                        parents: file.parents || []
+                                    });
+                                    // Recursively fetch contents of this sub-folder
+                                    await fetchFilesRecursive(file.id);
+                                } else {
+                                    if (file.mimeType.startsWith('video/')) {
+                                        type = 'video';
+                                        // Use the new embeddable format
+                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`;
+                                    } else if (file.mimeType === 'application/pdf') {
+                                        type = 'pdf';
+                                        url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink;
+                                    } else if (file.mimeType.startsWith('image/')) {
+                                        type = 'image';
+                                        url = file.webContentLink || file.webViewLink;
+                                    } else if (file.mimeType.includes('zip') || file.mimeType.includes('rar') || file.mimeType.includes('tar')) {
+                                        type = 'archive';
+                                        url = file.webContentLink || file.webViewLink;
+                                    } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
+                                        type = 'gem';
+                                        url = file.webContentLink || file.webViewLink;
+                                    }
 
-                            if (file.mimeType === 'application/vnd.google-apps.folder') {
-                                type = 'folder';
-                                // For folders, we'll just store their ID and name to represent them as modules
-                                url = file.webViewLink; // Link to view folder in Drive
-                            } else if (file.mimeType.startsWith('video/')) {
-                                type = 'video';
-                                url = `https://drive.google.com/embed?id=${file.id}`; // Embed link for videos
-                            } else if (file.mimeType === 'application/pdf') {
-                                type = 'pdf';
-                                url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink; // Direct link or export link
-                            } else if (file.mimeType.startsWith('image/')) {
-                                type = 'image';
-                                url = file.webContentLink || file.webViewLink;
-                            } else if (file.mimeType.includes('zip') || file.mimeType.includes('rar') || file.mimeType.includes('tar')) {
-                                type = 'archive';
-                                url = file.webContentLink || file.webViewLink; // Link to download/view archive
-                            } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
-                                type = 'gem'; // For miscellaneous/unidentified files
-                                url = file.webContentLink || file.webViewLink;
+                                    if (!url) url = file.webViewLink;
+
+                                    allFiles.push({
+                                        id: file.id,
+                                        name: file.name,
+                                        type: type,
+                                        mimeType: file.mimeType,
+                                        url: url,
+                                        parents: file.parents || []
+                                    });
+                                }
                             }
-                            
-                            // Ensure url is defined, fallback to webViewLink if webContentLink/exportLinks are missing
-                            if (!url) url = file.webViewLink;
-
-                            allFiles.push({
-                                id: file.id,
-                                name: file.name,
-                                type: type,
-                                mimeType: file.mimeType,
-                                url: url 
-                            });
                         }
-                    }
-                    pageToken = response.result.nextPageToken;
-                } while (pageToken);
+                        currentPageToken = response.result.nextPageToken;
+                    } while (currentPageToken);
+                }
 
-                return allFiles;
+                await fetchFilesRecursive(folderId);
+
+                const uniqueFiles = [];
+                const seenIds = new Set();
+                for (const file of allFiles) {
+                    if (!seenIds.has(file.id)) {
+                        uniqueFiles.push(file);
+                        seenIds.add(file.id);
+                    }
+                }
+                return uniqueFiles;
 
             } catch (error) {
                 console.error("Error fetching Google Drive folder contents:", error);
                 msg(`Error fetching Google Drive contents: ${error.message}. Check folder ID and sharing permissions.`, 'danger');
-                throw error; 
+                throw error;
             }
         }
 
@@ -640,7 +661,6 @@
 
                     videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
                     videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
-                    
                     videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
                         const newUrl = prompt('Enter new video URL:', video.url);
                         if (newUrl !== null) { 
@@ -810,69 +830,71 @@
 
                 let isContentDirectLink = batchTypeChoice;
                 let googleDriveFolderId = null;
+                let modules = {};
                 let driveContent = null;
-                let modules = null; // Initialize modules to null
 
                 if (isContentDirectLink) {
                     googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
                     if (!googleDriveFolderId) {
                         msg('Google Drive Folder ID is required for this batch type! Batch not added.', 'warning');
-                        return; 
+                        return;
                     }
 
                     showLoading('Fetching Drive contents...');
                     try {
-                        driveContent = await fetchDriveFolderContents(googleDriveFolderId);
-                        if (!driveContent || driveContent.length === 0) {
+                        const fetchedDriveItems = await fetchDriveFolderContents(googleDriveFolderId);
+                        if (!fetchedDriveItems || fetchedDriveItems.length === 0) {
                             msg('Failed to fetch Drive contents or folder is empty. Batch not added. Check folder ID or permissions.', 'danger');
-                            return; 
+                            return;
                         }
 
-                        // NEW LOGIC: Check for sub-folders to create modules or a single 'Access Here' module
-                        const foldersInDrive = driveContent.filter(item => item.type === 'folder');
-                        
-                        if (foldersInDrive.length > 0) {
-                            // If there are sub-folders, create modules for each
-                            modules = {};
-                            foldersInDrive.forEach(folder => {
-                                // Assign a unique ID for the module
-                                const moduleId = push(dbRef(db, 'dummy')).key; // Generate a unique key
+                        const directFiles = fetchedDriveItems.filter(item =>
+                            item.parents.includes(googleDriveFolderId) && item.type !== 'folder'
+                        );
+                        const subFolders = fetchedDriveItems.filter(item =>
+                            item.parents.includes(googleDriveFolderId) && item.type === 'folder'
+                        );
+
+                        if (subFolders.length > 0) {
+                            for (const folder of subFolders) {
+                                const moduleId = push(dbRef(db, 'dummy')).key;
+                                const moduleLectures = fetchedDriveItems.filter(item =>
+                                    item.parents.includes(folder.id) && item.type !== 'folder'
+                                ).map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    url: item.url,
+                                    type: item.type,
+                                    mimeType: item.mimeType
+                                }));
                                 modules[moduleId] = {
                                     name: folder.name,
-                                    driveId: folder.id, // Store the Drive ID of the sub-folder
-                                    driveContents: driveContent.filter(item => item.parents && item.parents.includes(folder.id)) // This needs recursive fetch in fetchDriveFolderContents or a flat structure with parent IDs
-                                    // Simpler: currently fetchDriveFolderContents only gets direct children.
-                                    // If you want nested modules, fetchDriveFolderContents needs to be recursive and store parent IDs.
-                                    // For now, let's assume direct children of the main folder for 'modules' if they are folders.
-                                    // Or, more robustly, fetch contents for each sub-folder directly here if deep nesting is needed.
-                                    // For this iteration, if a top-level item is a folder, its name becomes a module.
-                                    // Its content is NOT automatically fetched into 'lectures' here.
-                                    // The website would need to know to fetch the sub-folder's content when that module is clicked.
-                                    // This requires a new design for drive-based modules, let's simplify for now:
-                                    // If a main Drive folder has sub-folders, each sub-folder name becomes a module.
-                                    // Clicking THAT module would then show its contents (via a new website function like showDriveFolderContentAsLessons).
+                                    driveId: folder.id,
+                                    lectures: moduleLectures.sort((a,b) => (a.name || '').localeCompare(b.name || '')),
+                                    type: 'drive-module'
                                 };
-                            });
-                            // For simplicity, we won't automatically fetch deep nested content into firebase 'modules' right away.
-                            // The 'modules' will just be pointers to Drive folders.
-                            driveContent = null; // Clear main driveContent if we are using modules
+                            }
                         } else {
-                            // If no sub-folders, create a single 'Access Here' module
-                            modules = {};
-                            const moduleId = push(dbRef(db, 'dummy')).key; // Generate a unique key
+                            const moduleId = push(dbRef(db, 'dummy')).key;
                             modules[moduleId] = {
-                                name: `${title} Content`, // Module name same as batch title + " Content"
+                                name: `${title} Content`,
                                 isAutoGenerated: true,
-                                driveContents: driveContent // Store all fetched drive content here for this single module
+                                lectures: directFiles.map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    url: item.url,
+                                    type: item.type,
+                                    mimeType: item.mimeType
+                                })).sort((a,b) => (a.name || '').localeCompare(b.name || '')),
+                                type: 'drive-module-single'
                             };
-                            driveContent = null; // Clear main driveContent if moved to module
                         }
 
-                        msg('Drive contents fetched and structured!', 'success');
+                        msg('Drive contents fetched and structured into modules!', 'success');
                     } catch (err) {
                         console.error('Error fetching Drive content on add:', err);
                         msg(`Error fetching Drive content: ${err.message}. Batch not added. Check browser console.`, 'danger');
-                        return; 
+                        return;
                     } finally {
                         hideLoading();
                     }
@@ -882,7 +904,7 @@
                 let discountedPrice = null;
                 let isFree = false;
 
-                if (!isContentDirectLink) { 
+                if (!isContentDirectLink) {
                     originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
                     discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
                     
@@ -890,8 +912,8 @@
                     discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
                     isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
                 } else { 
-                    isFree = true; 
-                    discountedPrice = 0; 
+                    isFree = true;
+                    discountedPrice = 0;
                 }
 
                 try {
@@ -904,13 +926,11 @@
                         originalPrice: originalPrice, 
                         discountedPrice: discountedPrice, 
                         isFree: isFree, 
-                        isNew: true, 
+                        isNew: true,
                         isContentDirectLink: isContentDirectLink, 
                         googleDriveFolderId: isContentDirectLink ? googleDriveFolderId : null, 
-                        // driveContent is now only used if there are NO sub-folders and no modules are created
-                        // If modules are created, driveContents will be inside the module.
-                        driveContent: driveContent, // This will be null if modules were generated
-                        modules: modules // Pass the generated modules here
+                        driveContent: null,
+                        modules: modules
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -931,7 +951,8 @@
                     const item = createBatchItem(catId, bId, batch);
                     batchesListContainer.append(item);
                 });
-            }, (error) => {
+            }, 
+            (error) => {
                 msg(`Error loading batches: ${error.message}`, 'danger');
             });
         };
@@ -944,32 +965,60 @@
                                  '<span class="fw-bold text-success">FREE</span>' :
                                  (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
-            
-            // Determine initial display state for sections based on batch properties
             const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
             const googleDriveSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
 
             let dynamicContentHtml = '';
             if (batch.isContentDirectLink) {
-                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>';
-                
-                // Prioritize displaying driveContents from the first auto-generated module if available
-                let driveContentToPreview = [];
+                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents or modules found for this batch.</p>';
+
                 if (batch.modules && Object.keys(batch.modules).length > 0) {
-                    const firstModuleId = Object.keys(batch.modules)[0];
-                    if (batch.modules[firstModuleId].driveContents) {
-                        driveContentToPreview = batch.modules[firstModuleId].driveContents;
-                    }
-                } else if (batch.driveContent) { // Fallback to batch.driveContent if no modules were auto-generated (e.g., old batch format)
-                    driveContentToPreview = batch.driveContent;
-                }
-
-                if (driveContentToPreview && driveContentToPreview.length > 0) {
-                    const driveContentArray = Array.isArray(driveContentToPreview) 
-                                              ? driveContentToPreview 
-                                              : Object.values(driveContentToPreview); // Ensure array
-
                     driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
+                    const sortedModules = Object.entries(batch.modules).sort(([, modA], [, modB]) => (modA.name || '').localeCompare(modB.name || ''));
+
+                    sortedModules.forEach(([moduleId, module], modIndex) => {
+                        driveContentPreviewHtml += `
+                            <li class="drive-content-list-item">
+                                <i class="fas fa-folder text-info"></i>
+                                <strong>Module:</strong> <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-field="name" class="drive-content-name-editable">${module.name || 'Untitled Module'}</span>
+                                <button class="btn btn-sm btn-secondary ms-2 view-module-contents" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}">View Contents</button>
+                                <button class="btn btn-sm btn-danger ms-2 delete-module" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}">Delete Module</button>
+                            </li>
+                        `;
+                        driveContentPreviewHtml += `<ul class="list-unstyled ms-4 mt-2 mb-2 drive-module-lectures-list" id="module-lectures-${moduleId}" style="display: none;">`;
+                        if (module.lectures && module.lectures.length > 0) {
+                             const sortedLectures = module.lectures.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                            sortedLectures.forEach((lecture, lecIndex) => {
+                                let lectureIcon = '';
+                                let lectureColor = '';
+                                if (lecture.type === 'video') { lectureIcon = 'fas fa-video'; lectureColor = 'text-primary'; }
+                                else if (lecture.type === 'pdf') { lectureIcon = 'fas fa-file-pdf'; lectureColor = 'text-danger'; }
+                                else if (lecture.type === 'image') { lectureIcon = 'fas fa-image'; lectureColor = 'text-success'; }
+                                else if (lecture.type === 'archive') { lectureIcon = 'fas fa-file-archive'; lectureColor = 'text-warning'; }
+                                else { lectureIcon = 'fas fa-file'; lectureColor = 'text-secondary'; }
+
+                                driveContentPreviewHtml += `
+                                    <li class="drive-content-list-item">
+                                        <i class="${lectureIcon} ${lectureColor}"></i>
+                                        <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}" data-field="name" class="drive-content-name-editable">${lecture.name || 'Untitled Lecture'}</span>
+                                        <input type="url" contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}" data-field="url" class="form-control form-control-sm ms-2 drive-content-url-editable" value="${lecture.url || ''}" placeholder="URL">
+                                        <button class="btn btn-sm btn-danger ms-2 delete-lecture-from-module" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}">Delete</button>
+                                    </li>
+                                `;
+                            });
+                        } else {
+                            driveContentPreviewHtml += '<li class="text-muted fst-italic">No lectures in this module.</li>';
+                        }
+                        driveContentPreviewHtml += `</ul>`;
+                    });
+                    driveContentPreviewHtml += '</ul>';
+                }
+                else if (batch.driveContent && batch.driveContent.length > 0) {
+                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
+                    const driveContentArray = Array.isArray(batch.driveContent)
+                                              ? batch.driveContent
+                                              : Object.values(batch.driveContent);
+
                     const sortedContents = driveContentArray.sort((a, b) => {
                         if (a.type === 'folder' && b.type !== 'folder') return -1;
                         if (a.type !== 'folder' && b.type === 'folder') return 1;
@@ -981,8 +1030,8 @@
                         if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
                         else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
                         else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
+                        else if (item.type === 'image') { itemIcon = 'fas fa-image'; itemColor = 'text-success'; }
                         else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
-                        else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-secondary'; }
                         else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
 
                         driveContentPreviewHtml += `
@@ -1001,302 +1050,182 @@
                         <label for="googleDriveFolderId-${bId}-input" class="form-label">Google Drive Folder ID:</label>
                         <input type="text" class="form-control form-control-sm google-drive-folder-id" id="googleDriveFolderId-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.googleDriveFolderId || ''}" placeholder="e.g., 1_abcdefg1234567890">
                         <small class="form-text text-muted">Copy the folder ID from your Google Drive URL. Ex: drive.google.com/drive/folders/<span class="fw-bold">FOLDER_ID</span></small>
+                        <button class="btn btn-sm btn-info mt-2 refresh-drive-content" data-cat="${catId}" data-bid="${bId}">Refresh Drive Content</button>
                         <div class="mt-2 p-2 border rounded drive-content-preview">
-                            <h6>Drive Content Preview (editable):</h6>
+                            <h6>Drive Contents:</h6>
                             ${driveContentPreviewHtml}
-                            <button class="btn btn-sm btn-info w-100 mt-2 re-fetch-drive-content" data-cat="${catId}" data-bid="${bId}">Re-fetch Drive Content</button>
                         </div>
                     </div>
                 `;
-            } 
-            
-            // This section will contain either Modules or Telegram Link, and is hidden if it's a Drive content batch
-            dynamicContentHtml += `
-                <div id="normalContentSection-${bId}" style="display: ${normalContentSectionDisplay};">
-                    ${!batch.isContentDirectLink && batch.isFree ?
-                    `
-                        <h6 class="mb-2 text-muted">Modules:</h6>
-                        <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                        <div class="modules-list" id="modules-list-${bId}"></div>
-                    ` : 
-                    !batch.isContentDirectLink && !batch.isFree ?
-                    `
-                        <div class="mb-3">
-                            <label for="telegramCourseLink-${bId}-input" class="form-label">Telegram Course Link:</label>
-                            <input type="url" class="form-control form-control-sm telegram-course-link" id="telegramCourseLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/course_link">
+            } else {
+                dynamicContentHtml = `
+                    <div class="mb-3 normal-content-sections" style="display: ${normalContentSectionDisplay};">
+                        <label for="telegramCourseLink-${bId}" class="form-label">Telegram Course Link (Optional):</label>
+                        <input type="url" class="form-control form-control-sm mb-2 telegram-course-link" id="telegramCourseLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/your_course_channel">
+                        <small class="form-text text-muted">If this is not a free batch, the "Let's Roar" button will open this link.</small>
+                        <h6 class="mt-3 mb-2 text-muted">Modules:</h6>
+                        <div>
+                            <button class="btn btn-secondary btn-sm mb-2 add-module" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                            <div class="modules-list" id="modules-list-${bId}"></div>
                         </div>
-                    ` : ''}
-                </div>
-            `;
+                    </div>
+                `;
+            }
+
+
             div.innerHTML = `
-                <div class="card-body p-2">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <img src="${batch.thumbnail}" alt="Thumbnail" width="60" height="40" class="thumbnail-preview" onerror="this.onerror=null;this.src='https://via.placeholder.com/60x40/cccccc/333333?text=NoImg';"/>
-                        <input class="form-control form-control-sm batch-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" value="${batch.title}">
-                        <button class="btn btn-sm btn-danger delete-batch" data-cat="${catId}" data-bid="${bId}">Delete</button>
+                        <h6 contenteditable="true" data-cat="${catId}" data-id="${bId}" class="batch-title flex-grow-1 me-2">${batch.title}</h6>
+                        <span class="badge ${batch.isNew ? 'bg-success' : 'bg-secondary'} me-2 toggle-isnew" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isNew ? 'NEW' : 'OLD'}</span>
+                        <span class="badge ${batch.isFree ? 'bg-info' : 'bg-warning'} me-2 toggle-isfree" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isFree ? 'FREE' : 'PAID'}</span>
+                        <span class="badge ${batch.isContentDirectLink ? 'bg-primary' : 'bg-secondary'} me-2 toggle-iscontentdirectlink" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isContentDirectLink ? 'DRIVE' : 'NORMAL'}</span>
+                        <button class="btn btn-danger btn-sm delete-batch" data-cat="${catId}" data-id="${bId}">Delete Batch</button>
                     </div>
                     <div class="mb-2">
-                        <label for="batchDescription-${bId}" class="form-label">Description (max 100 words)</label>
-                        <textarea class="form-control form-control-sm batch-description" id="batchDescription-${bId}" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
+                        <label class="form-label">Thumbnail URL:</label>
+                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
+                        <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
                     </div>
-                    <div class="row mb-2">
-                        <div class="col">
-                            <label for="batchOriginalPrice-${bId}" class="form-label">Original Price</label>
-                            <input type="number" class="form-control form-control-sm batch-original-price" id="batchOriginalPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
+                    <div class="mb-2">
+                        <label class="form-label">Description:</label>
+                        <textarea class="form-control form-control-sm batch-description" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Price:</label>
+                        <div class="d-flex align-items-center">
+                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="Original Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
+                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isContentDirectLink ? 'none' : 'block'};">
+                            ${displayPrice} ${originalPriceStrikethrough}
                         </div>
-                        <div class="col">
-                            <label for="batchDiscountedPrice-${bId}" class="form-label">Discounted Price</label>
-                            <input type="number" class="form-control form-control-sm batch-discounted-price" id="batchDiscountedPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for FREE)">
-                        </div>
-                    </div>
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input batch-is-free" type="checkbox" role="switch" id="isFreeSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isFree ? 'checked' : ''}>
-                        <label class="form-check-label" for="isFreeSwitch-${bId}">Mark as FREE</label>
-                    </div>
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input batch-is-completed" type="checkbox" role="switch" id="isCompletedSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isCompleted ? 'checked' : ''}>
-                        <label class="form-check-label" for="isCompletedSwitch-${bId}">Mark as Completed</label>
-                    </div>
-                    <div class="form-check form-switch mb-2">
-                        <input class="form-check-input batch-is-content-direct-link" type="checkbox" role="switch" id="isContentDirectLinkSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isContentDirectLink ? 'checked' : ''}>
-                        <label class="form-check-label" for="isContentDirectLinkSwitch-${bId}">Is Google Drive Content?</label>
-                    </div>
-                    
-                    <div class="text-end fw-bold mb-3">
-                        Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
                     ${dynamicContentHtml}
-                </div>`;
-            setupBatchItemEvents(div, batch);
+                </div>
+            `;
+            // Add event listeners for new elements
+            setupBatchEvents(div, catId, bId, batch);
             return div;
         };
 
-        const setupBatchItemEvents = (div, batch) => {
-            const batchTitleInput = div.querySelector('.batch-title');
-            const batchDescriptionInput = div.querySelector('.batch-description');
-            const batchOriginalPriceInput = div.querySelector('.batch-original-price');
-            const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
-            const batchIsFreeSwitch = div.querySelector('.batch-is-free');
-            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
-            const batchIsContentDirectLinkSwitch = div.querySelector('.batch-is-content-direct-link');
-            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id');
-            const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`);
-            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container');
-            const driveContentPreviewContainer = div.querySelector('.drive-content-preview');
-
-            const { cat, bid } = batchTitleInput.dataset;
-
-            batchTitleInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value });
-                msg('Batch title updated', 'info');
-            });
-
-            batchDescriptionInput.addEventListener('change', async e => {
-                if (e.target.value.split(/\s+/).length > 100) {
-                    msg('Description exceeds 100 words! Changes not saved.', 'warning');
-                    return;
-                }
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
-                msg('Batch description updated', 'info');
-            });
-
-            batchOriginalPriceInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
-                msg('Batch original price updated', 'info');
-            });
-
-            batchDiscountedPriceInput.addEventListener('change', async e => {
-                const newDiscountedPrice = parseFloat(e.target.value);
-                const isFree = newDiscountedPrice === 0;
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
-                    discountedPrice: newDiscountedPrice || null,
-                    isFree: isFree
-                });
-                if (batchIsFreeSwitch) batchIsFreeSwitch.checked = isFree; 
-                msg('Batch discounted price updated', 'info');
-            });
-
-            if (batchIsFreeSwitch) {
-                batchIsFreeSwitch.addEventListener('change', async e => {
-                    const isFree = e.target.checked;
-                    let updateData = { isFree: isFree };
-                    if (isFree) {
-                        updateData.discountedPrice = 0;
-                        if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
-                        msg('Batch marked as FREE', 'info');
-                    } else {
-                        if (batchDiscountedPriceInput && parseFloat(batchDiscountedPriceInput.value) === 0) {
-                            updateData.discountedPrice = null;
-                            batchDiscountedPriceInput.value = '';
-                        }
-                        msg('Batch FREE status updated', 'info');
-                    }
-                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
-                });
-            }
-
-            if (batchIsCompletedSwitch) {
-                batchIsCompletedSwitch.addEventListener('change', async e => {
-                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isCompleted: e.target.checked });
-                    msg('Batch completion status updated', 'info');
-                });
-            }
-
-            if (batchIsContentDirectLinkSwitch) {
-                batchIsContentDirectLinkSwitch.addEventListener('change', async e => {
-                    const isDirectLink = e.target.checked;
-                    const batchDataRef = dbRef(db, `categories/${cat}/batches/${bid}`);
-
-                    let updateData = { isContentDirectLink: isDirectLink };
-                    
-                    if (isDirectLink) {
-                        updateData.isFree = true; // Mark as free if direct link
-                        updateData.discountedPrice = 0;
-                        updateData.modules = null; // Clear modules when switching to direct link
-                        updateData.driveContent = null; // Also clear top-level driveContent
-                        
-                        if (batchIsFreeSwitch) batchIsFreeSwitch.checked = true;
-                        if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
-                        
-                        if (googleDriveFolderIdContainer) googleDriveFolderIdContainer.style.display = 'block';
-                        if (normalContentSection) normalContentSection.style.display = 'none';
-
-                        msg('Batch set to Google Drive Content. Modules will be disabled.', 'info');
-                    } else {
-                        updateData.googleDriveFolderId = null;
-                        updateData.driveContent = null;
-                        updateData.modules = null; // Clear any auto-generated modules when turning off direct link
-                        
-                        if (googleDriveFolderIdContainer) googleDriveFolderIdContainer.style.display = 'none';
-                        if (normalContentSection) normalContentSection.style.display = 'block';
-
-                        msg('Batch set to Regular Modules/Lectures. Google Drive content will be cleared.', 'info');
-                    }
-                    await update(batchDataRef, updateData);
-                    loadCategories(); // Reload to ensure full UI update
-                });
-            }
-
-            if (googleDriveFolderIdInput) {
-                const reFetchDriveContent = async () => {
-                    const newFolderId = googleDriveFolderIdInput.value.trim();
-                    const batchDataRef = dbRef(db, `categories/${cat}/batches/${bid}`);
-
-                    if (!newFolderId) {
-                        msg('Google Drive Folder ID is empty. Cannot re-fetch.', 'warning');
-                        await update(batchDataRef, { googleDriveFolderId: null, driveContent: null, modules: null });
-                        loadCategories();
-                        return;
-                    }
-
-                    showLoading('Fetching Drive contents...');
+        const setupBatchEvents = (card, catId, bId, currentBatch) => {
+            // Batch title editing
+            card.querySelector('.batch-title').addEventListener('blur', async (e) => {
+                const newTitle = e.target.textContent.trim();
+                if (newTitle && newTitle !== currentBatch.title) {
                     try {
-                        const fetchedDriveContent = await fetchDriveFolderContents(newFolderId);
-                        if (!fetchedDriveContent || fetchedDriveContent.length === 0) {
-                            msg('Failed to fetch Drive contents or folder is empty. Check folder ID or permissions.', 'danger');
-                            await update(batchDataRef, { googleDriveFolderId: newFolderId, driveContent: null, modules: null });
-                            loadCategories();
-                            return;
-                        }
-
-                        const foldersInDrive = fetchedDriveContent.filter(item => item.type === 'folder');
-                        let modulesToSave = null;
-                        let topLevelDriveContentToSave = null;
-
-                        if (foldersInDrive.length > 0) {
-                            // If there are sub-folders, create modules for each
-                            modulesToSave = {};
-                            for (const folder of foldersInDrive) {
-                                const moduleId = push(dbRef(db, 'dummy')).key; // Generate unique key
-                                // For simplicity, we just create a module entry.
-                                // The website will need to fetch content of this sub-folder when user clicks it.
-                                modulesToSave[moduleId] = {
-                                    name: folder.name,
-                                    driveId: folder.id,
-                                    // No 'driveContents' here, as we assume website fetches on module click
-                                    isDriveModule: true // Flag for website
-                                };
-                            }
-                            topLevelDriveContentToSave = null; // No top-level driveContent if modules are generated
-                        } else {
-                            // If no sub-folders, create a single 'Access Here' auto-generated module
-                            modulesToSave = {};
-                            const moduleId = push(dbRef(db, 'dummy')).key;
-                            modulesToSave[moduleId] = {
-                                name: `${batch.title} Content`, // Module name same as batch title + " Content"
-                                isAutoGenerated: true,
-                                driveContents: fetchedDriveContent // Store all fetched drive content here for this single module
-                            };
-                            topLevelDriveContentToSave = null; // No top-level driveContent if modules are generated
-                        }
-
-                        await update(batchDataRef, { 
-                            googleDriveFolderId: newFolderId,
-                            driveContent: topLevelDriveContentToSave, // Will be null if modules created
-                            modules: modulesToSave // Update with new module structure
-                        });
-                        msg('Google Drive folder ID and content re-fetched and updated!', 'success');
-                        loadCategories(); // Reload to refresh UI with new content structure
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { title: newTitle });
+                        msg('Batch title updated', 'info');
                     } catch (error) {
-                        msg(`Error re-fetching Drive contents: ${error.message}`, 'danger');
-                        await update(batchDataRef, { googleDriveFolderId: newFolderId, driveContent: null, modules: null });
-                        loadCategories();
-                    } finally {
-                        hideLoading();
+                        msg(`Error updating batch title: ${error.message}`, 'danger');
                     }
-                };
-
-                googleDriveFolderIdInput.addEventListener('change', reFetchDriveContent);
-                const reFetchButton = div.querySelector('.re-fetch-drive-content');
-                if (reFetchButton) {
-                    reFetchButton.addEventListener('click', reFetchDriveContent);
                 }
+            });
 
-                // Setup listeners for editing drive content items (name and URL)
-                div.querySelectorAll('.drive-content-name-editable').forEach(span => {
-                    span.addEventListener('blur', async (e) => {
-                        const itemIndex = parseInt(e.target.dataset.idx);
-                        const newName = e.target.textContent.trim();
-                        // Determine which structure to update (batch.driveContent or batch.modules[moduleId].driveContents)
-                        await updateDriveContentItem(cat, bid, itemIndex, 'name', newName, batch);
-                        msg('Drive content item name updated!', 'info');
-                    });
-                });
-                div.querySelectorAll('.drive-content-url-editable').forEach(input => {
-                    input.addEventListener('change', async (e) => {
-                        const itemIndex = parseInt(e.target.dataset.idx);
-                        const newUrl = e.target.value.trim();
-                        await updateDriveContentItem(cat, bid, itemIndex, 'url', newUrl, batch);
-                        msg('Drive content item URL updated!', 'info');
-                    });
-                });
-                div.querySelectorAll('.delete-drive-content-item').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const itemIndex = parseInt(e.target.dataset.idx);
-                        const confirmDelete = await showConfirm('Are you sure you want to delete this Drive content item?');
-                        if (confirmDelete) {
-                            await deleteDriveContentItem(cat, bid, itemIndex, batch);
-                            msg('Drive content item deleted!', 'danger');
-                        }
-                    });
-                });
-            }
+            // Batch thumbnail URL
+            card.querySelector('.batch-thumbnail-url').addEventListener('change', async (e) => {
+                const newThumbnail = e.target.value.trim();
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { thumbnail: newThumbnail });
+                    msg('Batch thumbnail updated', 'info');
+                } catch (error) {
+                    msg(`Error updating batch thumbnail: ${error.message}`, 'danger');
+                }
+            });
 
-            const telegramCourseLinkInput = div.querySelector('.telegram-course-link');
-            if (telegramCourseLinkInput) {
-                telegramCourseLinkInput.addEventListener('change', async e => {
-                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), { telegramCourseLink: e.target.value.trim() });
-                    msg('Telegram Course Link updated', 'info');
-                });
-            }
-
-            div.querySelector('.delete-batch').addEventListener('click', async () => {
-                const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures/drive content?');
-                if (confirmDelete) {
-                    showLoading('Deleting batch and content...');
+            // Batch description
+            card.querySelector('.batch-description').addEventListener('blur', async (e) => {
+                const newDescription = e.target.value.trim();
+                if (newDescription && newDescription !== currentBatch.description) {
                     try {
-                        await remove(dbRef(db, `categories/${cat}/batches/${bid}`));
-                        msg('Batch deleted!', 'danger');
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { description: newDescription });
+                        msg('Batch description updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating batch description: ${error.message}`, 'danger');
+                    }
+                }
+            });
+
+            // Batch original price
+            card.querySelector('.batch-original-price').addEventListener('change', async (e) => {
+                const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
+                    msg('Original price updated', 'info');
+                } catch (error) { // Fixed: Changed 'Fcatch' to 'catch' here
+                    msg(`Error updating original price: ${error.message}`, 'danger');
+                }
+            });
+
+            // Batch discounted price
+            card.querySelector('.batch-discounted-price').addEventListener('change', async (e) => {
+                const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { discountedPrice: newPrice });
+                    msg('Discounted price updated', 'info');
+                } catch (error) {
+                    msg(`Error updating discounted price: ${error.message}`, 'danger');
+                }
+            });
+
+            // Toggle isNew status
+            card.querySelector('.toggle-isnew').addEventListener('click', async (e) => {
+                const newValue = !currentBatch.isNew;
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isNew: newValue });
+                    msg(`Batch status changed to ${newValue ? 'NEW' : 'OLD'}`, 'info');
+                } catch (error) {
+                    msg(`Error updating isNew status: ${error.message}`, 'danger');
+                }
+            });
+
+            // Toggle isFree status
+            card.querySelector('.toggle-isfree').addEventListener('click', async (e) => {
+                const newValue = !currentBatch.isFree;
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isFree: newValue });
+                    msg(`Batch status changed to ${newValue ? 'FREE' : 'PAID'}`, 'info');
+                } catch (error) {
+                    msg(`Error updating isFree status: ${error.message}`, 'danger');
+                }
+            });
+
+            // Toggle isContentDirectLink status
+            const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
+            if (toggleIsContentDirectLink) {
+                toggleIsContentDirectLink.addEventListener('click', async () => {
+                    const newValue = !currentBatch.isContentDirectLink;
+                    const confirm = await showConfirm(`Are you sure you want to change this batch to ${newValue ? 'Google Drive Content' : 'Normal Modules'}? This will reset modules/driveContent structure.`);
+                    if (confirm) {
+                        showLoading('Updating batch type...');
+                        try {
+                            const updates = {
+                                isContentDirectLink: newValue,
+                                googleDriveFolderId: null,
+                                driveContent: null,
+                                modules: null,
+                                originalPrice: null,
+                                discountedPrice: 0,
+                                isFree: true
+                            };
+                            await update(dbRef(db, `categories/${catId}/batches/${bId}`), updates);
+                            msg('Batch type updated and content reset. Please re-enter details.', 'info');
+                        } catch (error) {
+                            msg(`Error updating batch type: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                });
+            }
+
+            // Delete Batch
+            card.querySelector('.delete-batch').addEventListener('click', async (e) => {
+                const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures?');
+                if (confirmDelete) {
+                    try {
+                        showLoading('Deleting batch and content...');
+                        await remove(dbRef(db, `categories/${catId}/batches/${bId}`));
+                        msg('Batch and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting batch: ${error.message}`, 'danger');
                     } finally {
@@ -1305,149 +1234,286 @@
                 }
             });
 
-            const addModuleButton = div.querySelector('.add-module');
-            if (addModuleButton) {
-                addModuleButton.addEventListener('click', async () => {
-                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                    const moduleName = prompt('Enter Module Name:');
-                    if (!moduleName) { msg('Module name is required!', 'warning'); return; }
-
-                    showLoading('Adding module...');
+            // --- Google Drive Specific Events ---
+            const googleDriveFolderIdInput = card.querySelector('.google-drive-folder-id');
+            if (googleDriveFolderIdInput) {
+                googleDriveFolderIdInput.addEventListener('change', async (e) => {
+                    const newFolderId = e.target.value.trim();
                     try {
-                        const newRef = push(dbRef(db, `categories/${cat}/batches/${bid}/modules`));
-                        await set(newRef, { name: moduleName });
-                        msg('Module added successfully!', 'success');
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { googleDriveFolderId: newFolderId });
+                        msg('Google Drive Folder ID updated!', 'info');
                     } catch (error) {
-                        msg(`Error adding module: ${error.message}`, 'danger');
+                        msg(`Error updating Google Drive Folder ID: ${error.message}`, 'danger');
+                    }
+                });
+            }
+
+            const refreshDriveContentButton = card.querySelector('.refresh-drive-content');
+            if (refreshDriveContentButton) {
+                refreshDriveContentButton.addEventListener('click', async () => {
+                    const folderIdInput = card.querySelector(`.google-drive-folder-id[data-cat="${catId}"][data-bid="${bId}"]`);
+                    const folderId = folderIdInput.value.trim();
+                    if (!folderId) {
+                        msg('Google Drive Folder ID is required to refresh contents!', 'warning');
+                        return;
+                    }
+                    showLoading('Refreshing Drive contents...');
+                    try {
+                        const fetchedDriveItems = await fetchDriveFolderContents(folderId);
+                        if (!fetchedDriveItems || fetchedDriveItems.length === 0) {
+                            msg('Failed to fetch Drive contents or folder is empty. Check folder ID or permissions.', 'danger');
+                            await update(dbRef(db, `categories/${catId}/batches/${bId}`), { modules: null, driveContent: null });
+                            return;
+                        }
+
+                        let newModules = {};
+                        const directFiles = fetchedDriveItems.filter(item =>
+                            item.parents.includes(folderId) && item.type !== 'folder'
+                        );
+                        const subFolders = fetchedDriveItems.filter(item =>
+                            item.parents.includes(folderId) && item.type === 'folder'
+                        );
+
+                        if (subFolders.length > 0) {
+                            for (const folder of subFolders) {
+                                const moduleId = push(dbRef(db, 'dummy')).key;
+                                const moduleLectures = fetchedDriveItems.filter(item =>
+                                    item.parents.includes(folder.id) && item.type !== 'folder'
+                                ).map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    url: item.url,
+                                    type: item.type,
+                                    mimeType: item.mimeType
+                                }));
+                                newModules[moduleId] = {
+                                    name: folder.name,
+                                    driveId: folder.id,
+                                    lectures: moduleLectures.sort((a,b) => (a.name || '').localeCompare(b.name || '')),
+                                    type: 'drive-module'
+                                };
+                            }
+                        } else {
+                            const moduleId = push(dbRef(db, 'dummy')).key;
+                            newModules[moduleId] = {
+                                name: `${currentBatch.title} Content`,
+                                isAutoGenerated: true,
+                                lectures: directFiles.map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    url: item.url,
+                                    type: item.type,
+                                    mimeType: item.mimeType
+                                })).sort((a,b) => (a.name || '').localeCompare(b.name || '')),
+                                type: 'drive-module-single'
+                            };
+                        }
+
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), {
+                            googleDriveFolderId: folderId,
+                            modules: newModules,
+                            driveContent: null
+                        });
+                        msg('Drive contents refreshed and modules updated!', 'success');
+                    } catch (error) {
+                        msg(`Error refreshing Drive content: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
                     }
                 });
             }
 
-            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
+            // Handle "View Contents" button clicks for modules
+            card.querySelectorAll('.view-module-contents').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const moduleId = e.target.dataset.modid;
+                    const lecturesList = card.querySelector(`#module-lectures-${moduleId}`);
+                    if (lecturesList) {
+                        lecturesList.style.display = lecturesList.style.display === 'none' ? 'block' : 'none';
+                        e.target.textContent = lecturesList.style.display === 'none' ? 'View Contents' : 'Hide Contents';
+                    }
+                });
+            });
+
+            // Update module name (if contenteditable)
+            card.querySelectorAll('.drive-content-name-editable[data-modid]').forEach(el => {
+                el.addEventListener('blur', async (e) => {
+                    const newName = e.target.textContent.trim();
+                    const moduleId = e.target.dataset.modid;
+
+                    if (newName && newName !== e.target.dataset.originalValue) {
+                        showLoading('Updating module name...');
+                        try {
+                            await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}`), { name: newName });
+                            msg('Module name updated!', 'info');
+                        } catch (error) {
+                            msg(`Error updating module name: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                    e.target.dataset.originalValue = newName;
+                });
+                el.addEventListener('focus', (e) => {
+                    e.target.dataset.originalValue = e.target.textContent.trim();
+                });
+            });
+
+            // Update lecture name/URL within modules
+            card.querySelectorAll('.drive-content-name-editable[data-idx][data-modid], .drive-content-url-editable[data-idx][data-modid]').forEach(el => {
+                el.addEventListener('blur', async (e) => {
+                    const newValue = e.target.tagName === 'INPUT' ? e.target.value.trim() : e.target.textContent.trim();
+                    const lectureIndex = parseInt(e.target.dataset.idx);
+                    const moduleId = e.target.dataset.modid;
+                    const field = e.target.dataset.field;
+
+                    if (newValue && newValue !== e.target.dataset.originalValue) {
+                        showLoading('Updating lecture details...');
+                        try {
+                            const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
+                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
+                            const currentLectures = snapshot.val() || [];
+                            if (currentLectures[lectureIndex]) {
+                                currentLectures[lectureIndex][field] = newValue;
+                                await set(lecturesRef, currentLectures);
+                                msg('Lecture updated!', 'info');
+                            }
+                        } catch (error) {
+                            msg(`Error updating lecture: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                    e.target.dataset.originalValue = newValue;
+                });
+                el.addEventListener('focus', (e) => {
+                    e.target.dataset.originalValue = e.target.tagName === 'INPUT' ? e.target.value.trim() : e.target.textContent.trim();
+                });
+            });
+
+            // Delete module (for Drive batches)
+            card.querySelectorAll('.delete-module').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const moduleId = e.target.dataset.modid;
+                    const confirm = await showConfirm('Are you sure you want to delete this module and all its lectures?');
+                    if (confirm) {
+                        showLoading('Deleting module...');
+                        try {
+                            await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}`));
+                            msg('Module deleted!', 'danger');
+                        } catch (error) {
+                            msg(`Error deleting module: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                });
+            });
+
+            // Delete lecture from module (for Drive batches)
+            card.querySelectorAll('.delete-lecture-from-module').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const lectureIndex = parseInt(e.target.dataset.idx);
+                    const moduleId = e.target.dataset.modid;
+                    const confirm = await showConfirm('Are you sure you want to delete this lecture?');
+                    if (confirm) {
+                        showLoading('Deleting lecture...');
+                        try {
+                            const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
+                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
+                            const currentLectures = snapshot.val() || [];
+                            if (currentLectures[lectureIndex]) {
+                                currentLectures.splice(lectureIndex, 1);
+                                await set(lecturesRef, currentLectures);
+                                msg('Lecture deleted!', 'danger');
+                            }
+                        } catch (error) {
+                            msg(`Error deleting lecture: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                });
+            });
+
+            // --- Normal Batch Modules and Lectures (old structure) ---
+            const modulesListContainer = card.querySelector(`#modules-list-${bId}`);
             if (modulesListContainer) {
-                onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snapshot => {
+                // Load modules for this batch (if it's a normal batch)
+                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), snapshot => {
                     modulesListContainer.innerHTML = '';
                     const moduleData = snapshot.val() || {};
                     if (Object.keys(moduleData).length === 0) {
                         modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
                     }
                     Object.entries(moduleData).forEach(([mId, module]) => {
-                        const item = createModuleItem(cat, bid, mId, module);
-                        modulesListContainer.append(item);
+                        const moduleItem = createModuleItem(catId, bId, mId, module);
+                        modulesListContainer.append(moduleItem);
                     });
-                }, (error) => {
-                    msg(`Error loading modules: ${error.message}`, 'danger');
+                });
+
+                card.querySelector('.add-module').addEventListener('click', async () => {
+                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                    const moduleName = prompt('Enter Module Name:');
+                    if (moduleName) {
+                        try {
+                            showLoading('Adding module...');
+                            const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
+                            await set(newRef, { name: moduleName });
+                            msg('Module added!', 'success');
+                        } catch (error) {
+                            msg(`Error adding module: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
                 });
             }
         };
 
-        // Helper functions for editing/deleting drive content items
-        const updateDriveContentItem = async (catId, bid, itemIndex, field, value, batch) => {
-            const batchDataRef = dbRef(db, `categories/${catId}/batches/${bid}`);
-            let driveContentArray = [];
-
-            // Determine where the drive content is stored (top-level or inside a module)
-            let targetPath = '';
-            if (batch.modules && Object.keys(batch.modules).length > 0) {
-                const firstModuleId = Object.keys(batch.modules)[0];
-                if (batch.modules[firstModuleId].driveContents) {
-                    driveContentArray = Array.isArray(batch.modules[firstModuleId].driveContents) 
-                                        ? [...batch.modules[firstModuleId].driveContents] 
-                                        : Object.values(batch.modules[firstModuleId].driveContents);
-                    targetPath = `modules/${firstModuleId}/driveContents`;
-                }
-            } else if (batch.driveContent) {
-                driveContentArray = Array.isArray(batch.driveContent) 
-                                    ? [...batch.driveContent] 
-                                    : Object.values(batch.driveContent);
-                targetPath = 'driveContent';
-            }
-
-            if (driveContentArray[itemIndex]) {
-                driveContentArray[itemIndex][field] = value;
-                showLoading('Updating Drive content item...');
-                try {
-                    await update(batchDataRef, { [targetPath]: driveContentArray });
-                } catch (error) {
-                    msg(`Error updating Drive content item: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                    loadCategories(); // Reload to ensure data consistency in UI
-                }
-            }
-        };
-
-        const deleteDriveContentItem = async (catId, bid, itemIndex, batch) => {
-            const batchDataRef = dbRef(db, `categories/${catId}/batches/${bid}`);
-            let driveContentArray = [];
-            let targetPath = '';
-
-            if (batch.modules && Object.keys(batch.modules).length > 0) {
-                const firstModuleId = Object.keys(batch.modules)[0];
-                if (batch.modules[firstModuleId].driveContents) {
-                    driveContentArray = Array.isArray(batch.modules[firstModuleId].driveContents) 
-                                        ? [...batch.modules[firstModuleId].driveContents] 
-                                        : Object.values(batch.modules[firstModuleId].driveContents);
-                    targetPath = `modules/${firstModuleId}/driveContents`;
-                }
-            } else if (batch.driveContent) {
-                driveContentArray = Array.isArray(batch.driveContent) 
-                                    ? [...batch.driveContent] 
-                                    : Object.values(batch.driveContent);
-                targetPath = 'driveContent';
-            }
-
-            if (driveContentArray[itemIndex]) {
-                driveContentArray.splice(itemIndex, 1); // Remove the item
-                showLoading('Deleting Drive content item...');
-                try {
-                    await update(batchDataRef, { [targetPath]: driveContentArray });
-                } catch (error) {
-                    msg(`Error deleting Drive content item: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                    loadCategories(); // Reload to refresh UI
-                }
-            }
-        };
-
-
         const createModuleItem = (catId, bId, mId, module) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 ms-3 bg-light';
+            div.className = 'card mb-2 bg-secondary text-white'; // Slightly different style for modules
             div.innerHTML = `
-                <div class="card-body p-2">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" value="${module.name}">
-                        <button class="btn btn-sm btn-danger delete-module" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">Delete</button>
+                        <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-id="${mId}" class="module-name flex-grow-1 me-2">${module.name}</h6>
+                        <button class="btn btn-danger btn-sm delete-module" data-cat="${catId}" data-bid="${bId}" data-id="${mId}">Delete Module</button>
                     </div>
-                    ${module.isDriveModule ? 
-                        `<div class="text-muted fst-italic">This module represents a Google Drive folder. Its content is dynamically loaded on the website.</div>` :
-                        `<h6 class="mb-2 text-muted">Lectures:</h6>
-                         <button class="btn btn-sm btn-info add-lecture mb-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">+ Add Lecture</button>
-                         <div class="lectures-list" id="lectures-list-${mId}"></div>`
-                    }
-                </div>`;
-            setupModuleItemEvents(div, catId, bId, mId, module); // Pass module object
+                    <hr class="border-white-50">
+                    <h6 class="mb-2">Lectures:</h6>
+                    <div>
+                        <button class="btn btn-info btn-sm mb-2 add-lecture" data-cat="${catId}" data-bid="${bId}" data-id="${mId}">+ Add Lecture</button>
+                        <div class="lectures-list" id="lectures-list-${mId}"></div>
+                    </div>
+                </div>
+            `;
+            setupModuleEvents(div, catId, bId, mId, module);
             return div;
         };
 
-        const setupModuleItemEvents = (div, catId, bId, mId, module) => { // Accept module object
-            const moduleNameInput = div.querySelector('.module-name');
-            moduleNameInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`), { name: e.target.value });
-                msg('Module name updated', 'info');
+        const setupModuleEvents = (card, catId, bId, mId, currentModule) => {
+            // Module name editing
+            card.querySelector('.module-name').addEventListener('blur', async (e) => {
+                const newName = e.target.textContent.trim();
+                if (newName && newName !== currentModule.name) {
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`), { name: newName });
+                        msg('Module name updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating module name: ${error.message}`, 'danger');
+                    }
+                }
             });
 
-            div.querySelector('.delete-module').addEventListener('click', async () => {
+            // Delete Module (for normal batches)
+            card.querySelector('.delete-module').addEventListener('click', async (e) => {
                 const confirmDelete = await showConfirm('Are you sure you want to delete this module and all its lectures?');
                 if (confirmDelete) {
-                    showLoading('Deleting module and lectures...');
                     try {
+                        showLoading('Deleting module and content...');
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`));
-                        msg('Module and its lectures deleted!', 'danger');
+                        msg('Module and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting module: ${error.message}`, 'danger');
                     } finally {
@@ -1456,83 +1522,85 @@
                 }
             });
 
-            const addLectureButton = div.querySelector('.add-lecture');
-            if (addLectureButton) { // Only add listener if button exists (i.e., not a Drive module)
-                addLectureButton.addEventListener('click', async () => {
-                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                    const lectureTitle = prompt('Enter Lecture Title:');
-                    if (!lectureTitle) { msg('Lecture title is required!', 'warning'); return; }
-                    const videoUrl = prompt('Enter Video URL (YouTube or Google Drive):');
-                    if (!videoUrl) { msg('Video URL is required!', 'warning'); return; }
+            // Add Lecture
+            card.querySelector('.add-lecture').addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const lectureTitle = prompt('Enter Lecture Title:');
+                if (!lectureTitle) { msg('Lecture title is required!', 'warning'); return; }
 
+                const lectureUrl = prompt('Enter Video/Content URL (e.g., YouTube embed URL, GDrive shareable link):');
+                if (!lectureUrl) { msg('Lecture URL is required!', 'warning'); return; }
+
+                try {
                     showLoading('Adding lecture...');
-                    try {
-                        const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`));
-                        await set(newRef, { title: lectureTitle, videoUrl: videoUrl });
-                        msg('Lecture added successfully!', 'success');
-                    } catch (error) {
-                        msg(`Error adding lecture: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                });
-            }
+                    const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`));
+                    await set(newRef, { title: lectureTitle, url: lectureUrl });
+                    msg('Lecture added!', 'success');
+                } catch (error) {
+                    msg(`Error adding lecture: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
+            });
 
-            const lecturesListContainer = div.querySelector(`#lectures-list-${mId}`);
-            if (lecturesListContainer) { // Only fetch lectures if it's not a Drive module
-                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), snapshot => {
-                    lecturesListContainer.innerHTML = '';
-                    const lectureData = snapshot.val() || {};
-                    if (Object.keys(lectureData).length === 0) {
-                        lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
-                    }
-                    Object.entries(lectureData).forEach(([lId, lecture]) => {
-                        const item = createLectureItem(catId, bId, mId, lId, lecture);
-                        lecturesListContainer.append(item);
-                    });
-                }, (error) => {
-                    msg(`Error loading lectures: ${error.message}`, 'danger');
+            // Load and display lectures for this module
+            const lecturesListContainer = card.querySelector(`#lectures-list-${mId}`);
+            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), snapshot => {
+                lecturesListContainer.innerHTML = '';
+                const lectureData = snapshot.val() || {};
+                if (Object.keys(lectureData).length === 0) {
+                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
+                }
+                Object.entries(lectureData).forEach(([lId, lecture]) => {
+                    const lectureItem = createLectureItem(catId, bId, mId, lId, lecture);
+                    lecturesListContainer.append(lectureItem);
                 });
-            }
+            });
         };
 
         const createLectureItem = (catId, bId, mId, lId, lecture) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 ms-4 bg-light';
+            div.className = 'd-flex justify-content-between align-items-center mb-1 py-1 px-2 border rounded bg-white text-dark'; // Style for lecture item
             div.innerHTML = `
-                <div class="card-body p-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <input class="form-control form-control-sm lecture-title flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}" value="${lecture.title}">
-                        <button class="btn btn-sm btn-danger delete-lecture" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}">Delete</button>
-                    </div>
-                    <div class="mt-2">
-                        <label for="lectureVideoUrl-${lId}" class="form-label">Video URL:</label>
-                        <input type="url" class="form-control form-control-sm lecture-video-url" id="lectureVideoUrl-${lId}" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" data-lid="${lId}" value="${lecture.videoUrl || ''}">
-                    </div>
-                </div>`;
-            setupLectureItemEvents(div, catId, bId, mId, lId);
+                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}" class="lecture-title flex-grow-1 me-2">${lecture.title}</span>
+                <input type="url" class="form-control form-control-sm me-2 lecture-url" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}" value="${lecture.url || ''}" placeholder="Lecture URL">
+                <button class="btn btn-danger btn-sm delete-lecture" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}">Delete</button>
+            `;
+            setupLectureEvents(div, catId, bId, mId, lId, lecture);
             return div;
         };
 
-        const setupLectureItemEvents = (div, catId, bId, mId, lId) => {
-            const lectureTitleInput = div.querySelector('.lecture-title');
-            const lectureVideoUrlInput = div.querySelector('.lecture-video-url');
-
-            lectureTitleInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { title: e.target.value });
-                msg('Lecture title updated', 'info');
+        const setupLectureEvents = (card, catId, bId, mId, lId, currentLecture) => {
+            // Lecture title editing
+            card.querySelector('.lecture-title').addEventListener('blur', async (e) => {
+                const newTitle = e.target.textContent.trim();
+                if (newTitle && newTitle !== currentLecture.title) {
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { title: newTitle });
+                        msg('Lecture title updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating lecture title: ${error.message}`, 'danger');
+                    }
+                }
             });
 
-            lectureVideoUrlInput.addEventListener('change', async e => {
-                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { videoUrl: e.target.value });
-                msg('Lecture video URL updated', 'info');
+            // Lecture URL editing
+            card.querySelector('.lecture-url').addEventListener('change', async (e) => {
+                const newUrl = e.target.value.trim();
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { url: newUrl });
+                    msg('Lecture URL updated', 'info');
+                } catch (error) {
+                    msg(`Error updating lecture URL: ${error.message}`, 'danger');
+                }
             });
 
-            div.querySelector('.delete-lecture').addEventListener('click', async () => {
+            // Delete Lecture
+            card.querySelector('.delete-lecture').addEventListener('click', async (e) => {
                 const confirmDelete = await showConfirm('Are you sure you want to delete this lecture?');
                 if (confirmDelete) {
-                    showLoading('Deleting lecture...');
                     try {
+                        showLoading('Deleting lecture...');
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`));
                         msg('Lecture deleted!', 'danger');
                     } catch (error) {
@@ -1544,23 +1612,26 @@
             });
         };
 
-        // Initialize on page load
+
+        // Initial calls
         document.addEventListener('DOMContentLoaded', async () => {
             await authenticateFirebase();
             loadSiteConfig();
             setupSiteConfigEvents();
             loadHowToUseVideos();
             loadCategories();
+        });
 
-            document.getElementById('addCategory').addEventListener('click', async () => {
-                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                const name = document.getElementById('categoryName').value.trim();
-                const imageUrl = document.getElementById('categoryImageUrl').value.trim();
-                if (!name) { msg('Category name is required!', 'warning'); return; }
-
-                showLoading('Adding category...');
+        // Add Category button event listener
+        document.getElementById('addCategory').addEventListener('click', async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const categoryName = document.getElementById('categoryName').value.trim();
+            const categoryImageUrl = document.getElementById('categoryImageUrl').value.trim();
+            if (categoryName) {
                 try {
-                    await push(dbRef(db, 'categories'), { name: name, imageUrl: imageUrl });
+                    showLoading('Adding category...');
+                    const newRef = push(dbRef(db, 'categories'));
+                    await set(newRef, { name: categoryName, imageUrl: categoryImageUrl || null });
                     msg('Category added!', 'success');
                     document.getElementById('categoryName').value = '';
                     document.getElementById('categoryImageUrl').value = '';
@@ -1569,7 +1640,9 @@
                 } finally {
                     hideLoading();
                 }
-            });
+            } else {
+                msg('Category name cannot be empty!', 'warning');
+            }
         });
     </script>
 </body>
