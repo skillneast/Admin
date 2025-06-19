@@ -380,6 +380,8 @@
         <p class="loading-message">Processing...</p>
     </div>
 
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <script type="module">
@@ -402,13 +404,16 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         
-        // --- GOOGLE DRIVE API CONFIGURATION (FOR ADMIN PANEL) ---
-        // IMPORTANT: Replace with your actual API Key and Client ID from Google Cloud Console
-        // Ye keys aapke Google Cloud Console se aayenge, Drive API enable honi chahiye.
+        // --- GOOGLE DRIVE API CONFIGURATION ---
         const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // Replace with your actual API Key
         const GOOGLE_CLIENT_ID = "809797969413-ttaor2t8nomil5rvfbt9rrd728pn2tc1.apps.googleusercontent.com"; // Replace with your actual Client ID
 
         let isAuthenticated = false;
+        // Global variable for GIS Token Client
+        let tokenClient; 
+        // Flag to check if gapi.client is initialized
+        let gapiClientInitialized = false;
+
         const authenticateFirebase = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined') {
@@ -517,39 +522,71 @@
             });
         };
 
-        // --- GOOGLE DRIVE API INTEGRATION FUNCTIONS ---
-        // This variable tracks if gapi.client is initialized successfully
-        let gapiClientInitialized = false; 
-        
-        // Function to initialize Google API client
+        // --- GOOGLE DRIVE API INTEGRATION FUNCTIONS WITH GIS ---
         async function initGapiClient() {
-            // If already initialized, return immediately
-            if (gapiClientInitialized) { 
+            if (gapiClientInitialized) {
                 console.log('gapi.client already initialized.');
-                return; 
+                return;
             }
-            try {
-                // Load the Google API client library, including 'client' and 'auth2' modules
-                await new Promise(resolve => gapi.load('client:auth2', resolve)); 
+
+            // Load gapi client library if not already loaded by GIS
+            await new Promise(resolve => gapi.load('client', resolve));
+
+            // Initialize gapi.client
+            await gapi.client.init({
+                apiKey: GOOGLE_API_KEY,
+                clientId: GOOGLE_CLIENT_ID, // This might still be used by gapi.client.init for some setup
+                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                scope: 'https://www.googleapis.com/auth/drive.readonly'
+            });
+
+            // Initialize GIS Token Client
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: GOOGLE_CLIENT_ID, // Use your client ID here
+                scope: 'https://www.googleapis.com/auth/drive.readonly',
+                callback: (tokenResponse) => {
+                    if (tokenResponse.error) {
+                        console.error('GIS Token request failed:', tokenResponse.error, tokenResponse.error_description);
+                        msg(`GIS Authorization failed: ${tokenResponse.error_description || tokenResponse.error}. Please ensure your OAuth consent screen is configured.`, 'danger');
+                        gapiClientInitialized = false; // Reset flag on error
+                    } else {
+                        // Set the received access token to gapi.client
+                        gapi.client.setToken(tokenResponse);
+                        console.log('GIS token obtained and gapi.client updated.');
+                        gapiClientInitialized = true; // Set flag to true once token is set
+                    }
+                },
+                error_callback: (error) => {
+                    console.error('GIS initTokenClient error_callback:', error);
+                    msg(`GIS Token Client initialization error: ${error.type}. Check your Client ID and consent screen.`, 'danger');
+                    gapiClientInitialized = false;
+                }
+            });
+            console.log('GIS Token Client initialized.');
+        }
+
+        // Function to ensure authorization before API call
+        async function ensureGoogleAuthorization() {
+            // First, ensure gapi.client and tokenClient are initialized
+            if (!gapiClientInitialized || !tokenClient) {
+                try {
+                    await initGapiClient(); // Initialize them if not already
+                } catch (error) {
+                    throw new Error('Google API Client initialization failed prior to authorization request.');
+                }
+            }
+
+            // Request a new access token if none is available or it's expired
+            if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
+                console.log('Requesting new access token...');
+                // This call will trigger the callback defined in initTokenClient
+                tokenClient.requestAccessToken(); 
                 
-                // Initialize the client with your API Key, Client ID, and required scopes
-                await gapi.client.init({
-                    apiKey: GOOGLE_API_KEY, // Your Google API Key
-                    clientId: GOOGLE_CLIENT_ID, // Your Google OAuth 2.0 Client ID
-                    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], // API discovery document for Drive API
-                    scope: 'https://www.googleapis.com/auth/drive.readonly' // Scope for read-only access to Google Drive
-                });
-                
-                // Set flag to true if initialization is successful
-                gapiClientInitialized = true; 
-                console.log('gapi.client initialized successfully!');
-            } catch (error) {
-                // Log and display detailed error message if initialization fails
-                console.error('Error initializing gapi.client for Drive API:', error);
-                // The 'details' property might contain more specific information from Google
-                const errorDetails = error.details || 'No specific details provided.';
-                msg(`Failed to initialize Google Drive API: ${errorDetails}. Please check your API Key, Client ID, and enabled Drive API.`, 'danger');
-                throw error; // Propagate the error so calling functions can catch it
+                // We need to wait for the token to be set in the callback.
+                // This is a simplified wait. For production, a more robust promise-based
+                // mechanism should be used to wait for tokenClient.callback to complete.
+                // For now, a short delay might work for simple cases.
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Wait for 1.5 seconds
             }
         }
 
@@ -557,8 +594,12 @@
         async function fetchDriveFolderContents(folderId) {
             if (!folderId) return [];
             try {
-                // Ensure gapi client is initialized before making API calls
-                await initGapiClient();
+                // Ensure authorization before fetching content
+                await ensureGoogleAuthorization();
+
+                if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
+                    throw new Error('Google access token not available after authorization attempt.');
+                }
 
                 let allFiles = [];
                 // Recursive helper function to traverse folders
@@ -567,22 +608,21 @@
                     do {
                         // List files within the current folder
                         const response = await gapi.client.drive.files.list({
-                            'q': `'${currentFolderId}' in parents and trashed = false`, // Query for files in the current folder, not trashed
-                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Request specific fields including parents
-                            'pageSize': 100, // Number of files per page
-                            'pageToken': currentPageToken // Token for pagination
+                            'q': `'${currentFolderId}' in parents and trashed = false`,
+                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)',
+                            'pageSize': 100,
+                            'pageToken': currentPageToken
                         });
                         const files = response.result.files;
                         if (files && files.length > 0) {
                             for (const file of files) {
                                 let type = 'file';
-                                let url = file.webViewLink; // Default view link
+                                let url = file.webViewLink;
 
-                                // Handle folders recursively
                                 if (file.mimeType === 'application/vnd.google-apps.folder') {
                                     type = 'folder';
                                     url = file.webViewLink;
-                                    allFiles.push({ // Store folder info
+                                    allFiles.push({
                                         id: file.id,
                                         name: file.name,
                                         type: type,
@@ -590,12 +630,11 @@
                                         url: url,
                                         parents: file.parents || []
                                     });
-                                    await fetchFilesRecursive(file.id); // Recurse into sub-folder
+                                    await fetchFilesRecursive(file.id);
                                 } else {
-                                    // Determine file type and appropriate URL for embedding/downloading
                                     if (file.mimeType.startsWith('video/')) {
                                         type = 'video';
-                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`; // Embeddable format for videos
+                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`;
                                     } else if (file.mimeType === 'application/pdf') {
                                         type = 'pdf';
                                         url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink;
@@ -606,11 +645,10 @@
                                         type = 'archive';
                                         url = file.webContentLink || file.webViewLink;
                                     } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
-                                        type = 'gem'; // Generic type for other files
+                                        type = 'gem';
                                         url = file.webContentLink || file.webViewLink;
                                     }
 
-                                    // Fallback URL if specific content/export links are missing
                                     if (!url) url = file.webViewLink;
 
                                     allFiles.push({
@@ -624,13 +662,12 @@
                                 }
                             }
                         }
-                        currentPageToken = response.result.nextPageToken; // Get next page token for pagination
-                    } while (currentPageToken); // Continue until no more pages
+                        currentPageToken = response.result.nextPageToken;
+                    } while (currentPageToken);
                 }
 
-                await fetchFilesRecursive(folderId); // Start recursive fetch from the initial folderId
+                await fetchFilesRecursive(folderId);
 
-                // Filter out duplicate files (can happen with recursive fetches)
                 const uniqueFiles = [];
                 const seenIds = new Set();
                 for (const file of allFiles) {
@@ -643,10 +680,9 @@
 
             } catch (error) {
                 console.error("Error fetching Google Drive folder contents:", error);
-                // Display user-friendly error message, extracting details if available
                 const errorDetails = error.details || error.message || 'unknown error';
                 msg(`Error fetching Google Drive contents: ${errorDetails}. Check folder ID and sharing permissions.`, 'danger');
-                throw error; // Re-throw the error for higher-level error handling
+                throw error;
             }
         }
 
@@ -766,7 +802,7 @@
             const container = document.getElementById('categoriesList');
             container.innerHTML = '';
             if (Object.keys(cats).length === 0) {
-                container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
+                container.innerHTML = '<p class="text-muted fst-italic">No categories added yet. Start by creating one above!</p>';
                 return;
             }
             Object.entries(cats).forEach(([catId, cat]) => {
@@ -1050,9 +1086,10 @@
                         let itemColor = '';
                         if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
                         else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
-                        else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
-                        else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
-                        else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
+                        else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; lectureColor = 'text-danger'; }
+                        else if (item.type === 'image') { itemIcon = 'fas fa-image'; lectureColor = 'text-success'; }
+                        else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; lectureColor = 'text-warning'; }
+                        else { itemIcon = 'fas fa-file'; lectureColor = 'text-secondary'; }
 
                         driveContentPreviewHtml += `
                             <li class="drive-content-list-item">
@@ -1636,6 +1673,14 @@
         // Initial calls
         document.addEventListener('DOMContentLoaded', async () => {
             await authenticateFirebase();
+            // Initialize GIS and gapi client for Google Drive API calls
+            try {
+                await initGapiClient(); 
+            } catch (error) {
+                console.error("Initial GIS/gapi.client setup failed:", error);
+                // Error message is already shown by msg() in initGapiClient
+            }
+
             loadSiteConfig();
             setupSiteConfigEvents();
             loadHowToUseVideos();
