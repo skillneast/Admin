@@ -1505,7 +1505,7 @@
                         showLoading('Deleting lecture...');
                         try {
                             const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
-                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
+                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnly: true }));
                             const currentLectures = snapshot.val() || [];
                             if (currentLectures[lectureIndex]) {
                                 currentLectures.splice(lectureIndex, 1);
