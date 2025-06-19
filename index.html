@@ -405,8 +405,8 @@
         const auth = getAuth(app);
         
         // --- GOOGLE DRIVE API CONFIGURATION ---
-        const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // YOUR API KEY
-        const GOOGLE_CLIENT_ID = "809797969413-ttaor2t8nomil5rvfbt9rrd728pn2tc1.apps.googleusercontent.com"; // YOUR CLIENT ID
+        const GOOGLE_API_KEY = "AIzaSyAmgFl8LmLgTG71pS0iUjEVkwyYmSTnMcY"; // YOUR API KEY
+        const GOOGLE_CLIENT_ID = "709184072806-ehsmc8i6ikrmcqcv91c94fri5b1dge82.apps.googleusercontent.com"; // YOUR CLIENT ID
 
         let isAuthenticated = false;
         // Global variable for GIS Token Client
@@ -844,7 +844,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="categoryImageUrl-${catId}" class="form-label">Category Image URL:</label>
-                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
+                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.}</p>'}
                             <input type="url" class="form-control form-control-sm mt-2 category-image-url" id="categoryImageUrl-${catId}" data-id="${catId}" value="${cat.imageUrl || ''}" placeholder="e.g., https://example.com/image.jpg">
                         </div>
                         <hr>
@@ -1505,7 +1505,7 @@
                         showLoading('Deleting lecture...');
                         try {
                             const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
-                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnly: true }));
+                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
                             const currentLectures = snapshot.val() || [];
                             if (currentLectures[lectureIndex]) {
                                 currentLectures.splice(lectureIndex, 1);
