@@ -405,8 +405,8 @@
         const auth = getAuth(app);
         
         // --- GOOGLE DRIVE API CONFIGURATION ---
-        const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // Replace with your actual API Key
-        const GOOGLE_CLIENT_ID = "809797969413-ttaor2t8nomil5rvfbt9rrd728pn2tc1.apps.googleusercontent.com"; // Replace with your actual Client ID
+        const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // YOUR API KEY
+        const GOOGLE_CLIENT_ID = "809797969413-ttaor2t8nomil5rvfbt9rrd728pn2tc1.apps.googleusercontent.com"; // YOUR CLIENT ID
 
         let isAuthenticated = false;
         // Global variable for GIS Token Client
@@ -419,11 +419,11 @@
         const authenticateFirebase = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
                     isAuthenticated = true;
                     console.log("Admin Panel: Signed in with custom token.");
                 } else {
-                    await signInAnonymously(auth);
+                    const userCredential = await signInAnonymously(auth);
                     isAuthenticated = true;
                     console.log("Admin Panel: Signed in anonymously.");
                 }
@@ -552,7 +552,7 @@
                     if (tokenResponse.error) {
                         console.error('GIS Token request failed:', tokenResponse.error, tokenResponse.error_description);
                         msg(`GIS Authorization failed: ${tokenResponse.error_description || tokenResponse.error}. Please ensure your OAuth consent screen is configured.`, 'danger');
-                        gapiClientInitialized = false; 
+                        gapiClientInitialized = false; // Reset flag on error
                         if (pendingAuthPromiseResolve) {
                             pendingAuthPromiseResolve(false); // Resolve with false on error
                             pendingAuthPromiseResolve = null;
@@ -561,7 +561,7 @@
                         // Set the received access token to gapi.client for subsequent API calls
                         gapi.client.setToken(tokenResponse);
                         console.log('GIS token obtained and gapi.client updated.');
-                        gapiClientInitialized = true; 
+                        gapiClientInitialized = true; // Set flag to true once token is set
                         if (pendingAuthPromiseResolve) {
                             pendingAuthPromiseResolve(true); // Resolve with true on success
                             pendingAuthPromiseResolve = null;
@@ -773,7 +773,7 @@
             showLoading('Adding video...');
             try {
                 const newRef = push(dbRef(db, `siteConfig/howToUseVideos`));
-                await set(newRef, { title, url, description });
+                await set(newRef, { title: title, url: url, description: description });
                 msg('Video added successfully!', 'success');
                 document.getElementById('howToUseVideoTitle').value = '';
                 document.getElementById('howToUseVideoUrl').value = '';
@@ -818,7 +818,7 @@
         // Load and display categories
         const loadCategories = () => {
             const catRef = dbRef(db, 'categories');
-            onValue(catRef, snapshot => {
+            onValue(catRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 renderCategories(data);
             }, (error) => {
@@ -1026,7 +1026,7 @@
             };
 
             const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
-            onValue(dbRef(db, `categories/${catId}/batches`), snapshot => {
+            onValue(dbRef(db, `categories/${catId}/batches`), (snapshot) => {
                 batchesListContainer.innerHTML = '';
                 const batchData = snapshot.val() || {};
                 if (Object.keys(batchData).length === 0) {
@@ -1525,7 +1525,7 @@
             const modulesListContainer = card.querySelector(`#modules-list-${bId}`);
             if (modulesListContainer) {
                 // Load modules for this batch (if it's a normal batch)
-                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), snapshot => {
+                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), (snapshot) => {
                     modulesListContainer.innerHTML = '';
                     const moduleData = snapshot.val() || {};
                     if (Object.keys(moduleData).length === 0) {
@@ -1630,7 +1630,7 @@
 
             // Load and display lectures for this module
             const lecturesListContainer = card.querySelector(`#lectures-list-${mId}`);
-            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), snapshot => {
+            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), (snapshot) => {
                 lecturesListContainer.innerHTML = '';
                 const lectureData = snapshot.val() || {};
                 if (Object.keys(lectureData).length === 0) {
@@ -1703,10 +1703,10 @@
             await authenticateFirebase();
             // Initialize GIS and gapi client for Google Drive API calls
             try {
+                // GIS will now prompt for sign-in/consent automatically when requestAccessToken is called
                 await initGapiClient(); 
             } catch (error) {
                 console.error("Initial GIS/gapi.client setup failed:", error);
-                // Error message is already shown by msg() in initGapiClient
             }
 
             loadSiteConfig();
@@ -1723,7 +1723,7 @@
             if (categoryName) {
                 try {
                     showLoading('Adding category...');
-                    const newRef = push(dbRef(db, 'categories'));
+                    const newRef = push(dbRef(db, `categories`));
                     await set(newRef, { name: categoryName, imageUrl: categoryImageUrl || null });
                     msg('Category added!', 'success');
                     document.getElementById('categoryName').value = '';
