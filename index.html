@@ -405,8 +405,8 @@
         // --- GOOGLE DRIVE API CONFIGURATION (FOR ADMIN PANEL) ---
         // IMPORTANT: Replace with your actual API Key and Client ID from Google Cloud Console
         // Ye keys aapke Google Cloud Console se aayenge, Drive API enable honi chahiye.
-        const GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY"; // Replace with your actual API Key
-        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"; // Replace with your actual Client ID
+        const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // Replace with your actual API Key
+        const GOOGLE_CLIENT_ID = "809797969413-rgov7qlrh9opkd98i3qd80hf7hjunll1.apps.googleusercontent.com"; // Replace with your actual Client ID
 
         let isAuthenticated = false;
         const authenticateFirebase = async () => {
@@ -517,54 +517,72 @@
             });
         };
 
-        // --- Google Drive API Integration Functions ---
-        let gapiClientInitialized = false;
+        // --- GOOGLE DRIVE API INTEGRATION FUNCTIONS ---
+        // This variable tracks if gapi.client is initialized successfully
+        let gapiClientInitialized = false; 
+        
+        // Function to initialize Google API client
         async function initGapiClient() {
-            if (gapiClientInitialized) return;
+            // If already initialized, return immediately
+            if (gapiClientInitialized) { 
+                console.log('gapi.client already initialized.');
+                return; 
+            }
             try {
-                // Ensure gapi client library is loaded
-                await new Promise(resolve => gapi.load('client:auth2', resolve));
+                // Load the Google API client library, including 'client' and 'auth2' modules
+                await new Promise(resolve => gapi.load('client:auth2', resolve)); 
+                
+                // Initialize the client with your API Key, Client ID, and required scopes
                 await gapi.client.init({
-                    apiKey: GOOGLE_API_KEY,
-                    clientId: GOOGLE_CLIENT_ID,
-                    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                    scope: 'https://www.googleapis.com/auth/drive.readonly' 
+                    apiKey: GOOGLE_API_KEY, // Your Google API Key
+                    clientId: GOOGLE_CLIENT_ID, // Your Google OAuth 2.0 Client ID
+                    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], // API discovery document for Drive API
+                    scope: 'https://www.googleapis.com/auth/drive.readonly' // Scope for read-only access to Google Drive
                 });
-                gapiClientInitialized = true;
-                console.log('gapi.client initialized for Drive API.');
+                
+                // Set flag to true if initialization is successful
+                gapiClientInitialized = true; 
+                console.log('gapi.client initialized successfully!');
             } catch (error) {
+                // Log and display detailed error message if initialization fails
                 console.error('Error initializing gapi.client for Drive API:', error);
-                msg(`Failed to initialize Google Drive API: ${error.message}. Please check your API Key, Client ID, and enabled Drive API.`, 'danger');
-                throw error;
+                // The 'details' property might contain more specific information from Google
+                const errorDetails = error.details || 'No specific details provided.';
+                msg(`Failed to initialize Google Drive API: ${errorDetails}. Please check your API Key, Client ID, and enabled Drive API.`, 'danger');
+                throw error; // Propagate the error so calling functions can catch it
             }
         }
 
+        // Function to fetch contents of a Google Drive folder
         async function fetchDriveFolderContents(folderId) {
             if (!folderId) return [];
             try {
+                // Ensure gapi client is initialized before making API calls
                 await initGapiClient();
 
                 let allFiles = [];
-                // Recursive helper function
+                // Recursive helper function to traverse folders
                 async function fetchFilesRecursive(currentFolderId) {
                     let currentPageToken = null;
                     do {
+                        // List files within the current folder
                         const response = await gapi.client.drive.files.list({
-                            'q': `'${currentFolderId}' in parents and trashed = false`,
-                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Added 'parents' field
-                            'pageSize': 100, 
-                            'pageToken': currentPageToken
+                            'q': `'${currentFolderId}' in parents and trashed = false`, // Query for files in the current folder, not trashed
+                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Request specific fields including parents
+                            'pageSize': 100, // Number of files per page
+                            'pageToken': currentPageToken // Token for pagination
                         });
                         const files = response.result.files;
                         if (files && files.length > 0) {
                             for (const file of files) {
                                 let type = 'file';
-                                let url = file.webViewLink;
+                                let url = file.webViewLink; // Default view link
 
+                                // Handle folders recursively
                                 if (file.mimeType === 'application/vnd.google-apps.folder') {
                                     type = 'folder';
                                     url = file.webViewLink;
-                                    allFiles.push({ // Push folder info
+                                    allFiles.push({ // Store folder info
                                         id: file.id,
                                         name: file.name,
                                         type: type,
@@ -572,13 +590,12 @@
                                         url: url,
                                         parents: file.parents || []
                                     });
-                                    // Recursively fetch contents of this sub-folder
-                                    await fetchFilesRecursive(file.id);
+                                    await fetchFilesRecursive(file.id); // Recurse into sub-folder
                                 } else {
+                                    // Determine file type and appropriate URL for embedding/downloading
                                     if (file.mimeType.startsWith('video/')) {
                                         type = 'video';
-                                        // Use the new embeddable format
-                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`;
+                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`; // Embeddable format for videos
                                     } else if (file.mimeType === 'application/pdf') {
                                         type = 'pdf';
                                         url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink;
@@ -589,10 +606,11 @@
                                         type = 'archive';
                                         url = file.webContentLink || file.webViewLink;
                                     } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
-                                        type = 'gem';
+                                        type = 'gem'; // Generic type for other files
                                         url = file.webContentLink || file.webViewLink;
                                     }
 
+                                    // Fallback URL if specific content/export links are missing
                                     if (!url) url = file.webViewLink;
 
                                     allFiles.push({
@@ -606,12 +624,13 @@
                                 }
                             }
                         }
-                        currentPageToken = response.result.nextPageToken;
-                    } while (currentPageToken);
+                        currentPageToken = response.result.nextPageToken; // Get next page token for pagination
+                    } while (currentPageToken); // Continue until no more pages
                 }
 
-                await fetchFilesRecursive(folderId);
+                await fetchFilesRecursive(folderId); // Start recursive fetch from the initial folderId
 
+                // Filter out duplicate files (can happen with recursive fetches)
                 const uniqueFiles = [];
                 const seenIds = new Set();
                 for (const file of allFiles) {
@@ -624,8 +643,10 @@
 
             } catch (error) {
                 console.error("Error fetching Google Drive folder contents:", error);
-                msg(`Error fetching Google Drive contents: ${error.message}. Check folder ID and sharing permissions.`, 'danger');
-                throw error;
+                // Display user-friendly error message, extracting details if available
+                const errorDetails = error.details || error.message || 'unknown error';
+                msg(`Error fetching Google Drive contents: ${errorDetails}. Check folder ID and sharing permissions.`, 'danger');
+                throw error; // Re-throw the error for higher-level error handling
             }
         }
 
@@ -1030,7 +1051,6 @@
                         if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
                         else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
                         else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
-                        else if (item.type === 'image') { itemIcon = 'fas fa-image'; itemColor = 'text-success'; }
                         else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
                         else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
 
@@ -1095,7 +1115,7 @@
                         <label class="form-label">Price:</label>
                         <div class="d-flex align-items-center">
                             <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="Original Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
-                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isContentDirectLink ? 'none' : 'block'};">
+                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
                             ${displayPrice} ${originalPriceStrikethrough}
                         </div>
                     </div>
@@ -1151,7 +1171,7 @@
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
                     msg('Original price updated', 'info');
-                } catch (error) { // Fixed: Changed 'Fcatch' to 'catch' here
+                } catch (error) { 
                     msg(`Error updating original price: ${error.message}`, 'danger');
                 }
             });
