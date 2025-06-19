@@ -7,11 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
+        body {
             padding: 10px;
-            background-color: #f0f2f5; 
-            font-family: 'Open Sans', sans-serif; 
-            color: #333; 
+            background-color: #f0f2f5;
+            font-family: 'Open Sans', sans-serif;
+            color: #333;
         }
         .container {
             background-color: #ffffff;
@@ -19,106 +19,106 @@
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        h2, h5 { 
+        h2, h5 {
             color: #007bff;
-            font-family: 'Montserrat', sans-serif; 
-            font-weight: 700; 
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
         }
-        .btn-primary { 
-            background-color: #007bff; 
+        .btn-primary {
+            background-color: #007bff;
             border-color: #007bff;
-            border-radius: 20px; 
-            padding: 8px 20px; 
+            border-radius: 20px;
+            padding: 8px 20px;
         }
-        .btn-primary:hover { 
-            background-color: #0056b3; 
+        .btn-primary:hover {
+            background-color: #0056b3;
             border-color: #0056b3;
         }
-        .btn-danger { 
-            background-color: #dc3545; 
-            border-color: #dc3545; 
-            border-radius: 15px; 
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            border-radius: 15px;
             padding: 5px 12px;
         }
-        .btn-danger:hover { 
-            background-color: #c82333; 
+        .btn-danger:hover {
+            background-color: #c82333;
             border-color: #bd2130;
         }
-        .btn-secondary { 
-            background-color: #6c757d; 
-            border-color: #6c757d; 
-            border-radius: 15px; 
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            border-radius: 15px;
             padding: 5px 12px;
         }
-        .btn-secondary:hover { 
-            background-color: #5a6268; 
+        .btn-secondary:hover {
+            background-color: #5a6268;
             border-color: #545b62;
         }
-        .btn-success { 
-            background-color: #28a745; 
-            border-color: #28a745; 
-            border-radius: 15px; 
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            border-radius: 15px;
             padding: 5px 12px;
         }
-        .btn-success:hover { 
-            background-color: #218838; 
+        .btn-success:hover {
+            background-color: #218838;
             border-color: #1e7e34;
         }
-        .btn-info { 
-            background-color: #17a2b8; 
-            border-color: #17a2b8; 
-            border-radius: 15px; 
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            border-radius: 15px;
             padding: 5px 12px;
         }
-        .btn-info:hover { 
-            background-color: #138496; 
+        .btn-info:hover {
+            background-color: #138496;
             border-color: #117a8b;
         }
-        .form-control { 
-            border-radius: 8px; 
-            border: 1px solid #ced4da; 
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
             padding: 10px;
         }
-        .form-label { 
-            font-weight: 600; 
+        .form-label {
+            font-weight: 600;
             margin-bottom: 5px;
         }
-        .alert { 
-            margin-top: 15px; 
+        .alert {
+            margin-top: 15px;
             border-radius: 8px;
         }
-        .card { 
-            border-radius: 10px; 
-            border: 1px solid #e9ecef; 
-            margin-bottom: 20px; 
+        .card {
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
             background-color: #fdfdfd;
         }
-        .card-body { 
+        .card-body {
             padding: 20px;
         }
-        .cat-name, .batch-title, .module-name { 
-            cursor: text; 
+        .cat-name, .batch-title, .module-name {
+            cursor: text;
             font-weight: 600;
-        } 
-        .batches-list, .modules-list, .lectures-list { 
-            margin-left: 20px; 
-            padding-left: 15px;
-            border-left: 3px solid #e9ecef; 
-            margin-top: 10px; 
         }
-        img.thumbnail-preview { 
-            border-radius: 8px; 
+        .batches-list, .modules-list, .lectures-list {
+            margin-left: 20px;
+            padding-left: 15px;
+            border-left: 3px solid #e9ecef;
+            margin-top: 10px;
+        }
+        img.thumbnail-preview {
+            border-radius: 8px;
             object-fit: cover;
-            width: 100px; 
-            height: 70px; 
-            margin-right: 15px; 
+            width: 100px;
+            height: 70px;
+            margin-right: 15px;
             border: 1px solid #ddd;
         }
-        input.form-control-sm { 
+        input.form-control-sm {
             max-width: 300px;
-        } 
-        textarea.form-control { 
-            min-height: 80px; 
+        }
+        textarea.form-control {
+            min-height: 80px;
             resize: vertical;
         }
 
@@ -232,6 +232,7 @@
             align-items: center;
             padding: 8px;
             border-bottom: 1px solid #eee;
+            color: #333;
         }
         .drive-content-list-item:last-child {
             border-bottom: none;
@@ -240,12 +241,22 @@
             margin-right: 10px;
             font-size: 1.2em;
             color: #666;
+            min-width: 20px; /* Ensure icon doesn't shrink */
+            text-align: center;
         }
         .drive-content-list-item span {
             flex-grow: 1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+        .drive-content-preview {
+            max-height: 200px; /* Limit height of preview */
+            overflow-y: auto; /* Make preview scrollable */
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -690,7 +701,10 @@
             card.querySelector('.add-batch').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const title = prompt('Enter Batch title:');
+                // Prompt user for batch type: Regular or Google Drive Content
+                const batchTypeChoice = await showConfirm('Is this a Google Drive Content batch? (Click OK for Drive, Cancel for Regular Modules/Lectures)');
+                
+                let title = prompt('Enter Batch title:');
                 if (!title) { msg('Batch title is required!', 'warning'); return; }
                 
                 const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
@@ -700,12 +714,11 @@
                 if (!description) { msg('Batch description is required!', 'warning'); return; }
                 if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
 
-                let isContentDirectLink = false; // Default to false
+                let isContentDirectLink = batchTypeChoice; // Set based on user's choice
                 let googleDriveFolderId = ''; // Initialize
                 let driveContent = null; // Initialize drive content
 
-                if (await showConfirm('Is this a Google Drive Content batch (no modules/lectures)?')) {
-                    isContentDirectLink = true;
+                if (isContentDirectLink) {
                     googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
                     if (!googleDriveFolderId) {
                         msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning'); 
@@ -721,13 +734,13 @@
                         }
                         driveContent = await fetchDriveFolderContents(googleDriveFolderId);
                         if (!driveContent) {
-                            msg('Failed to fetch Drive contents. Please re-enter folder ID or check permissions.', 'danger');
+                            msg('Failed to fetch Drive contents. Batch not added. Check folder ID or permissions.', 'danger');
                             return; // Stop if fetching failed
                         }
                         msg('Drive contents fetched!', 'success');
                     } catch (err) {
                         console.error('Error fetching Drive content on add:', err);
-                        msg(`Error fetching Drive content: ${err.message}. Check browser console.`, 'danger');
+                        msg(`Error fetching Drive content: ${err.message}. Batch not added. Check browser console.`, 'danger');
                         return; // Stop if there was an error
                     } finally {
                         hideLoading();
@@ -807,9 +820,9 @@
 
             if (batch.isContentDirectLink) { // If it's a direct content link batch
                 // Render a preview of Drive contents in the admin panel
-                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents fetched yet.</p>';
+                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>';
                 if (batch.driveContent && Object.keys(batch.driveContent).length > 0) {
-                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2">';
+                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
                     // Sort content for display: folders first, then files, alphabetically
                     const sortedContents = Object.values(batch.driveContent).sort((a, b) => {
                         if (a.type === 'folder' && b.type !== 'folder') return -1;
@@ -824,7 +837,7 @@
                         else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
                         else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
                         else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
-                        else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-purple'; } /* Assuming you have a 'text-purple' or similar class */
+                        else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-secondary'; } // No specific color for gem in bootstrap default
                         else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
 
                         driveContentPreviewHtml += `
@@ -915,13 +928,11 @@
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
             const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
             
-            // New elements for direct content link
             const batchIsContentDirectLinkSwitch = div.querySelector('.batch-is-content-direct-link');
-            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id'); // Query the new input
-            
-            // Containers for dynamic visibility toggling
-            const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`); // Correctly target by ID
-            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container'); // Query the new container
+            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id');
+            const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`);
+            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container');
+            const driveContentPreviewListContainer = div.querySelector(`#driveContentPreviewList-${batch.id}`); // Get the preview list container
 
 
             const { cat, bid } = batchTitleInput.dataset;
@@ -949,12 +960,11 @@
                     discountedPrice: newDiscountedPrice || null,
                     isFree: isFree
                 });
-                // Ensure the checkbox reflects the new free status
                 if (batchIsFreeSwitch) batchIsFreeSwitch.checked = isFree; 
                 msg('Batch discounted price updated', 'info');
             });
 
-            if (batchIsFreeSwitch) { // Check if element exists before adding listener
+            if (batchIsFreeSwitch) {
                 batchIsFreeSwitch.addEventListener('change', async e => {
                     const isFree = e.target.checked;
                     let updateData = { isFree: isFree };
@@ -987,8 +997,7 @@
                     if (googleDriveFolderIdContainer) googleDriveFolderIdContainer.style.display = isDirect ? 'block' : 'none';
                 };
 
-                // Initial setup based on current batch data
-                toggleBatchContentVisibility(batch.isContentDirectLink); // Use the passed batch object
+                toggleBatchContentVisibility(batch.isContentDirectLink); // Initial setup
 
                 batchIsContentDirectLinkSwitch.addEventListener('change', async (e) => {
                     const isDirect = e.target.checked;
@@ -998,32 +1007,32 @@
                         const folderId = prompt('Enter Google Drive Folder ID:');
                         if (!folderId) {
                             msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning');
-                            e.target.checked = false; // Revert checkbox state
+                            e.target.checked = false; 
                             updateData.isContentDirectLink = false;
+                            renderDriveContentPreview(null); // Clear preview
                         } else {
+                            if (googleDriveFolderIdInput) googleDriveFolderIdInput.value = folderId; // Update input field
                             updateData.googleDriveFolderId = folderId;
-                            updateData.isFree = true; // Google Drive content batches are free
-                            updateData.discountedPrice = 0; // Set discounted price to 0 if direct link
+                            updateData.isFree = true;
+                            updateData.discountedPrice = 0;
                             if (batchIsFreeSwitch) batchIsFreeSwitch.checked = true;
                             if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
 
                             // Fetch and save Drive contents to Firebase
                             showLoading('Fetching Drive contents & saving to Firebase...');
                             try {
-                                // Ensure gapi client is loaded before calling Drive API
                                 if (!gapi.client || !gapi.client.drive) {
                                     await new Promise(resolve => gapi.load('client', resolve));
-                                    await initGapiClient(); // Re-initialize gapi client
+                                    await initGapiClient();
                                 }
                                 
                                 const driveContents = await fetchDriveFolderContents(folderId);
                                 if (driveContents) {
-                                    // Save the driveContents directly under the batch in Firebase
-                                    updateData.driveContent = driveContents; // Save the fetched content
-                                    msg('Drive contents loaded and ready to save!', 'info');
+                                    updateData.driveContent = driveContents;
+                                    renderDriveContentPreview(currentDriveContents); // Render preview after fetching
                                 } else {
-                                    msg('Failed to fetch Drive contents.', 'danger');
-                                    e.target.checked = false; // Revert checkbox if fetch fails
+                                    msg('Failed to fetch Drive contents. Batch might not function correctly.', 'danger');
+                                    e.target.checked = false;
                                     updateData.isContentDirectLink = false;
                                 }
                             } catch (err) {
@@ -1036,8 +1045,9 @@
                             }
                         }
                     } else { // Switching back from Drive content batch
-                        updateData.googleDriveFolderId = null; // Clear folder ID
-                        updateData.driveContent = null; // Clear fetched content
+                        updateData.googleDriveFolderId = null;
+                        updateData.driveContent = null;
+                        renderDriveContentPreview(null);
                     }
                     
                     showLoading('Updating batch type...');
@@ -1059,22 +1069,25 @@
                     const newFolderId = e.target.value.trim();
                     if (!newFolderId) {
                         msg('Google Drive Folder ID cannot be empty!', 'warning');
+                        renderDriveContentPreview(null);
                         return;
                     }
                     showLoading('Updating Google Drive Folder ID & fetching contents...');
                     try {
-                        // Ensure gapi client is loaded before calling Drive API
                         if (!gapi.client || !gapi.client.drive) {
                             await new Promise(resolve => gapi.load('client', resolve));
-                            await initGapiClient(); // Re-initialize gapi client
+                            await initGapiClient();
                         }
 
                         const driveContents = await fetchDriveFolderContents(newFolderId);
                         let updateData = { googleDriveFolderId: newFolderId };
                         if (driveContents) {
-                            updateData.driveContent = driveContents; // Update fetched content
+                            updateData.driveContent = driveContents;
+                            renderDriveContentPreview(driveContents); // Render preview after successful fetch
                             msg('Google Drive Folder ID and contents updated!', 'info');
                         } else {
+                            updateData.driveContent = null; // Clear if fetching fails
+                            renderDriveContentPreview(null);
                             msg('Failed to fetch new Drive contents. Check ID.', 'danger');
                         }
                         await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
