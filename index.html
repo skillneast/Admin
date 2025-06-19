@@ -413,6 +413,8 @@
         let tokenClient; 
         // Flag to check if gapi.client is initialized
         let gapiClientInitialized = false;
+        // Promise resolver for pending authorization request
+        let pendingAuthPromiseResolve = null; 
 
         const authenticateFirebase = async () => {
             try {
@@ -530,36 +532,50 @@
             }
 
             // Load gapi client library if not already loaded by GIS
-            await new Promise(resolve => gapi.load('client', resolve));
+            // gapi.load('client') only loads client library; auth2 is handled by GIS
+            await new Promise(resolve => gapi.load('client', resolve)); 
 
-            // Initialize gapi.client
+            // Initialize gapi.client (this initializes the client, not authorizes it)
             await gapi.client.init({
-                apiKey: GOOGLE_API_KEY,
-                clientId: GOOGLE_CLIENT_ID, // This might still be used by gapi.client.init for some setup
+                apiKey: GOOGLE_API_KEY, 
+                clientId: GOOGLE_CLIENT_ID, // Use for gapi.client.init setup
                 discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
                 scope: 'https://www.googleapis.com/auth/drive.readonly'
             });
 
             // Initialize GIS Token Client
             tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: GOOGLE_CLIENT_ID, // Use your client ID here
+                client_id: GOOGLE_CLIENT_ID, // Use your client ID here for GIS
                 scope: 'https://www.googleapis.com/auth/drive.readonly',
                 callback: (tokenResponse) => {
+                    // This callback fires when requestAccessToken() completes
                     if (tokenResponse.error) {
                         console.error('GIS Token request failed:', tokenResponse.error, tokenResponse.error_description);
                         msg(`GIS Authorization failed: ${tokenResponse.error_description || tokenResponse.error}. Please ensure your OAuth consent screen is configured.`, 'danger');
-                        gapiClientInitialized = false; // Reset flag on error
+                        gapiClientInitialized = false; 
+                        if (pendingAuthPromiseResolve) {
+                            pendingAuthPromiseResolve(false); // Resolve with false on error
+                            pendingAuthPromiseResolve = null;
+                        }
                     } else {
-                        // Set the received access token to gapi.client
+                        // Set the received access token to gapi.client for subsequent API calls
                         gapi.client.setToken(tokenResponse);
                         console.log('GIS token obtained and gapi.client updated.');
-                        gapiClientInitialized = true; // Set flag to true once token is set
+                        gapiClientInitialized = true; 
+                        if (pendingAuthPromiseResolve) {
+                            pendingAuthPromiseResolve(true); // Resolve with true on success
+                            pendingAuthPromiseResolve = null;
+                        }
                     }
                 },
-                error_callback: (error) => {
+                error_callback: (error) => { // This callback is for errors during initTokenClient setup itself
                     console.error('GIS initTokenClient error_callback:', error);
                     msg(`GIS Token Client initialization error: ${error.type}. Check your Client ID and consent screen.`, 'danger');
                     gapiClientInitialized = false;
+                    if (pendingAuthPromiseResolve) {
+                        pendingAuthPromiseResolve(false); // Resolve with false on error
+                        pendingAuthPromiseResolve = null;
+                    }
                 }
             });
             console.log('GIS Token Client initialized.');
@@ -572,6 +588,7 @@
                 try {
                     await initGapiClient(); // Initialize them if not already
                 } catch (error) {
+                    console.error("Initialization failed prior to authorization:", error);
                     throw new Error('Google API Client initialization failed prior to authorization request.');
                 }
             }
@@ -579,14 +596,20 @@
             // Request a new access token if none is available or it's expired
             if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
                 console.log('Requesting new access token...');
-                // This call will trigger the callback defined in initTokenClient
+                
+                // Create a new Promise that will resolve when tokenClient.callback is called
+                const authPromise = new Promise(resolve => {
+                    pendingAuthPromiseResolve = resolve; // Store the resolve function globally
+                });
+
+                // This call will trigger the GIS consent pop-up if user is not already authorized
                 tokenClient.requestAccessToken(); 
                 
-                // We need to wait for the token to be set in the callback.
-                // This is a simplified wait. For production, a more robust promise-based
-                // mechanism should be used to wait for tokenClient.callback to complete.
-                // For now, a short delay might work for simple cases.
-                await new Promise(resolve => setTimeout(resolve, 1500)); // Wait for 1.5 seconds
+                // Wait for the authPromise to resolve (meaning tokenClient.callback has fired)
+                const success = await authPromise;
+                if (!success) {
+                    throw new Error('Failed to obtain Google access token. User might have denied consent.');
+                }
             }
         }
 
@@ -597,8 +620,9 @@
                 // Ensure authorization before fetching content
                 await ensureGoogleAuthorization();
 
+                // Double check if token is available after authorization
                 if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
-                    throw new Error('Google access token not available after authorization attempt.');
+                    throw new Error('Google access token not available after authorization attempt. (Pre-API call check)');
                 }
 
                 let allFiles = [];
@@ -608,21 +632,22 @@
                     do {
                         // List files within the current folder
                         const response = await gapi.client.drive.files.list({
-                            'q': `'${currentFolderId}' in parents and trashed = false`,
-                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)',
-                            'pageSize': 100,
-                            'pageToken': currentPageToken
+                            'q': `'${currentFolderId}' in parents and trashed = false`, // Query for files in the current folder, not trashed
+                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Request specific fields including parents
+                            'pageSize': 100, // Number of files per page
+                            'pageToken': currentPageToken // Token for pagination
                         });
                         const files = response.result.files;
                         if (files && files.length > 0) {
                             for (const file of files) {
                                 let type = 'file';
-                                let url = file.webViewLink;
+                                let url = file.webViewLink; // Default view link
 
+                                // Handle folders recursively
                                 if (file.mimeType === 'application/vnd.google-apps.folder') {
                                     type = 'folder';
                                     url = file.webViewLink;
-                                    allFiles.push({
+                                    allFiles.push({ // Store folder info
                                         id: file.id,
                                         name: file.name,
                                         type: type,
@@ -630,11 +655,12 @@
                                         url: url,
                                         parents: file.parents || []
                                     });
-                                    await fetchFilesRecursive(file.id);
+                                    await fetchFilesRecursive(file.id); // Recurse into sub-folder
                                 } else {
+                                    // Determine file type and appropriate URL for embedding/downloading
                                     if (file.mimeType.startsWith('video/')) {
                                         type = 'video';
-                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`;
+                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`; // Embeddable format for videos
                                     } else if (file.mimeType === 'application/pdf') {
                                         type = 'pdf';
                                         url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink;
@@ -645,10 +671,11 @@
                                         type = 'archive';
                                         url = file.webContentLink || file.webViewLink;
                                     } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
-                                        type = 'gem';
+                                        type = 'gem'; // Generic type for other files
                                         url = file.webContentLink || file.webViewLink;
                                     }
 
+                                    // Fallback URL if specific content/export links are missing
                                     if (!url) url = file.webViewLink;
 
                                     allFiles.push({
@@ -662,12 +689,13 @@
                                 }
                             }
                         }
-                        currentPageToken = response.result.nextPageToken;
-                    } while (currentPageToken);
+                        currentPageToken = response.result.nextPageToken; // Get next page token for pagination
+                    } while (currentPageToken); // Continue until no more pages
                 }
 
-                await fetchFilesRecursive(folderId);
+                await fetchFilesRecursive(folderId); // Start recursive fetch from the initial folderId
 
+                // Filter out duplicate files (can happen with recursive fetches)
                 const uniqueFiles = [];
                 const seenIds = new Set();
                 for (const file of allFiles) {
@@ -682,7 +710,7 @@
                 console.error("Error fetching Google Drive folder contents:", error);
                 const errorDetails = error.details || error.message || 'unknown error';
                 msg(`Error fetching Google Drive contents: ${errorDetails}. Check folder ID and sharing permissions.`, 'danger');
-                throw error;
+                throw error; // Re-throw the error for higher-level error handling
             }
         }
 
@@ -1141,7 +1169,7 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Thumbnail URL:</label>
-                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
+                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.}</p>'}
                         <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
                     </div>
                     <div class="mb-2">
