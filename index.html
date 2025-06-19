@@ -334,6 +334,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script> 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
@@ -353,6 +354,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+
+        // --- GOOGLE DRIVE API CONFIGURATION (FOR ADMIN PANEL) ---
+        // IMPORTANT: Replace with your actual API Key and Client ID from Google Cloud Console
+        const GOOGLE_API_KEY = "YOUR_GOOGLE_DRIVE_API_KEY"; // <-- Get this from Google Cloud Console -> APIs & Services -> Credentials -> API Key
+        const GOOGLE_CLIENT_ID = "809797969413-bs7amc6ch9d963ulk7ejpq8cqi5e3sq1.apps.googleusercontent.com"; // Your provided Client ID
 
         let isAuthenticated = false;
         const authenticateFirebase = async () => {
@@ -433,10 +439,12 @@
                 const config = snapshot.val() || {};
                 document.querySelectorAll('.site-config-input').forEach(input => {
                     const key = input.dataset.key;
+                    // Only update if the value exists in Firebase, otherwise keep placeholder
                     if (config.hasOwnProperty(key) && config[key] !== null) {
                         input.value = config[key];
                     } else {
-                        // input.value = ''; // Optionally clear if it was previously set and then removed from DB
+                        // Optionally clear if it was previously set and then removed from DB
+                        // input.value = ''; 
                     }
                 });
             }, (error) => {
@@ -673,21 +681,41 @@
                 if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
 
                 let isContentDirectLink = false; // Default to false
-                if (await showConfirm('Is this a direct content link batch (no modules/lectures)?')) {
+                let googleDriveFolderId = ''; // Initialize
+                let driveContent = null; // Initialize drive content
+
+                if (await showConfirm('Is this a Google Drive Content batch (no modules/lectures)?')) {
                     isContentDirectLink = true;
-                }
-                let contentDirectLink = '';
-                if (isContentDirectLink) {
-                    contentDirectLink = prompt('Enter Direct Content Link (Telegram/GDrive):');
-                    if (!contentDirectLink) {
-                        msg('Direct Content Link is required for this batch type!', 'warning'); 
-                        isContentDirectLink = false; // Revert if link is not provided
-                        return;
+                    googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
+                    if (!googleDriveFolderId) {
+                        msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning'); 
+                        return; // Stop if ID is not provided
+                    }
+
+                    showLoading('Fetching Drive contents...');
+                    try {
+                        // Ensure gapi client is loaded before calling Drive API
+                        if (!gapi.client || !gapi.client.drive) {
+                            await new Promise(resolve => gapi.load('client', resolve));
+                            await initGapiClient(); // Re-initialize gapi client
+                        }
+                        driveContent = await fetchDriveFolderContents(googleDriveFolderId);
+                        if (!driveContent) {
+                            msg('Failed to fetch Drive contents. Please re-enter folder ID or check permissions.', 'danger');
+                            return; // Stop if fetching failed
+                        }
+                        msg('Drive contents fetched!', 'success');
+                    } catch (err) {
+                        console.error('Error fetching Drive content on add:', err);
+                        msg(`Error fetching Drive content: ${err.message}. Check browser console.`, 'danger');
+                        return; // Stop if there was an error
+                    } finally {
+                        hideLoading();
                     }
                 }
 
-                let originalPrice = '';
-                let discountedPrice = '';
+                let originalPrice = null; // Default to null
+                let discountedPrice = null; // Default to null
                 let isFree = false;
 
                 if (!isContentDirectLink) { // Only ask for price if it's not a direct content link batch
@@ -697,6 +725,9 @@
                     originalPrice = originalPrice ? parseFloat(originalPrice) : null;
                     discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
                     isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
+                } else { // If it's a direct content link batch, it's always free
+                    isFree = true;
+                    discountedPrice = 0;
                 }
 
                 try {
@@ -710,8 +741,9 @@
                         discountedPrice: discountedPrice,
                         isFree: isFree,
                         isNew: true, // Assuming new batches are always 'new'
-                        isContentDirectLink: isContentDirectLink, // New field
-                        contentDirectLink: contentDirectLink // New field
+                        isContentDirectLink: isContentDirectLink, 
+                        googleDriveFolderId: isContentDirectLink ? googleDriveFolderId : null, // Only save if it's a Drive content batch
+                        driveContent: isContentDirectLink ? driveContent : null // Only save if it's a Drive content batch
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -747,35 +779,37 @@
                                  (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
             
-            // Determine visibility based on batch properties
-            const modulesSectionDisplay = (batch.isContentDirectLink === true) ? 'none' : 'block';
-            const directLinkSectionDisplay = (batch.isContentDirectLink === true) ? 'block' : 'none';
+            // Determine initial display state for sections based on batch properties
+            const normalContentSectionDisplay = (batch.isContentDirectLink === true) ? 'none' : 'block';
+            const googleDriveSectionDisplay = (batch.isContentDirectLink === true) ? 'block' : 'none';
 
-            let dynamicContentHtml = ''; // This will hold the HTML for module/telegram link OR direct content link
+            let dynamicContentHtml = ''; 
 
             if (batch.isContentDirectLink) { // If it's a direct content link batch
                 dynamicContentHtml = `
-                    <div class="mb-3 content-direct-link-container" style="display: ${directLinkSectionDisplay};">
-                        <label for="contentDirectLink-${bId}-input" class="form-label">Direct Content Link (Telegram/GDrive):</label>
-                        <input type="url" class="form-control form-control-sm content-direct-link" id="contentDirectLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.contentDirectLink || ''}" placeholder="e.g., https://t.me/your_batch_content">
+                    <div class="mb-3 google-drive-folder-id-container" style="display: ${googleDriveSectionDisplay};">
+                        <label for="googleDriveFolderId-${bId}-input" class="form-label">Google Drive Folder ID:</label>
+                        <input type="text" class="form-control form-control-sm google-drive-folder-id" id="googleDriveFolderId-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.googleDriveFolderId || ''}" placeholder="e.g., 1_abcdefg1234567890">
+                        <small class="form-text text-muted">Copy the folder ID from your Google Drive URL. Ex: drive.google.com/drive/folders/<span class="fw-bold">FOLDER_ID</span></small>
                     </div>
                 `;
-            } else { // It's a normal batch (free with modules OR paid with telegram link)
-                dynamicContentHtml = `
-                    <div id="normalContentSection-${bId}" style="display: ${modulesSectionDisplay};">
-                        ${batch.isFree ? `
-                            <h6 class="mb-2 text-muted">Modules:</h6>
-                            <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                            <div class="modules-list" id="modules-list-${bId}"></div>
-                        ` : `
-                            <div class="mb-3">
-                                <label for="telegramCourseLink-${bId}-input" class="form-label">Telegram Course Link:</label>
-                                <input type="url" class="form-control form-control-sm telegram-course-link" id="telegramCourseLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/course_link">
-                            </div>
-                        `}
-                    </div>
-                `;
-            }
+            } 
+            
+            // This section will contain either Modules or Telegram Link, and is hidden if it's a Drive content batch
+            dynamicContentHtml += `
+                <div id="normalContentSection-${bId}" style="display: ${normalContentSectionDisplay};">
+                    ${!batch.isContentDirectLink && batch.isFree ? `
+                        <h6 class="mb-2 text-muted">Modules:</h6>
+                        <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                        <div class="modules-list" id="modules-list-${bId}"></div>
+                    ` : !batch.isContentDirectLink && !batch.isFree ? `
+                        <div class="mb-3">
+                            <label for="telegramCourseLink-${bId}-input" class="form-label">Telegram Course Link:</label>
+                            <input type="url" class="form-control form-control-sm telegram-course-link" id="telegramCourseLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/course_link">
+                        </div>
+                    ` : ''}
+                </div>
+            `;
 
 
             div.innerHTML = `
@@ -809,7 +843,7 @@
                     </div>
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input batch-is-content-direct-link" type="checkbox" role="switch" id="isContentDirectLinkSwitch-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isContentDirectLink ? 'checked' : ''}>
-                        <label class="form-check-label" for="isContentDirectLinkSwitch-${bId}">Is Content Direct Link?</label>
+                        <label class="form-check-label" for="isContentDirectLinkSwitch-${bId}">Is Google Drive Content?</label>
                     </div>
                     
                     <div class="text-end fw-bold mb-3">
@@ -820,7 +854,6 @@
             return div;
         };
 
-        // Renamed from setupBatchEvents to setupBatchItemEvents for clarity
         const setupBatchItemEvents = (div, batch) => { // Accept batch object
             const batchTitleInput = div.querySelector('.batch-title');
             const batchDescriptionInput = div.querySelector('.batch-description');
@@ -829,13 +862,13 @@
             const batchIsFreeSwitch = div.querySelector('.batch-is-free');
             const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
             
-            // Elements for direct content link
+            // New elements for direct content link
             const batchIsContentDirectLinkSwitch = div.querySelector('.batch-is-content-direct-link');
-            const contentDirectLinkInput = div.querySelector('.content-direct-link'); 
+            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id'); // Query the new input
             
-            // Containers for dynamic visibility toggling (must be queried within 'div')
+            // Containers for dynamic visibility toggling
             const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`); // Correctly target by ID
-            const contentDirectLinkContainer = div.querySelector(`.content-direct-link-container`); // Generic class, as it's directly inside the batch item structure
+            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container'); // Query the new container
 
 
             const { cat, bid } = batchTitleInput.dataset;
@@ -898,7 +931,7 @@
             if (batchIsContentDirectLinkSwitch) {
                 const toggleBatchContentVisibility = (isDirect) => {
                     if (normalContentSection) normalContentSection.style.display = isDirect ? 'none' : 'block';
-                    if (contentDirectLinkContainer) contentDirectLinkContainer.style.display = isDirect ? 'block' : 'none';
+                    if (googleDriveFolderIdContainer) googleDriveFolderIdContainer.style.display = isDirect ? 'block' : 'none';
                 };
 
                 // Initial setup based on current batch data
@@ -908,15 +941,57 @@
                     const isDirect = e.target.checked;
                     let updateData = { isContentDirectLink: isDirect };
 
-                    if (!isDirect) {
-                        updateData.contentDirectLink = null; // Clear direct link if unchecked
+                    if (isDirect) {
+                        const folderId = prompt('Enter Google Drive Folder ID:');
+                        if (!folderId) {
+                            msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning');
+                            e.target.checked = false; // Revert checkbox state
+                            updateData.isContentDirectLink = false;
+                        } else {
+                            updateData.googleDriveFolderId = folderId;
+                            updateData.isFree = true; // Direct content batches are free
+                            updateData.discountedPrice = 0; // Set discounted price to 0 if direct link
+                            if (batchIsFreeSwitch) batchIsFreeSwitch.checked = true;
+                            if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
+
+                            // Fetch and save Drive contents to Firebase
+                            showLoading('Fetching Drive contents & saving to Firebase...');
+                            try {
+                                // Ensure gapi client is loaded before calling Drive API
+                                if (!gapi.client || !gapi.client.drive) {
+                                    await new Promise(resolve => gapi.load('client', resolve));
+                                    await initGapiClient(); // Re-initialize gapi client
+                                }
+                                
+                                const driveContents = await fetchDriveFolderContents(folderId);
+                                if (driveContents) {
+                                    // Save the driveContents directly under the batch in Firebase
+                                    updateData.driveContent = driveContents; // Save the fetched content
+                                    msg('Drive contents loaded and ready to save!', 'info');
+                                } else {
+                                    msg('Failed to fetch Drive contents.', 'danger');
+                                    e.target.checked = false; // Revert checkbox if fetch fails
+                                    updateData.isContentDirectLink = false;
+                                }
+                            } catch (err) {
+                                console.error('Error in Drive API call:', err);
+                                msg('Failed to load Drive contents from API. Check folder ID/permissions & browser console.', 'danger');
+                                e.target.checked = false;
+                                updateData.isContentDirectLink = false;
+                            } finally {
+                                hideLoading();
+                            }
+                        }
+                    } else { // Switching back from Drive content batch
+                        updateData.googleDriveFolderId = null; // Clear folder ID
+                        updateData.driveContent = null; // Clear fetched content
                     }
                     
                     showLoading('Updating batch type...');
                     try {
                         await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
-                        toggleBatchContentVisibility(isDirect); // Update UI visibility
-                        msg(`Batch type updated to ${isDirect ? 'Direct Content' : 'Modules/Lectures'}`, 'info');
+                        toggleBatchContentVisibility(updateData.isContentDirectLink); 
+                        msg(`Batch type updated to ${updateData.isContentDirectLink ? 'Google Drive Content' : 'Modules/Lectures'}`, 'info');
                     } catch (error) {
                         msg(`Error updating batch type: ${error.message}`, 'danger');
                     } finally {
@@ -925,16 +1000,34 @@
                 });
             }
 
-            // NEW: Event listener for direct content link input
-            if (contentDirectLinkInput) {
-                contentDirectLinkInput.addEventListener('change', async (e) => {
-                    const newLink = e.target.value.trim();
+            // NEW: Event listener for Google Drive Folder ID input
+            if (googleDriveFolderIdInput) {
+                googleDriveFolderIdInput.addEventListener('change', async (e) => {
+                    const newFolderId = e.target.value.trim();
+                    if (!newFolderId) {
+                        msg('Google Drive Folder ID cannot be empty!', 'warning');
+                        return;
+                    }
+                    showLoading('Updating Google Drive Folder ID & fetching contents...');
                     try {
-                        showLoading('Updating direct content link...');
-                        await update(dbRef(db, `categories/${cat}/batches/${bid}`), { contentDirectLink: newLink });
-                        msg('Direct content link updated!', 'info');
+                        // Ensure gapi client is loaded before calling Drive API
+                        if (!gapi.client || !gapi.client.drive) {
+                            await new Promise(resolve => gapi.load('client', resolve));
+                            await initGapiClient(); // Re-initialize gapi client
+                        }
+
+                        const driveContents = await fetchDriveFolderContents(newFolderId);
+                        let updateData = { googleDriveFolderId: newFolderId };
+                        if (driveContents) {
+                            updateData.driveContent = driveContents; // Update fetched content
+                            msg('Google Drive Folder ID and contents updated!', 'info');
+                        } else {
+                            msg('Failed to fetch new Drive contents. Check ID.', 'danger');
+                        }
+                        await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
                     } catch (error) {
-                        msg(`Error updating direct content link: ${error.message}`, 'danger');
+                        console.error('Error in Drive API call:', error);
+                        msg(`Error updating Google Drive Folder ID: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
                     }
@@ -942,7 +1035,7 @@
             }
 
             // Listener for Telegram Course Link (only if it exists for normal paid batches)
-            const telegramCourseLinkInput = div.querySelector('.telegram-course-link'); // Query here as it might not always exist
+            const telegramCourseLinkInput = div.querySelector('.telegram-course-link'); 
             if (telegramCourseLinkInput) {
                 telegramCourseLinkInput.addEventListener('change', async e => {
                     const newLink = e.target.value.trim();
@@ -1152,6 +1245,104 @@
                 }
             };
         };
+
+        // --- Google Drive API Specific Functions ---
+        // Load the Google API client library and authorize (if necessary)
+        async function initGapiClient() {
+            try {
+                await gapi.client.init({
+                    apiKey: GOOGLE_API_KEY,
+                    clientId: GOOGLE_CLIENT_ID, // This is for Picker API potentially, not needed for direct access if API key is enough
+                    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                    scope: 'https://www.googleapis.com/auth/drive.readonly', // Read-only access to Drive
+                });
+                console.log("gapi client initialized.");
+                // If using OAuth for full Drive access, you'd call gapi.client.token.getToken() here or gapi.auth2.getAuthInstance().signIn()
+            } catch (error) {
+                console.error("Error initializing gapi client:", error);
+                msg(`Error initializing Google API: ${error.message}. Check API Key and Client ID.`, 'danger');
+            }
+        }
+        
+        // This function fetches content from a given Google Drive folder ID
+        // It recursively fetches contents of sub-folders to get all files.
+        async function fetchDriveFolderContents(folderId) {
+            // Ensure gapi client is loaded
+            if (!gapi.client || !gapi.client.drive) {
+                // Attempt to load and init client if not already
+                try {
+                    await new Promise(resolve => gapi.load('client', resolve));
+                    await initGapiClient(); // Re-initialize gapi client
+                } catch (loadError) {
+                    msg('Failed to load Google API client for Drive. ' + loadError.message, 'danger');
+                    console.error('gapi load/init error:', loadError);
+                    return null;
+                }
+            }
+            
+            let allContents = {};
+            let pageToken = null;
+
+            try {
+                showLoading('Fetching Drive contents...');
+                do {
+                    const response = await gapi.client.drive.files.list({
+                        q: `'${folderId}' in parents and trashed = false`,
+                        fields: 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, iconLink)',
+                        pageToken: pageToken
+                    });
+
+                    for (const file of response.result.files) { // Use for...of for async operations if needed inside
+                        let fileType;
+                        if (file.mimeType.startsWith('video/')) {
+                            fileType = 'video';
+                        } else if (file.mimeType === 'application/pdf') {
+                            fileType = 'pdf';
+                        } else if (file.mimeType === 'application/zip' || file.mimeType === 'application/x-rar-compressed') {
+                            fileType = 'archive';
+                        } else if (file.mimeType === 'application/vnd.google-apps.folder') {
+                            fileType = 'folder';
+                            // Recursively fetch contents for sub-folders
+                            const subFolderContents = await fetchDriveFolderContents(file.id);
+                            if (subFolderContents) {
+                                // Merge sub-folder contents directly into allContents
+                                Object.assign(allContents, subFolderContents);
+                            }
+                        } else if (file.name.toLowerCase().endsWith('.gem')) { // Specific check for .gem
+                            fileType = 'gem';
+                        } else {
+                            fileType = 'other'; // For other unknown types
+                        }
+                        
+                        // Only add actual files to the list for now, folders are traversed
+                        if (file.mimeType !== 'application/vnd.google-apps.folder') {
+                            allContents[file.id] = {
+                                id: file.id,
+                                name: file.name,
+                                mimeType: file.mimeType,
+                                webContentLink: file.webContentLink || `https://drive.google.com/uc?id=${file.id}&export=download`, // Fallback for download
+                                webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`, // Fallback for view
+                                iconLink: file.iconLink,
+                                type: fileType
+                            };
+                        }
+                    }
+                    pageToken = response.result.nextPageToken;
+                } while (pageToken);
+                msg('Drive contents fetched!', 'success');
+                return allContents;
+
+            } catch (error) {
+                console.error('Error fetching Drive contents:', error);
+                msg(`Error fetching Drive contents: ${error.message}. Check folder ID and API Key/permissions.`, 'danger');
+                return null;
+            } finally {
+                hideLoading();
+            }
+        }
+        // Load the Google API client library on script load
+        gapi.load('client', initGapiClient);
+
 
         // Initial calls when the page loads
         document.addEventListener('DOMContentLoaded', async () => {
