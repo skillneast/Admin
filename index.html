@@ -259,6 +259,21 @@
             padding: 10px;
             border-radius: 5px;
         }
+        /* Style for editable span/input for drive content list */
+        .drive-content-name-editable,
+        .drive-content-url-editable {
+            display: inline-block;
+            border: 1px solid transparent;
+            padding: 2px 5px;
+            border-radius: 3px;
+            min-width: 50px; /* To make it visible even when empty */
+        }
+
+        .drive-content-name-editable:focus,
+        .drive-content-url-editable:focus {
+            border-color: #007bff;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -377,126 +392,127 @@
           authDomain: "adminneast.firebaseapp.com",
           databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
           projectId: "adminneast",
-          storageBucket: "adminneast.appspot.com",
+          storageBucket: "adminneast.appspot.com", 
           messagingSenderId: "883877553418",
           appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
           measurementId: "G-PCH99BDF1S"
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // 
-        const app = initializeApp(firebaseConfig); // 
-        const db = getDatabase(app); // 
-        const auth = getAuth(app); // 
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
         // --- GOOGLE DRIVE API CONFIGURATION (FOR ADMIN PANEL) ---
         // IMPORTANT: Replace with your actual API Key and Client ID from Google Cloud Console
-        const GOOGLE_API_KEY = "AIzaSyBlrXftrF9CQezB1risdPilBvmDpNUb_R8"; // 
-        const GOOGLE_CLIENT_ID = "809797969413-bs7amc6ch9d963ulk7ejpq8cqi5e3sq1.apps.googleusercontent.com"; // 
+        // Ye keys aapke Google Cloud Console se aayenge, Drive API enable honi chahiye.
+        const GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY"; // Replace with your actual API Key
+        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"; // Replace with your actual Client ID
 
-        let isAuthenticated = false; // 
-        const authenticateFirebase = async () => { // 
+        let isAuthenticated = false;
+        const authenticateFirebase = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token); // 
-                    isAuthenticated = true; // 
-                    console.log("Admin Panel: Signed in with custom token."); // 
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in with custom token.");
                 } else {
-                    await signInAnonymously(auth); // 
-                    isAuthenticated = true; // 
-                    console.log("Admin Panel: Signed in anonymously."); // 
+                    await signInAnonymously(auth);
+                    isAuthenticated = true;
+                    console.log("Admin Panel: Signed in anonymously.");
                 }
             } catch (error) {
-                console.error("Admin Panel Firebase authentication error:", error); // 
-                msg(`Authentication failed: ${error.message}. Please check Firebase config & authorized domains.`, 'danger'); // 
-                isAuthenticated = false; // 
+                console.error("Admin Panel Firebase authentication error:", error);
+                msg(`Authentication failed: ${error.message}. Please check Firebase config & authorized domains.`, 'danger');
+                isAuthenticated = false;
             }
         };
 
-        const msg = (text, type = 'success') => { // 
-            const alertsDiv = document.getElementById('alerts'); // 
-            const el = document.createElement('div'); // 
-            el.className = `alert alert-${type} fade show`; // 
-            el.textContent = text; // 
-            alertsDiv.append(el); // 
-            setTimeout(() => { // 
-                el.classList.remove('show'); // 
-                el.classList.add('fade'); // 
-                el.addEventListener('transitionend', () => el.remove(), { once: true }); // 
-            }, 3000); // 
+        const msg = (text, type = 'success') => {
+            const alertsDiv = document.getElementById('alerts');
+            const el = document.createElement('div');
+            el.className = `alert alert-${type} fade show`;
+            el.textContent = text;
+            alertsDiv.append(el);
+            setTimeout(() => {
+                el.classList.remove('show');
+                el.classList.add('fade');
+                el.addEventListener('transitionend', () => el.remove(), { once: true });
+            }, 3000);
         };
 
-        const showConfirm = (message) => { // 
+        const showConfirm = (message) => {
             return new Promise((resolve) => {
-                const modalOverlay = document.getElementById('customConfirmModal'); // 
-                const modalMessage = document.getElementById('customConfirmMessage'); // 
-                const okButton = document.getElementById('customConfirmOK'); // 
-                const cancelButton = document.getElementById('customConfirmCancel'); // 
+                const modalOverlay = document.getElementById('customConfirmModal');
+                const modalMessage = document.getElementById('customConfirmMessage');
+                const okButton = document.getElementById('customConfirmOK');
+                const cancelButton = document.getElementById('customConfirmCancel');
 
-                modalMessage.textContent = message; // 
-                modalOverlay.classList.add('active'); // 
+                modalMessage.textContent = message;
+                modalOverlay.classList.add('active');
 
                 const handleConfirm = () => {
-                    modalOverlay.classList.remove('active'); // 
-                    okButton.removeEventListener('click', handleConfirm); // 
-                    cancelButton.removeEventListener('click', handleCancel); // 
-                    resolve(true); // 
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(true);
                 };
 
                 const handleCancel = () => {
-                    modalOverlay.classList.remove('active'); // 
-                    okButton.removeEventListener('click', handleConfirm); // 
-                    cancelButton.removeEventListener('click', handleCancel); // 
-                    resolve(false); // 
+                    modalOverlay.classList.remove('active');
+                    okButton.removeEventListener('click', handleConfirm);
+                    cancelButton.removeEventListener('click', handleCancel);
+                    resolve(false);
                 };
 
-                okButton.addEventListener('click', handleConfirm); // 
-                cancelButton.addEventListener('click', handleCancel); // 
+                okButton.addEventListener('click', handleConfirm);
+                cancelButton.addEventListener('click', handleCancel);
             });
         };
 
-        const showLoading = (message = "Processing...") => { // 
-            const loadingOverlay = document.getElementById('loadingOverlay'); // 
-            loadingOverlay.querySelector('.loading-message').textContent = message; // 
-            loadingOverlay.classList.add('active'); // 
+        const showLoading = (message = "Processing...") => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.querySelector('.loading-message').textContent = message;
+            loadingOverlay.classList.add('active');
         };
 
-        const hideLoading = () => { // 
-            const loadingOverlay = document.getElementById('loadingOverlay'); // 
-            loadingOverlay.classList.remove('active'); // 
+        const hideLoading = () => {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('active');
         };
 
         // --- Site Configuration (Global Links & Assets) Management ---
-        const loadSiteConfig = () => { // 
-            const configRef = dbRef(db, 'siteConfig'); // 
-            onValue(configRef, (snapshot) => { // 
-                const config = snapshot.val() || {}; // 
-                document.querySelectorAll('.site-config-input').forEach(input => { // 
-                    const key = input.dataset.key; // 
-                    if (config.hasOwnProperty(key) && config[key] !== null) { // 
-                        input.value = config[key]; // 
+        const loadSiteConfig = () => {
+            const configRef = dbRef(db, 'siteConfig');
+            onValue(configRef, (snapshot) => {
+                const config = snapshot.val() || {};
+                document.querySelectorAll('.site-config-input').forEach(input => {
+                    const key = input.dataset.key;
+                    if (config.hasOwnProperty(key) && config[key] !== null) {
+                        input.value = config[key];
                     }
                 });
             }, (error) => {
-                msg(`Error loading site config: ${error.message}`, 'danger'); // 
+                msg(`Error loading site config: ${error.message}`, 'danger');
             });
         };
 
-        const setupSiteConfigEvents = () => { // 
-            document.querySelectorAll('.site-config-input').forEach(input => { // 
-                if (!input.dataset.listenerAdded) { // 
-                    input.addEventListener('change', async (e) => { // 
-                        const key = e.target.dataset.key; // 
-                        const value = e.target.value.trim(); // 
+        const setupSiteConfigEvents = () => {
+            document.querySelectorAll('.site-config-input').forEach(input => {
+                if (!input.dataset.listenerAdded) {
+                    input.addEventListener('change', async (e) => {
+                        const key = e.target.dataset.key;
+                        const value = e.target.value.trim();
                         try {
-                            showLoading('Updating site config...'); // 
-                            await update(dbRef(db, `siteConfig`), { [key]: value }); // 
-                            msg(`${key} updated!`, 'info'); // 
+                            showLoading('Updating site config...');
+                            await update(dbRef(db, `siteConfig`), { [key]: value });
+                            msg(`${key} updated!`, 'info');
                         } catch (error) {
-                            msg(`Error updating ${key}: ${error.message}`, 'danger'); // 
+                            msg(`Error updating ${key}: ${error.message}`, 'danger');
                         } finally {
-                            hideLoading(); // 
+                            hideLoading();
                         }
                     });
-                    input.dataset.listenerAdded = 'true'; // 
+                    input.dataset.listenerAdded = 'true';
                 }
             });
         };
@@ -507,6 +523,9 @@
         async function initGapiClient() {
             if (gapiClientInitialized) return;
             try {
+                // Ensure gapi client library is loaded
+                await new Promise(resolve => gapi.load('client:auth2', resolve));
+                
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
                     clientId: GOOGLE_CLIENT_ID,
@@ -517,7 +536,8 @@
                 console.log('gapi.client initialized for Drive API.');
             } catch (error) {
                 console.error('Error initializing gapi.client for Drive API:', error);
-                msg(`Failed to initialize Google Drive API: ${error.message}`, 'danger');
+                msg(`Failed to initialize Google Drive API: ${error.message}. Please check your API Key, Client ID, and enabled Drive API.`, 'danger');
+                throw error; // Propagate the error so calling functions can catch it
             }
         }
 
@@ -525,8 +545,7 @@
             if (!folderId) return [];
 
             try {
-                await new Promise(resolve => gapi.load('client:auth2', resolve));
-                await initGapiClient();
+                await initGapiClient(); // Ensure gapi client is initialized
 
                 let allFiles = [];
                 let pageToken = null;
@@ -542,11 +561,11 @@
                     if (files && files.length > 0) {
                         for (const file of files) {
                             let type = 'file';
-                            let url = file.webViewLink; 
+                            let url = file.webViewLink; // Default view link
 
                             if (file.mimeType === 'application/vnd.google-apps.folder') {
                                 type = 'folder';
-                                // For simplicity, we just list folders, not recurse into them automatically on fetch
+                                // For folders, we'll just store their ID and name to represent them as modules
                                 url = file.webViewLink; // Link to view folder in Drive
                             } else if (file.mimeType.startsWith('video/')) {
                                 type = 'video';
@@ -591,21 +610,21 @@
 
 
         // --- How to Use App Videos Management ---
-        const loadHowToUseVideos = () => { // 
-            const videosRef = dbRef(db, 'siteConfig/howToUseVideos'); // 
-            onValue(videosRef, (snapshot) => { // 
-                const videos = snapshot.val() || {}; // 
-                const listContainer = document.getElementById('howToUseVideosList'); // 
-                listContainer.innerHTML = ''; // 
+        const loadHowToUseVideos = () => {
+            const videosRef = dbRef(db, 'siteConfig/howToUseVideos');
+            onValue(videosRef, (snapshot) => {
+                const videos = snapshot.val() || {};
+                const listContainer = document.getElementById('howToUseVideosList');
+                listContainer.innerHTML = '';
 
-                if (Object.keys(videos).length === 0) { // 
-                    listContainer.innerHTML = '<p class="text-muted fst-italic">No videos added yet.</p>'; // 
+                if (Object.keys(videos).length === 0) {
+                    listContainer.innerHTML = '<p class="text-muted fst-italic">No videos added yet.</p>';
                     return;
                 }
 
-                Object.entries(videos).forEach(([videoId, video]) => { // 
-                    const videoItem = document.createElement('div'); // 
-                    videoItem.className = 'how-to-use-video-item'; // 
+                Object.entries(videos).forEach(([videoId, video]) => {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'how-to-use-video-item';
                     videoItem.innerHTML = `
                         <div>
                             <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
@@ -616,102 +635,102 @@
                             <button class="btn btn-sm btn-info edit-how-to-use-video" data-id="${videoId}">Edit URL</button>
                             <button class="btn btn-sm btn-danger delete-how-to-use-video" data-id="${videoId}">Delete</button>
                         </div>
-                    `; // 
-                    listContainer.appendChild(videoItem); // 
+                    `;
+                    listContainer.appendChild(videoItem);
 
-                    videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent)); // 
-                    videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent)); // 
+                    videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
+                    videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
                     
-                    videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => { // 
-                        const newUrl = prompt('Enter new video URL:', video.url); // 
-                        if (newUrl !== null) { // Allow empty string to clear URL
-                             updateHowToUseVideo(videoId, 'url', newUrl.trim()); // 
+                    videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
+                        const newUrl = prompt('Enter new video URL:', video.url);
+                        if (newUrl !== null) { 
+                             updateHowToUseVideo(videoId, 'url', newUrl.trim());
                         }
                     });
-                    videoItem.querySelector('.delete-how-to-use-video').addEventListener('click', () => deleteHowToUseVideo(videoId)); // 
+                    videoItem.querySelector('.delete-how-to-use-video').addEventListener('click', () => deleteHowToUseVideo(videoId));
                 });
             }, (error) => {
-                msg(`Error loading how-to-use videos: ${error.message}`, 'danger'); // 
+                msg(`Error loading how-to-use videos: ${error.message}`, 'danger');
             });
         };
 
-        const addHowToUseVideo = async () => { // 
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } // 
-            const title = document.getElementById('howToUseVideoTitle').value.trim(); // 
-            const url = document.getElementById('howToUseVideoUrl').value.trim(); // 
-            const description = document.getElementById('howToUseVideoDescription').value.trim(); // 
+        const addHowToUseVideo = async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const title = document.getElementById('howToUseVideoTitle').value.trim();
+            const url = document.getElementById('howToUseVideoUrl').value.trim();
+            const description = document.getElementById('howToUseVideoDescription').value.trim();
 
-            if (!title || !url) { // 
-                msg('Video title and URL are required!', 'warning'); // 
+            if (!title || !url) {
+                msg('Video title and URL are required!', 'warning');
                 return;
             }
 
-            showLoading('Adding video...'); // 
+            showLoading('Adding video...');
             try {
-                const newRef = push(dbRef(db, `siteConfig/howToUseVideos`)); // 
-                await set(newRef, { title, url, description }); // 
-                msg('Video added successfully!', 'success'); // 
-                document.getElementById('howToUseVideoTitle').value = ''; // 
-                document.getElementById('howToUseVideoUrl').value = ''; // 
-                document.getElementById('howToUseVideoDescription').value = ''; // 
+                const newRef = push(dbRef(db, `siteConfig/howToUseVideos`));
+                await set(newRef, { title, url, description });
+                msg('Video added successfully!', 'success');
+                document.getElementById('howToUseVideoTitle').value = '';
+                document.getElementById('howToUseVideoUrl').value = '';
+                document.getElementById('howToUseVideoDescription').value = '';
             } catch (error) {
-                msg(`Error adding video: ${error.message}`, 'danger'); // 
+                msg(`Error adding video: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); // 
+                hideLoading();
             }
         };
 
-        const updateHowToUseVideo = async (videoId, field, value) => { // 
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } // 
-            showLoading('Updating video...'); // 
+        const updateHowToUseVideo = async (videoId, field, value) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            showLoading('Updating video...');
             try {
-                await update(dbRef(db, `siteConfig/howToUseVideos/${videoId}`), { [field]: value }); // 
-                msg('Video updated!', 'info'); // 
+                await update(dbRef(db, `siteConfig/howToUseVideos/${videoId}`), { [field]: value });
+                msg('Video updated!', 'info');
             } catch (error) {
-                msg(`Error updating video: ${error.message}`, 'danger'); // 
+                msg(`Error updating video: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); // 
+                hideLoading();
             }
         };
 
-        const deleteHowToUseVideo = async (videoId) => { // 
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } // 
-            const confirm = await showConfirm('Are you sure you want to delete this video?'); // 
-            if (confirm) { // 
-                showLoading('Deleting video...'); // 
+        const deleteHowToUseVideo = async (videoId) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const confirm = await showConfirm('Are you sure you want to delete this video?');
+            if (confirm) {
+                showLoading('Deleting video...');
                 try {
-                    await remove(dbRef(db, `siteConfig/howToUseVideos/${videoId}`)); // 
-                    msg('Video deleted!', 'danger'); // 
+                    await remove(dbRef(db, `siteConfig/howToUseVideos/${videoId}`));
+                    msg('Video deleted!', 'danger');
                 } catch (error) {
-                    msg(`Error deleting video: ${error.message}`, 'danger'); // 
+                    msg(`Error deleting video: ${error.message}`, 'danger');
                 } finally {
-                    hideLoading(); // 
+                    hideLoading();
                 }
             }
         };
-        document.getElementById('addHowToUseVideo').addEventListener('click', addHowToUseVideo); // 
+        document.getElementById('addHowToUseVideo').addEventListener('click', addHowToUseVideo);
 
         // Load and display categories
-        const loadCategories = () => { // 
-            const catRef = dbRef(db, 'categories'); // 
-            onValue(catRef, snapshot => { // 
-                const data = snapshot.val() || {}; // 
-                renderCategories(data); // 
+        const loadCategories = () => {
+            const catRef = dbRef(db, 'categories');
+            onValue(catRef, snapshot => {
+                const data = snapshot.val() || {};
+                renderCategories(data);
             }, (error) => {
-                msg(`Error loading categories: ${error.message}`, 'danger'); // 
+                msg(`Error loading categories: ${error.message}`, 'danger');
             });
         };
 
-        const renderCategories = (cats) => { // 
-            const container = document.getElementById('categoriesList'); // 
-            container.innerHTML = ''; // 
-            if (Object.keys(cats).length === 0) { // 
-                container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>'; // 
+        const renderCategories = (cats) => {
+            const container = document.getElementById('categoriesList');
+            container.innerHTML = '';
+            if (Object.keys(cats).length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No categories added yet. Start by creating one above!</p>';
                 return;
             }
-            Object.entries(cats).forEach(([catId, cat]) => { // 
-                const card = document.createElement('div'); // 
-                card.className = "card mb-3"; // 
+            Object.entries(cats).forEach(([catId, cat]) => {
+                const card = document.createElement('div');
+                card.className = "card mb-3";
                 card.innerHTML = `
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -729,191 +748,252 @@
                             <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
                             <div class="batches-list" id="batches-list-${catId}"></div>
                         </div>
-                    </div>`; // 
-                setupCategoryEvents(card, catId, cat.imageUrl); // 
-                container.append(card); // 
+                    </div>`;
+                setupCategoryEvents(card, catId, cat.imageUrl);
+                container.append(card);
             });
         };
 
-        const setupCategoryEvents = (card, catId, currentImageUrl) => { // 
-            const nameEl = card.querySelector('.cat-name'); // 
-            nameEl.addEventListener('blur', async () => { // 
-                const newName = nameEl.textContent.trim(); // 
-                if (newName && newName !== nameEl.dataset.originalName) { // 
+        const setupCategoryEvents = (card, catId, currentImageUrl) => {
+            const nameEl = card.querySelector('.cat-name');
+            nameEl.addEventListener('blur', async () => {
+                const newName = nameEl.textContent.trim();
+                if (newName && newName !== nameEl.dataset.originalName) {
                     try {
-                        await update(dbRef(db, `categories/${catId}`), { name: newName }); // 
-                        msg('Category name updated', 'info'); // 
+                        await update(dbRef(db, `categories/${catId}`), { name: newName });
+                        msg('Category name updated', 'info');
                     } catch (error) {
-                        msg(`Error updating category name: ${error.message}`, 'danger'); // 
+                        msg(`Error updating category name: ${error.message}`, 'danger');
                     }
                 }
-                nameEl.dataset.originalName = newName; // 
+                nameEl.dataset.originalName = newName;
             });
 
-            const imageUrlInput = card.querySelector('.category-image-url'); // 
-            imageUrlInput.addEventListener('change', async (e) => { // 
-                const newImageUrl = e.target.value.trim(); // 
+            const imageUrlInput = card.querySelector('.category-image-url');
+            imageUrlInput.addEventListener('change', async (e) => {
+                const newImageUrl = e.target.value.trim();
                 try {
-                    await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl }); // 
-                    msg('Category image URL updated successfully!', 'success'); // 
+                    await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl });
+                    msg('Category image URL updated successfully!', 'success');
                 } catch (error) {
-                    msg(`Error updating category image URL: ${error.message}`, 'danger'); // 
+                    msg(`Error updating category image URL: ${error.message}`, 'danger');
                 }
             });
-            card.querySelector('.delete-cat').addEventListener('click', async (e) => { // 
-                const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?'); // 
-                if (confirmDelete) { // 
+            card.querySelector('.delete-cat').addEventListener('click', async (e) => {
+                const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
+                if (confirmDelete) {
                     try {
-                        showLoading('Deleting category and content...'); // 
-                        await remove(dbRef(db, `categories/${catId}`)); // 
-                        msg('Category and its contents deleted!', 'danger'); // 
+                        showLoading('Deleting category and content...');
+                        await remove(dbRef(db, `categories/${catId}`));
+                        msg('Category and its contents deleted!', 'danger');
                     } catch (error) {
-                        msg(`Error deleting category: ${error.message}`, 'danger'); // 
+                        msg(`Error deleting category: ${error.message}`, 'danger');
                     } finally {
-                        hideLoading(); // 
+                        hideLoading();
                     }
                 }
             });
 
-            card.querySelector('.add-batch').onclick = async () => { // 
-                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } // 
+            card.querySelector('.add-batch').onclick = async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const batchTypeChoice = await showConfirm('Is this a Google Drive Content batch? (Click OK for Drive, Cancel for Regular Modules/Lectures)'); // 
-                let title = prompt('Enter Batch title:'); // 
-                if (!title) { msg('Batch title is required!', 'warning'); return; } // 
+                const batchTypeChoice = await showConfirm('Is this a Google Drive Content batch? (OK for Drive, Cancel for Regular Modules/Lectures)');
+                let title = prompt('Enter Batch title:');
+                if (!title) { msg('Batch title is required!', 'warning'); return; }
                 
-                const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):'); // 
-                if (!thumbnailUrl) { msg('Thumbnail URL is required!', 'warning'); return; } // 
+                const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
+                if (!thumbnailUrl) { msg('Thumbnail URL is required!', 'warning'); return; }
 
-                const description = prompt('Enter Batch description (max 100 words):'); // 
-                if (!description) { msg('Batch description is required!', 'warning'); return; } // 
-                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; } // 
+                const description = prompt('Enter Batch description (max 100 words):');
+                if (!description) { msg('Batch description is required!', 'warning'); return; }
+                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
 
-                let isContentDirectLink = batchTypeChoice; // 
-                let googleDriveFolderId = ''; // 
-                let driveContent = null; // 
+                let isContentDirectLink = batchTypeChoice;
+                let googleDriveFolderId = null;
+                let driveContent = null;
+                let modules = null; // Initialize modules to null
 
-                if (isContentDirectLink) { // 
-                    googleDriveFolderId = prompt('Enter Google Drive Folder ID:'); // 
-                    if (!googleDriveFolderId) { // 
-                        msg('Google Drive Folder ID is required for this batch type! Batch not added.', 'warning'); // 
+                if (isContentDirectLink) {
+                    googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
+                    if (!googleDriveFolderId) {
+                        msg('Google Drive Folder ID is required for this batch type! Batch not added.', 'warning');
                         return; 
                     }
 
-                    showLoading('Fetching Drive contents...'); // 
+                    showLoading('Fetching Drive contents...');
                     try {
-                        if (!gapiClientInitialized) { // 
-                            await new Promise(resolve => gapi.load('client:auth2', resolve)); // 
-                            await initGapiClient(); // 
-                        }
-                        driveContent = await fetchDriveFolderContents(googleDriveFolderId); // 
-                        if (!driveContent) { // 
-                            msg('Failed to fetch Drive contents. Batch not added. Check folder ID or permissions.', 'danger'); // 
+                        driveContent = await fetchDriveFolderContents(googleDriveFolderId);
+                        if (!driveContent || driveContent.length === 0) {
+                            msg('Failed to fetch Drive contents or folder is empty. Batch not added. Check folder ID or permissions.', 'danger');
                             return; 
                         }
-                        msg('Drive contents fetched!', 'success'); // 
+
+                        // NEW LOGIC: Check for sub-folders to create modules or a single 'Access Here' module
+                        const foldersInDrive = driveContent.filter(item => item.type === 'folder');
+                        
+                        if (foldersInDrive.length > 0) {
+                            // If there are sub-folders, create modules for each
+                            modules = {};
+                            foldersInDrive.forEach(folder => {
+                                // Assign a unique ID for the module
+                                const moduleId = push(dbRef(db, 'dummy')).key; // Generate a unique key
+                                modules[moduleId] = {
+                                    name: folder.name,
+                                    driveId: folder.id, // Store the Drive ID of the sub-folder
+                                    driveContents: driveContent.filter(item => item.parents && item.parents.includes(folder.id)) // This needs recursive fetch in fetchDriveFolderContents or a flat structure with parent IDs
+                                    // Simpler: currently fetchDriveFolderContents only gets direct children.
+                                    // If you want nested modules, fetchDriveFolderContents needs to be recursive and store parent IDs.
+                                    // For now, let's assume direct children of the main folder for 'modules' if they are folders.
+                                    // Or, more robustly, fetch contents for each sub-folder directly here if deep nesting is needed.
+                                    // For this iteration, if a top-level item is a folder, its name becomes a module.
+                                    // Its content is NOT automatically fetched into 'lectures' here.
+                                    // The website would need to know to fetch the sub-folder's content when that module is clicked.
+                                    // This requires a new design for drive-based modules, let's simplify for now:
+                                    // If a main Drive folder has sub-folders, each sub-folder name becomes a module.
+                                    // Clicking THAT module would then show its contents (via a new website function like showDriveFolderContentAsLessons).
+                                };
+                            });
+                            // For simplicity, we won't automatically fetch deep nested content into firebase 'modules' right away.
+                            // The 'modules' will just be pointers to Drive folders.
+                            driveContent = null; // Clear main driveContent if we are using modules
+                        } else {
+                            // If no sub-folders, create a single 'Access Here' module
+                            modules = {};
+                            const moduleId = push(dbRef(db, 'dummy')).key; // Generate a unique key
+                            modules[moduleId] = {
+                                name: `${title} Content`, // Module name same as batch title + " Content"
+                                isAutoGenerated: true,
+                                driveContents: driveContent // Store all fetched drive content here for this single module
+                            };
+                            driveContent = null; // Clear main driveContent if moved to module
+                        }
+
+                        msg('Drive contents fetched and structured!', 'success');
                     } catch (err) {
-                        console.error('Error fetching Drive content on add:', err); // 
-                        msg(`Error fetching Drive content: ${err.message}. Batch not added. Check browser console.`, 'danger'); // 
+                        console.error('Error fetching Drive content on add:', err);
+                        msg(`Error fetching Drive content: ${err.message}. Batch not added. Check browser console.`, 'danger');
                         return; 
                     } finally {
-                        hideLoading(); // 
+                        hideLoading();
                     }
                 }
 
-                let originalPrice = null; // 
-                let discountedPrice = null; // 
-                let isFree = false; // 
+                let originalPrice = null;
+                let discountedPrice = null;
+                let isFree = false;
 
-                if (!isContentDirectLink) { // 
-                    originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):'); // 
-                    discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):'); // 
+                if (!isContentDirectLink) { 
+                    originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
+                    discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
                     
-                    originalPrice = originalPrice ? parseFloat(originalPrice) : null; // 
-                    discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null; // 
-                    isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null); // 
+                    originalPrice = originalPrice ? parseFloat(originalPrice) : null;
+                    discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
+                    isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
                 } else { 
-                    isFree = true; // 
-                    discountedPrice = 0; // 
+                    isFree = true; 
+                    discountedPrice = 0; 
                 }
 
                 try {
-                    showLoading('Adding batch...'); // 
-                    const newRef = push(dbRef(db, `categories/${catId}/batches`)); // 
+                    showLoading('Adding batch...');
+                    const newRef = push(dbRef(db, `categories/${catId}/batches`));
                     await set(newRef, { 
                         title, 
                         thumbnail: thumbnailUrl, 
                         description,
-                        originalPrice: originalPrice, // 
-                        discountedPrice: discountedPrice, // 
-                        isFree: isFree, // 
+                        originalPrice: originalPrice, 
+                        discountedPrice: discountedPrice, 
+                        isFree: isFree, 
                         isNew: true, 
-                        isContentDirectLink: isContentDirectLink, // 
-                        googleDriveFolderId: isContentDirectLink ? googleDriveFolderId : null, // 
-                        driveContent: isContentDirectLink ? driveContent : null // 
+                        isContentDirectLink: isContentDirectLink, 
+                        googleDriveFolderId: isContentDirectLink ? googleDriveFolderId : null, 
+                        // driveContent is now only used if there are NO sub-folders and no modules are created
+                        // If modules are created, driveContents will be inside the module.
+                        driveContent: driveContent, // This will be null if modules were generated
+                        modules: modules // Pass the generated modules here
                     });
-                    msg('Batch added successfully!', 'success'); // 
+                    msg('Batch added successfully!', 'success');
                 } catch (error) {
-                    msg(`Error adding batch: ${error.message}`, 'danger'); // 
+                    msg(`Error adding batch: ${error.message}`, 'danger');
                 } finally {
-                    hideLoading(); // 
+                    hideLoading();
                 }
             };
 
-            const batchesListContainer = card.querySelector(`#batches-list-${catId}`); // 
-            onValue(dbRef(db, `categories/${catId}/batches`), snapshot => { // 
-                batchesListContainer.innerHTML = ''; // 
-                const batchData = snapshot.val() || {}; // 
-                if (Object.keys(batchData).length === 0) { // 
-                    batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>'; // 
+            const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
+            onValue(dbRef(db, `categories/${catId}/batches`), snapshot => {
+                batchesListContainer.innerHTML = '';
+                const batchData = snapshot.val() || {};
+                if (Object.keys(batchData).length === 0) {
+                    batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
                 }
-                Object.entries(batchData).forEach(([bId, batch]) => { // 
-                    const item = createBatchItem(catId, bId, batch); // 
-                    batchesListContainer.append(item); // 
+                Object.entries(batchData).forEach(([bId, batch]) => {
+                    const item = createBatchItem(catId, bId, batch);
+                    batchesListContainer.append(item);
                 });
             }, (error) => {
-                msg(`Error loading batches: ${error.message}`, 'danger'); // 
+                msg(`Error loading batches: ${error.message}`, 'danger');
             });
         };
 
-        const createBatchItem = (catId, bId, batch) => { // 
-            const div = document.createElement('div'); // 
-            div.className = 'card mb-2 bg-light'; // 
+        const createBatchItem = (catId, bId, batch) => {
+            const div = document.createElement('div');
+            div.className = 'card mb-2 bg-light';
             
             const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ?
-                                 '<span class="fw-bold text-success">FREE</span>' : // 
-                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A')); // 
-            const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : ''; // 
+                                 '<span class="fw-bold text-success">FREE</span>' :
+                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
+            const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
             
-            const normalContentSectionDisplay = (batch.isContentDirectLink === true) ? 'none' : 'block'; // 
-            const googleDriveSectionDisplay = (batch.isContentDirectLink === true) ? 'block' : 'none'; // 
+            // Determine initial display state for sections based on batch properties
+            const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
+            const googleDriveSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
 
-            let dynamicContentHtml = ''; // 
-            if (batch.isContentDirectLink) { // 
-                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>'; // 
-                if (batch.driveContent && Object.keys(batch.driveContent).length > 0) { // 
-                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">'; // 
-                    const sortedContents = Object.values(batch.driveContent).sort((a, b) => { // 
-                        if (a.type === 'folder' && b.type !== 'folder') return -1; // 
-                        if (a.type !== 'folder' && b.type === 'folder') return 1; // 
-                        return (a.name || '').localeCompare(b.name || ''); // 
+            let dynamicContentHtml = '';
+            if (batch.isContentDirectLink) {
+                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>';
+                
+                // Prioritize displaying driveContents from the first auto-generated module if available
+                let driveContentToPreview = [];
+                if (batch.modules && Object.keys(batch.modules).length > 0) {
+                    const firstModuleId = Object.keys(batch.modules)[0];
+                    if (batch.modules[firstModuleId].driveContents) {
+                        driveContentToPreview = batch.modules[firstModuleId].driveContents;
+                    }
+                } else if (batch.driveContent) { // Fallback to batch.driveContent if no modules were auto-generated (e.g., old batch format)
+                    driveContentToPreview = batch.driveContent;
+                }
+
+                if (driveContentToPreview && driveContentToPreview.length > 0) {
+                    const driveContentArray = Array.isArray(driveContentToPreview) 
+                                              ? driveContentToPreview 
+                                              : Object.values(driveContentToPreview); // Ensure array
+
+                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
+                    const sortedContents = driveContentArray.sort((a, b) => {
+                        if (a.type === 'folder' && b.type !== 'folder') return -1;
+                        if (a.type !== 'folder' && b.type === 'folder') return 1;
+                        return (a.name || '').localeCompare(b.name || '');
                     });
-                    sortedContents.forEach(item => { // 
-                        let itemIcon = ''; // 
-                        let itemColor = ''; // 
-                        if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; } // 
-                        else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; } // 
-                        else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; } // 
-                        else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; } // 
-                        else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-secondary'; } // 
-                        else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; } // 
+                    sortedContents.forEach((item, index) => {
+                        let itemIcon = '';
+                        let itemColor = '';
+                        if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
+                        else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
+                        else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
+                        else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
+                        else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-secondary'; }
+                        else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
 
                         driveContentPreviewHtml += `
                             <li class="drive-content-list-item">
-                                <i class="${itemIcon} ${itemColor}"></i> <span>${item.name || 'Untitled'}</span>
-                            </li>`; // 
+                                <i class="${itemIcon} ${itemColor}"></i>
+                                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-idx="${index}" data-field="name" class="drive-content-name-editable">${item.name || 'Untitled'}</span>
+                                <input type="url" contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-idx="${index}" data-field="url" class="form-control form-control-sm ms-2 drive-content-url-editable" value="${item.url || ''}" placeholder="URL">
+                                <button class="btn btn-sm btn-danger ms-2 delete-drive-content-item" data-cat="${catId}" data-bid="${bId}" data-idx="${index}">Delete</button>
+                            </li>`;
                     });
-                    driveContentPreviewHtml += '</ul>'; // 
+                    driveContentPreviewHtml += '</ul>';
                 }
 
                 dynamicContentHtml = `
@@ -922,13 +1002,15 @@
                         <input type="text" class="form-control form-control-sm google-drive-folder-id" id="googleDriveFolderId-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.googleDriveFolderId || ''}" placeholder="e.g., 1_abcdefg1234567890">
                         <small class="form-text text-muted">Copy the folder ID from your Google Drive URL. Ex: drive.google.com/drive/folders/<span class="fw-bold">FOLDER_ID</span></small>
                         <div class="mt-2 p-2 border rounded drive-content-preview">
-                            <h6>Drive Content Preview:</h6>
+                            <h6>Drive Content Preview (editable):</h6>
                             ${driveContentPreviewHtml}
+                            <button class="btn btn-sm btn-info w-100 mt-2 re-fetch-drive-content" data-cat="${catId}" data-bid="${bId}">Re-fetch Drive Content</button>
                         </div>
                     </div>
-                `; // 
+                `;
             } 
             
+            // This section will contain either Modules or Telegram Link, and is hidden if it's a Drive content batch
             dynamicContentHtml += `
                 <div id="normalContentSection-${bId}" style="display: ${normalContentSectionDisplay};">
                     ${!batch.isContentDirectLink && batch.isFree ?
@@ -936,7 +1018,7 @@
                         <h6 class="mb-2 text-muted">Modules:</h6>
                         <button class="btn btn-sm btn-success add-module mb-2" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
                         <div class="modules-list" id="modules-list-${bId}"></div>
-                    ` : // [cite: 968, 969]
+                    ` : 
                     !batch.isContentDirectLink && !batch.isFree ?
                     `
                         <div class="mb-3">
@@ -945,8 +1027,7 @@
                         </div>
                     ` : ''}
                 </div>
-            `; // 
-
+            `;
             div.innerHTML = `
                 <div class="card-body p-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -985,83 +1066,83 @@
                         Current Price: ${displayPrice} ${originalPriceStrikethrough}
                     </div>
                     ${dynamicContentHtml}
-                </div>`; // 
-            setupBatchItemEvents(div, batch); // 
-            return div; // 
+                </div>`;
+            setupBatchItemEvents(div, batch);
+            return div;
         };
 
-        const setupBatchItemEvents = (div, batch) => { // 
-            const batchTitleInput = div.querySelector('.batch-title'); // 
-            const batchDescriptionInput = div.querySelector('.batch-description'); // 
-            const batchOriginalPriceInput = div.querySelector('.batch-original-price'); // 
-            const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price'); // 
-            const batchIsFreeSwitch = div.querySelector('.batch-is-free'); // 
-            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed'); // 
-            const batchIsContentDirectLinkSwitch = div.querySelector('.batch-is-content-direct-link'); // 
-            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id'); // 
-            const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`); // 
-            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container'); // 
-            const driveContentPreviewContainer = div.querySelector('.drive-content-preview'); // 
+        const setupBatchItemEvents = (div, batch) => {
+            const batchTitleInput = div.querySelector('.batch-title');
+            const batchDescriptionInput = div.querySelector('.batch-description');
+            const batchOriginalPriceInput = div.querySelector('.batch-original-price');
+            const batchDiscountedPriceInput = div.querySelector('.batch-discounted-price');
+            const batchIsFreeSwitch = div.querySelector('.batch-is-free');
+            const batchIsCompletedSwitch = div.querySelector('.batch-is-completed');
+            const batchIsContentDirectLinkSwitch = div.querySelector('.batch-is-content-direct-link');
+            const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id');
+            const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`);
+            const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container');
+            const driveContentPreviewContainer = div.querySelector('.drive-content-preview');
 
-            const { cat, bid } = batchTitleInput.dataset; // 
+            const { cat, bid } = batchTitleInput.dataset;
 
-            batchTitleInput.addEventListener('change', async e => { // 
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value }); // 
-                msg('Batch title updated', 'info'); // 
+            batchTitleInput.addEventListener('change', async e => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { title: e.target.value });
+                msg('Batch title updated', 'info');
             });
 
-            batchDescriptionInput.addEventListener('change', async e => { // 
-                if (e.target.value.split(/\s+/).length > 100) { // 
-                    msg('Description exceeds 100 words! Changes not saved.', 'warning'); // 
+            batchDescriptionInput.addEventListener('change', async e => {
+                if (e.target.value.split(/\s+/).length > 100) {
+                    msg('Description exceeds 100 words! Changes not saved.', 'warning');
                     return;
                 }
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value }); // 
-                msg('Batch description updated', 'info'); // 
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { description: e.target.value });
+                msg('Batch description updated', 'info');
             });
 
-            batchOriginalPriceInput.addEventListener('change', async e => { // 
-                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null }); // 
-                msg('Batch original price updated', 'info'); // 
+            batchOriginalPriceInput.addEventListener('change', async e => {
+                await update(dbRef(db, `categories/${cat}/batches/${bid}`), { originalPrice: parseFloat(e.target.value) || null });
+                msg('Batch original price updated', 'info');
             });
 
-            batchDiscountedPriceInput.addEventListener('change', async e => { // 
-                const newDiscountedPrice = parseFloat(e.target.value); // 
-                const isFree = newDiscountedPrice === 0; // 
+            batchDiscountedPriceInput.addEventListener('change', async e => {
+                const newDiscountedPrice = parseFloat(e.target.value);
+                const isFree = newDiscountedPrice === 0;
                 await update(dbRef(db, `categories/${cat}/batches/${bid}`), { 
-                    discountedPrice: newDiscountedPrice || null, // 
-                    isFree: isFree // 
+                    discountedPrice: newDiscountedPrice || null,
+                    isFree: isFree
                 });
-                if (batchIsFreeSwitch) batchIsFreeSwitch.checked = isFree; // 
-                msg('Batch discounted price updated', 'info'); // 
+                if (batchIsFreeSwitch) batchIsFreeSwitch.checked = isFree; 
+                msg('Batch discounted price updated', 'info');
             });
 
-            if (batchIsFreeSwitch) { // 
-                batchIsFreeSwitch.addEventListener('change', async e => { // 
-                    const isFree = e.target.checked; // 
-                    let updateData = { isFree: isFree }; // 
-                    if (isFree) { // 
-                        updateData.discountedPrice = 0; // 
-                        if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0'; // 
-                        msg('Batch marked as FREE', 'info'); // 
+            if (batchIsFreeSwitch) {
+                batchIsFreeSwitch.addEventListener('change', async e => {
+                    const isFree = e.target.checked;
+                    let updateData = { isFree: isFree };
+                    if (isFree) {
+                        updateData.discountedPrice = 0;
+                        if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
+                        msg('Batch marked as FREE', 'info');
                     } else {
-                        if (batchDiscountedPriceInput && parseFloat(batchDiscountedPriceInput.value) === 0) { // 
-                            updateData.discountedPrice = null; // 
-                            batchDiscountedPriceInput.value = ''; // 
+                        if (batchDiscountedPriceInput && parseFloat(batchDiscountedPriceInput.value) === 0) {
+                            updateData.discountedPrice = null;
+                            batchDiscountedPriceInput.value = '';
                         }
-                        msg('Batch FREE status updated', 'info'); // 
+                        msg('Batch FREE status updated', 'info');
                     }
-                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData); // 
+                    await update(dbRef(db, `categories/${cat}/batches/${bid}`), updateData);
                 });
             }
 
-            if (batchIsCompletedSwitch) { // 
+            if (batchIsCompletedSwitch) {
                 batchIsCompletedSwitch.addEventListener('change', async e => {
                     await update(dbRef(db, `categories/${cat}/batches/${bid}`), { isCompleted: e.target.checked });
                     msg('Batch completion status updated', 'info');
                 });
             }
 
-            if (batchIsContentDirectLinkSwitch) { // 
+            if (batchIsContentDirectLinkSwitch) {
                 batchIsContentDirectLinkSwitch.addEventListener('change', async e => {
                     const isDirectLink = e.target.checked;
                     const batchDataRef = dbRef(db, `categories/${cat}/batches/${bid}`);
@@ -1069,9 +1150,10 @@
                     let updateData = { isContentDirectLink: isDirectLink };
                     
                     if (isDirectLink) {
-                        updateData.isFree = true; // Mark as free if direct link 
+                        updateData.isFree = true; // Mark as free if direct link
                         updateData.discountedPrice = 0;
-                        updateData.modules = null; // Clear modules when switching to direct link 
+                        updateData.modules = null; // Clear modules when switching to direct link
+                        updateData.driveContent = null; // Also clear top-level driveContent
                         
                         if (batchIsFreeSwitch) batchIsFreeSwitch.checked = true;
                         if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
@@ -1083,6 +1165,7 @@
                     } else {
                         updateData.googleDriveFolderId = null;
                         updateData.driveContent = null;
+                        updateData.modules = null; // Clear any auto-generated modules when turning off direct link
                         
                         if (googleDriveFolderIdContainer) googleDriveFolderIdContainer.style.display = 'none';
                         if (normalContentSection) normalContentSection.style.display = 'block';
@@ -1094,43 +1177,112 @@
                 });
             }
 
-            if (googleDriveFolderIdInput) { // 
-                googleDriveFolderIdInput.addEventListener('change', async e => {
-                    const newFolderId = e.target.value.trim();
+            if (googleDriveFolderIdInput) {
+                const reFetchDriveContent = async () => {
+                    const newFolderId = googleDriveFolderIdInput.value.trim();
                     const batchDataRef = dbRef(db, `categories/${cat}/batches/${bid}`);
 
-                    if (newFolderId) {
-                        showLoading('Fetching Drive contents...');
-                        try {
-                            const driveContents = await fetchDriveFolderContents(newFolderId);
-                            await update(batchDataRef, { 
-                                googleDriveFolderId: newFolderId,
-                                driveContent: driveContents 
-                            });
-                            msg('Google Drive folder ID and contents updated!', 'success');
-                            loadCategories(); 
-                        } catch (error) {
-                            msg(`Error fetching or updating Drive contents: ${error.message}`, 'danger');
-                            await update(batchDataRef, { 
-                                googleDriveFolderId: newFolderId,
-                                driveContent: null
-                            });
-                            loadCategories();
-                        } finally {
-                            hideLoading();
-                        }
-                    } else {
-                        await update(batchDataRef, { 
-                            googleDriveFolderId: null,
-                            driveContent: null
-                        });
-                        msg('Google Drive folder ID cleared.', 'info');
-                        loadCategories(); 
+                    if (!newFolderId) {
+                        msg('Google Drive Folder ID is empty. Cannot re-fetch.', 'warning');
+                        await update(batchDataRef, { googleDriveFolderId: null, driveContent: null, modules: null });
+                        loadCategories();
+                        return;
                     }
+
+                    showLoading('Fetching Drive contents...');
+                    try {
+                        const fetchedDriveContent = await fetchDriveFolderContents(newFolderId);
+                        if (!fetchedDriveContent || fetchedDriveContent.length === 0) {
+                            msg('Failed to fetch Drive contents or folder is empty. Check folder ID or permissions.', 'danger');
+                            await update(batchDataRef, { googleDriveFolderId: newFolderId, driveContent: null, modules: null });
+                            loadCategories();
+                            return;
+                        }
+
+                        const foldersInDrive = fetchedDriveContent.filter(item => item.type === 'folder');
+                        let modulesToSave = null;
+                        let topLevelDriveContentToSave = null;
+
+                        if (foldersInDrive.length > 0) {
+                            // If there are sub-folders, create modules for each
+                            modulesToSave = {};
+                            for (const folder of foldersInDrive) {
+                                const moduleId = push(dbRef(db, 'dummy')).key; // Generate unique key
+                                // For simplicity, we just create a module entry.
+                                // The website will need to fetch content of this sub-folder when user clicks it.
+                                modulesToSave[moduleId] = {
+                                    name: folder.name,
+                                    driveId: folder.id,
+                                    // No 'driveContents' here, as we assume website fetches on module click
+                                    isDriveModule: true // Flag for website
+                                };
+                            }
+                            topLevelDriveContentToSave = null; // No top-level driveContent if modules are generated
+                        } else {
+                            // If no sub-folders, create a single 'Access Here' auto-generated module
+                            modulesToSave = {};
+                            const moduleId = push(dbRef(db, 'dummy')).key;
+                            modulesToSave[moduleId] = {
+                                name: `${batch.title} Content`, // Module name same as batch title + " Content"
+                                isAutoGenerated: true,
+                                driveContents: fetchedDriveContent // Store all fetched drive content here for this single module
+                            };
+                            topLevelDriveContentToSave = null; // No top-level driveContent if modules are generated
+                        }
+
+                        await update(batchDataRef, { 
+                            googleDriveFolderId: newFolderId,
+                            driveContent: topLevelDriveContentToSave, // Will be null if modules created
+                            modules: modulesToSave // Update with new module structure
+                        });
+                        msg('Google Drive folder ID and content re-fetched and updated!', 'success');
+                        loadCategories(); // Reload to refresh UI with new content structure
+                    } catch (error) {
+                        msg(`Error re-fetching Drive contents: ${error.message}`, 'danger');
+                        await update(batchDataRef, { googleDriveFolderId: newFolderId, driveContent: null, modules: null });
+                        loadCategories();
+                    } finally {
+                        hideLoading();
+                    }
+                };
+
+                googleDriveFolderIdInput.addEventListener('change', reFetchDriveContent);
+                const reFetchButton = div.querySelector('.re-fetch-drive-content');
+                if (reFetchButton) {
+                    reFetchButton.addEventListener('click', reFetchDriveContent);
+                }
+
+                // Setup listeners for editing drive content items (name and URL)
+                div.querySelectorAll('.drive-content-name-editable').forEach(span => {
+                    span.addEventListener('blur', async (e) => {
+                        const itemIndex = parseInt(e.target.dataset.idx);
+                        const newName = e.target.textContent.trim();
+                        // Determine which structure to update (batch.driveContent or batch.modules[moduleId].driveContents)
+                        await updateDriveContentItem(cat, bid, itemIndex, 'name', newName, batch);
+                        msg('Drive content item name updated!', 'info');
+                    });
+                });
+                div.querySelectorAll('.drive-content-url-editable').forEach(input => {
+                    input.addEventListener('change', async (e) => {
+                        const itemIndex = parseInt(e.target.dataset.idx);
+                        const newUrl = e.target.value.trim();
+                        await updateDriveContentItem(cat, bid, itemIndex, 'url', newUrl, batch);
+                        msg('Drive content item URL updated!', 'info');
+                    });
+                });
+                div.querySelectorAll('.delete-drive-content-item').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const itemIndex = parseInt(e.target.dataset.idx);
+                        const confirmDelete = await showConfirm('Are you sure you want to delete this Drive content item?');
+                        if (confirmDelete) {
+                            await deleteDriveContentItem(cat, bid, itemIndex, batch);
+                            msg('Drive content item deleted!', 'danger');
+                        }
+                    });
                 });
             }
 
-            const telegramCourseLinkInput = div.querySelector('.telegram-course-link'); // 
+            const telegramCourseLinkInput = div.querySelector('.telegram-course-link');
             if (telegramCourseLinkInput) {
                 telegramCourseLinkInput.addEventListener('change', async e => {
                     await update(dbRef(db, `categories/${cat}/batches/${bid}`), { telegramCourseLink: e.target.value.trim() });
@@ -1138,7 +1290,7 @@
                 });
             }
 
-            div.querySelector('.delete-batch').addEventListener('click', async () => { // 
+            div.querySelector('.delete-batch').addEventListener('click', async () => {
                 const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures/drive content?');
                 if (confirmDelete) {
                     showLoading('Deleting batch and content...');
@@ -1153,7 +1305,7 @@
                 }
             });
 
-            const addModuleButton = div.querySelector('.add-module'); // 
+            const addModuleButton = div.querySelector('.add-module');
             if (addModuleButton) {
                 addModuleButton.addEventListener('click', async () => {
                     if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
@@ -1173,7 +1325,7 @@
                 });
             }
 
-            const modulesListContainer = div.querySelector(`#modules-list-${bid}`); // 
+            const modulesListContainer = div.querySelector(`#modules-list-${bid}`);
             if (modulesListContainer) {
                 onValue(dbRef(db, `categories/${cat}/batches/${bid}/modules`), snapshot => {
                     modulesListContainer.innerHTML = '';
@@ -1191,7 +1343,78 @@
             }
         };
 
-        const createModuleItem = (catId, bId, mId, module) => { // 
+        // Helper functions for editing/deleting drive content items
+        const updateDriveContentItem = async (catId, bid, itemIndex, field, value, batch) => {
+            const batchDataRef = dbRef(db, `categories/${catId}/batches/${bid}`);
+            let driveContentArray = [];
+
+            // Determine where the drive content is stored (top-level or inside a module)
+            let targetPath = '';
+            if (batch.modules && Object.keys(batch.modules).length > 0) {
+                const firstModuleId = Object.keys(batch.modules)[0];
+                if (batch.modules[firstModuleId].driveContents) {
+                    driveContentArray = Array.isArray(batch.modules[firstModuleId].driveContents) 
+                                        ? [...batch.modules[firstModuleId].driveContents] 
+                                        : Object.values(batch.modules[firstModuleId].driveContents);
+                    targetPath = `modules/${firstModuleId}/driveContents`;
+                }
+            } else if (batch.driveContent) {
+                driveContentArray = Array.isArray(batch.driveContent) 
+                                    ? [...batch.driveContent] 
+                                    : Object.values(batch.driveContent);
+                targetPath = 'driveContent';
+            }
+
+            if (driveContentArray[itemIndex]) {
+                driveContentArray[itemIndex][field] = value;
+                showLoading('Updating Drive content item...');
+                try {
+                    await update(batchDataRef, { [targetPath]: driveContentArray });
+                } catch (error) {
+                    msg(`Error updating Drive content item: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                    loadCategories(); // Reload to ensure data consistency in UI
+                }
+            }
+        };
+
+        const deleteDriveContentItem = async (catId, bid, itemIndex, batch) => {
+            const batchDataRef = dbRef(db, `categories/${catId}/batches/${bid}`);
+            let driveContentArray = [];
+            let targetPath = '';
+
+            if (batch.modules && Object.keys(batch.modules).length > 0) {
+                const firstModuleId = Object.keys(batch.modules)[0];
+                if (batch.modules[firstModuleId].driveContents) {
+                    driveContentArray = Array.isArray(batch.modules[firstModuleId].driveContents) 
+                                        ? [...batch.modules[firstModuleId].driveContents] 
+                                        : Object.values(batch.modules[firstModuleId].driveContents);
+                    targetPath = `modules/${firstModuleId}/driveContents`;
+                }
+            } else if (batch.driveContent) {
+                driveContentArray = Array.isArray(batch.driveContent) 
+                                    ? [...batch.driveContent] 
+                                    : Object.values(batch.driveContent);
+                targetPath = 'driveContent';
+            }
+
+            if (driveContentArray[itemIndex]) {
+                driveContentArray.splice(itemIndex, 1); // Remove the item
+                showLoading('Deleting Drive content item...');
+                try {
+                    await update(batchDataRef, { [targetPath]: driveContentArray });
+                } catch (error) {
+                    msg(`Error deleting Drive content item: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                    loadCategories(); // Reload to refresh UI
+                }
+            }
+        };
+
+
+        const createModuleItem = (catId, bId, mId, module) => {
             const div = document.createElement('div');
             div.className = 'card mb-2 ms-3 bg-light';
             div.innerHTML = `
@@ -1200,15 +1423,18 @@
                         <input class="form-control form-control-sm module-name flex-grow-1 me-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}" value="${module.name}">
                         <button class="btn btn-sm btn-danger delete-module" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">Delete</button>
                     </div>
-                    <h6 class="mb-2 text-muted">Lectures:</h6>
-                    <button class="btn btn-sm btn-info add-lecture mb-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">+ Add Lecture</button>
-                    <div class="lectures-list" id="lectures-list-${mId}"></div>
+                    ${module.isDriveModule ? 
+                        `<div class="text-muted fst-italic">This module represents a Google Drive folder. Its content is dynamically loaded on the website.</div>` :
+                        `<h6 class="mb-2 text-muted">Lectures:</h6>
+                         <button class="btn btn-sm btn-info add-lecture mb-2" data-cat="${catId}" data-bid="${bId}" data-mid="${mId}">+ Add Lecture</button>
+                         <div class="lectures-list" id="lectures-list-${mId}"></div>`
+                    }
                 </div>`;
-            setupModuleItemEvents(div, catId, bId, mId);
+            setupModuleItemEvents(div, catId, bId, mId, module); // Pass module object
             return div;
         };
 
-        const setupModuleItemEvents = (div, catId, bId, mId) => { // 
+        const setupModuleItemEvents = (div, catId, bId, mId, module) => { // Accept module object
             const moduleNameInput = div.querySelector('.module-name');
             moduleNameInput.addEventListener('change', async e => {
                 await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`), { name: e.target.value });
@@ -1230,39 +1456,44 @@
                 }
             });
 
-            div.querySelector('.add-lecture').addEventListener('click', async () => {
-                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                const lectureTitle = prompt('Enter Lecture Title:');
-                if (!lectureTitle) { msg('Lecture title is required!', 'warning'); return; }
-                const videoUrl = prompt('Enter Video URL (YouTube or Google Drive):');
-                if (!videoUrl) { msg('Video URL is required!', 'warning'); return; }
+            const addLectureButton = div.querySelector('.add-lecture');
+            if (addLectureButton) { // Only add listener if button exists (i.e., not a Drive module)
+                addLectureButton.addEventListener('click', async () => {
+                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                    const lectureTitle = prompt('Enter Lecture Title:');
+                    if (!lectureTitle) { msg('Lecture title is required!', 'warning'); return; }
+                    const videoUrl = prompt('Enter Video URL (YouTube or Google Drive):');
+                    if (!videoUrl) { msg('Video URL is required!', 'warning'); return; }
 
-                showLoading('Adding lecture...');
-                try {
-                    const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`));
-                    await set(newRef, { title: lectureTitle, videoUrl: videoUrl });
-                    msg('Lecture added successfully!', 'success');
-                } catch (error) {
-                    msg(`Error adding lecture: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                }
-            });
+                    showLoading('Adding lecture...');
+                    try {
+                        const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`));
+                        await set(newRef, { title: lectureTitle, videoUrl: videoUrl });
+                        msg('Lecture added successfully!', 'success');
+                    } catch (error) {
+                        msg(`Error adding lecture: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            }
 
             const lecturesListContainer = div.querySelector(`#lectures-list-${mId}`);
-            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), snapshot => {
-                lecturesListContainer.innerHTML = '';
-                const lectureData = snapshot.val() || {};
-                if (Object.keys(lectureData).length === 0) {
-                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
-                }
-                Object.entries(lectureData).forEach(([lId, lecture]) => {
-                    const item = createLectureItem(catId, bId, mId, lId, lecture);
-                    lecturesListContainer.append(item);
+            if (lecturesListContainer) { // Only fetch lectures if it's not a Drive module
+                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), snapshot => {
+                    lecturesListContainer.innerHTML = '';
+                    const lectureData = snapshot.val() || {};
+                    if (Object.keys(lectureData).length === 0) {
+                        lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
+                    }
+                    Object.entries(lectureData).forEach(([lId, lecture]) => {
+                        const item = createLectureItem(catId, bId, mId, lId, lecture);
+                        lecturesListContainer.append(item);
+                    });
+                }, (error) => {
+                    msg(`Error loading lectures: ${error.message}`, 'danger');
                 });
-            }, (error) => {
-                msg(`Error loading lectures: ${error.message}`, 'danger');
-            });
+            }
         };
 
         const createLectureItem = (catId, bId, mId, lId, lecture) => {
