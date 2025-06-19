@@ -721,7 +721,7 @@
                 if (isContentDirectLink) {
                     googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
                     if (!googleDriveFolderId) {
-                        msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning'); 
+                        msg('Google Drive Folder ID is required for this batch type! Batch not added.', 'warning'); 
                         return; // Stop if ID is not provided
                     }
 
@@ -794,7 +794,6 @@
                     batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
                 }
                 Object.entries(batchData).forEach(([bId, batch]) => {
-                    // Pass the entire batch object to createBatchItem to ensure setupBatchItemEvents receives it.
                     const item = createBatchItem(catId, bId, batch); 
                     batchesListContainer.append(item);
                 });
@@ -932,7 +931,7 @@
             const googleDriveFolderIdInput = div.querySelector('.google-drive-folder-id');
             const normalContentSection = div.querySelector(`#normalContentSection-${batch.id}`);
             const googleDriveFolderIdContainer = div.querySelector('.google-drive-folder-id-container');
-            const driveContentPreviewListContainer = div.querySelector(`#driveContentPreviewList-${batch.id}`); // Get the preview list container
+            const driveContentPreviewContainer = div.querySelector('.drive-content-preview'); // Get the preview container itself
 
 
             const { cat, bid } = batchTitleInput.dataset;
@@ -990,6 +989,50 @@
                 msg(`Batch marked as ${isCompleted ? 'Completed' : 'Incomplete'}`, 'info');
             });
 
+            // Helper to render Drive content preview in Admin Panel
+            const renderDriveContentPreview = (contents) => {
+                const driveContentPreviewList = div.querySelector('.drive-content-preview-list');
+                if (!driveContentPreviewList) return; // Exit if element not found
+
+                if (!contents || Object.keys(contents).length === 0) {
+                    driveContentPreviewList.innerHTML = '<p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>';
+                    return;
+                }
+                let html = '<ul class="list-unstyled mt-2">';
+                const sortedContents = Object.values(contents).sort((a, b) => {
+                    if (a.type === 'folder' && b.type !== 'folder') return -1;
+                    if (a.type !== 'folder' && b.type === 'folder') return 1;
+                    return (a.name || '').localeCompare(b.name || '');
+                });
+
+                sortedContents.forEach(item => {
+                    let itemIcon = '';
+                    let itemColor = '';
+                    if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
+                    else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
+                    else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; itemColor = 'text-danger'; }
+                    else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; itemColor = 'text-warning'; }
+                    else if (item.type === 'gem') { itemIcon = 'fas fa-gem'; itemColor = 'text-secondary'; }
+                    else { itemIcon = 'fas fa-file'; itemColor = 'text-secondary'; }
+
+                    html += `
+                        <li class="drive-content-list-item">
+                            <i class="${itemIcon} ${itemColor}"></i> <span>${item.name || 'Untitled'}</span>
+                        </li>`;
+                });
+                html += '</ul>';
+                driveContentPreviewList.innerHTML = html;
+            };
+
+            // Initial render of Drive content preview when batch item is loaded/created
+            if (batch.isContentDirectLink && batch.driveContent) {
+                 renderDriveContentPreview(batch.driveContent);
+            } else if (googleDriveFolderIdContainer) {
+                 // If it's a Drive section but no content, show the placeholder
+                 googleDriveFolderIdContainer.querySelector('.drive-content-preview').innerHTML = '<h6>Drive Content Preview:</h6><p class="text-muted fst-italic">No Drive contents fetched yet or folder ID invalid.</p>';
+            }
+
+
             // NEW: Event listener for isContentDirectLink switch
             if (batchIsContentDirectLinkSwitch) {
                 const toggleBatchContentVisibility = (isDirect) => {
@@ -1004,21 +1047,20 @@
                     let updateData = { isContentDirectLink: isDirect };
 
                     if (isDirect) {
-                        const folderId = prompt('Enter Google Drive Folder ID:');
-                        if (!folderId) {
+                        const folderId = prompt('Enter Google Drive Folder ID (e.g., 1_abcdefgABC123):');
+                        if (!folderId || folderId.trim() === '') {
                             msg('Google Drive Folder ID is required for this batch type! Reverting.', 'warning');
                             e.target.checked = false; 
                             updateData.isContentDirectLink = false;
-                            renderDriveContentPreview(null); // Clear preview
+                            renderDriveContentPreview(null);
                         } else {
-                            if (googleDriveFolderIdInput) googleDriveFolderIdInput.value = folderId; // Update input field
-                            updateData.googleDriveFolderId = folderId;
+                            if (googleDriveFolderIdInput) googleDriveFolderIdInput.value = folderId.trim(); // Update input field
+                            updateData.googleDriveFolderId = folderId.trim();
                             updateData.isFree = true;
                             updateData.discountedPrice = 0;
                             if (batchIsFreeSwitch) batchIsFreeSwitch.checked = true;
                             if (batchDiscountedPriceInput) batchDiscountedPriceInput.value = '0';
 
-                            // Fetch and save Drive contents to Firebase
                             showLoading('Fetching Drive contents & saving to Firebase...');
                             try {
                                 if (!gapi.client || !gapi.client.drive) {
@@ -1026,20 +1068,22 @@
                                     await initGapiClient();
                                 }
                                 
-                                const driveContents = await fetchDriveFolderContents(folderId);
+                                const driveContents = await fetchDriveFolderContents(updateData.googleDriveFolderId);
                                 if (driveContents) {
                                     updateData.driveContent = driveContents;
-                                    renderDriveContentPreview(currentDriveContents); // Render preview after fetching
+                                    renderDriveContentPreview(driveContents); // Render preview after fetching
                                 } else {
                                     msg('Failed to fetch Drive contents. Batch might not function correctly.', 'danger');
                                     e.target.checked = false;
                                     updateData.isContentDirectLink = false;
+                                    renderDriveContentPreview(null);
                                 }
                             } catch (err) {
-                                console.error('Error in Drive API call:', err);
+                                console.error('Error fetching Drive content:', err); // Log the actual error
                                 msg(`Error fetching Drive content: ${err.message}. Check browser console.`, 'danger');
                                 e.target.checked = false;
                                 updateData.isContentDirectLink = false;
+                                renderDriveContentPreview(null);
                             } finally {
                                 hideLoading();
                             }
@@ -1067,7 +1111,7 @@
             if (googleDriveFolderIdInput) {
                 googleDriveFolderIdInput.addEventListener('change', async (e) => {
                     const newFolderId = e.target.value.trim();
-                    if (!newFolderId) {
+                    if (!newFolderId || newFolderId.trim() === '') {
                         msg('Google Drive Folder ID cannot be empty!', 'warning');
                         renderDriveContentPreview(null);
                         return;
@@ -1086,7 +1130,7 @@
                             renderDriveContentPreview(driveContents); // Render preview after successful fetch
                             msg('Google Drive Folder ID and contents updated!', 'info');
                         } else {
-                            updateData.driveContent = null; // Clear if fetching fails
+                            updateData.driveContent = null;
                             renderDriveContentPreview(null);
                             msg('Failed to fetch new Drive contents. Check ID.', 'danger');
                         }
