@@ -11,7 +11,10 @@
         :root {
             /* Dark Theme Colors */
             --primary-dark: #1a1a1a; /* Overall background */
-            --secondary-dark: #2c2c2c; /* Sidebar background */
+            --secondary-dark: #2c2c2c; /* Card/Section background */
+            --bottom-nav-bg: #000000; /* Black for bottom nav */
+            --bottom-nav-item: #ffffff; /* White default icon/text color */
+            --bottom-nav-active: #00ADB5; /* Accent teal for active as per website theme */
             --card-bg: #222222; /* Card backgrounds */
             --text-light: #f0f0f0; /* Main text color */
             --text-muted: #b0b0b0; /* Muted text */
@@ -23,7 +26,7 @@
             --shadow-color: rgba(0, 0, 0, 0.4); /* General shadow color */
             --input-bg: #333333; /* Input field background */
             --input-border: #444444; /* Input field border */
-            --hover-item: #3a3a3a; /* For sidebar item hover */
+            --hover-item: #3a3a3a; /* For navigation item hover (if applicable) */
             --quote-text: #E0E0E0; /* Specific for quote text */
             --quote-author: #FFD700; /* Gold for quote author */
         }
@@ -39,146 +42,24 @@
             -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure body takes full height */
         }
 
         .main-wrapper {
             display: flex;
-            width: 100%;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            min-width: 250px;
-            height: 100vh;
-            background-color: var(--secondary-dark);
-            box-shadow: 2px 0 10px var(--shadow-color);
-            padding-top: 20px;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(0); /* Default visible */
-            display: flex;
             flex-direction: column;
+            width: 100%;
+            flex-grow: 1; /* Allows it to take available space */
+            padding-bottom: 70px; /* Space for the fixed bottom navbar */
         }
-
-        .sidebar.collapsed {
-            transform: translateX(-250px);
-        }
-
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 10px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .sidebar-header h3 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            font-size: 1.8em;
-            color: var(--accent-teal);
-            margin-bottom: 5px;
-            letter-spacing: 1.5px;
-        }
-        .sidebar-header .app-version {
-            font-size: 0.8em;
-            color: var(--text-muted);
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex-grow: 1; /* Allows nav to take available space */
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: var(--text-light);
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-        }
-
-        .nav-item:hover {
-            background-color: var(--hover-item);
-            color: var(--accent-teal);
-            transform: translateX(5px);
-        }
-
-        .nav-item.active {
-            background-color: var(--accent-blue);
-            color: var(--text-light);
-            font-weight: 600;
-            border-left: 4px solid var(--accent-teal);
-            padding-left: 16px; /* Adjust padding for border */
-        }
-        .nav-item.active:hover {
-             background-color: var(--accent-blue); /* Keep active background on hover */
-             color: var(--text-light);
-             transform: translateX(0); /* No transform for active on hover */
-        }
-
-        .nav-item i {
-            font-size: 1.3em;
-            margin-right: 15px;
-            min-width: 20px; /* Ensure consistent icon alignment */
-            text-align: center;
-        }
-        .nav-item.active i {
-            color: var(--text-light); /* Active icon color */
-        }
-
-        .sidebar-footer {
-            padding: 15px;
-            text-align: center;
-            font-size: 0.8em;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-        }
-
 
         /* Content Area Styles */
         .content {
             flex-grow: 1;
-            margin-left: 250px; /* Space for sidebar */
             padding: 20px;
-            transition: margin-left 0.3s ease-in-out;
-            position: relative; /* For toggle button positioning */
+            position: relative;
         }
-
-        .content.full-width {
-            margin-left: 0;
-        }
-
-        .toggle-sidebar-btn {
-            position: fixed;
-            left: 260px; /* Just outside sidebar */
-            top: 20px;
-            background-color: var(--accent-blue);
-            color: var(--text-light);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            z-index: 1001;
-            transition: left 0.3s ease-in-out;
-        }
-        .toggle-sidebar-btn.shifted {
-            left: 10px;
-        }
-
 
         /* Section Specific Styles */
         .section {
@@ -345,6 +226,7 @@
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
         }
 
         /* Quote Section on Homepage */
@@ -391,30 +273,66 @@
             padding-top: 0; /* Remove extra padding */
         }
 
+        /* Bottom Navigation Bar Styles (New for Admin Panel) */
+        .bottom-navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bottom-nav-bg); /* Black for bottom nav */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 1000;
+            color: var(--bottom-nav-item); /* White default icon/text color */
+        }
+
+        .bottom-navbar .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: inherit; /* Inherit from parent .bottom-navbar */
+            font-size: 0.8em;
+            font-weight: 500;
+            padding: 5px 0;
+            flex: 1; /* Distribute space evenly */
+            transition: color 0.2s ease, transform 0.2s ease;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        .bottom-navbar .nav-item i {
+            font-size: 1.5em; /* Icon size */
+            margin-bottom: 5px;
+            color: inherit; /* Inherit from nav-item */
+            transition: color 0.2s ease;
+        }
+
+        .bottom-navbar .nav-item.active {
+            color: var(--bottom-nav-active); /* Active color (Accent Teal) */
+            font-weight: 700;
+        }
+
+        .bottom-navbar .nav-item.active i {
+            color: var(--bottom-nav-active); /* Active icon color (Accent Teal) */
+        }
+
+        .bottom-navbar .nav-item:hover {
+            transform: translateY(-2px);
+            color: var(--bottom-nav-active); /* Hover effect */
+        }
+
+        .bottom-navbar .nav-item:active {
+            transform: scale(0.95);
+        }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-250px); /* Hidden by default on small screens */
-                position: fixed; /* Ensure it's fixed so content scrolls over it */
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1000;
-            }
-            .sidebar.collapsed {
-                transform: translateX(0); /* Show when toggled on small screens */
-            }
             .content {
-                margin-left: 0; /* No margin on small screens */
                 padding: 15px;
-            }
-            .toggle-sidebar-btn {
-                left: 10px; /* Always visible on the left edge */
-                top: 15px;
-            }
-            .toggle-sidebar-btn.shifted {
-                 left: 260px; /* Shifted when sidebar is open */
+                padding-bottom: 80px; /* Adjust padding for mobile bottom navbar */
             }
             .home-section h1 {
                 font-size: 2.2em;
@@ -423,51 +341,29 @@
                 padding: 20px;
             }
             .home-quote-section {
-                width: 95%; /* Adjust width for smaller screens */
+                width: 95%;
                 padding: 15px;
+            }
+            .bottom-navbar {
+                padding: 8px 0;
+            }
+            .bottom-navbar .nav-item {
+                font-size: 0.7em;
+            }
+            .bottom-navbar .nav-item i {
+                font-size: 1.3em;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3>SkillNeast</h3>
-                <span class="app-version">Admin Panel v1.0</span>
-            </div>
-            <ul class="sidebar-nav">
-                <li class="nav-item active" data-section="home">
-                    <i class="fas fa-home"></i> Home
-                </li>
-                <li class="nav-item" data-section="site-config">
-                    <i class="fas fa-cogs"></i> Site Configuration
-                </li>
-                <li class="nav-item" data-section="notifications">
-                    <i class="fas fa-bell"></i> Push Notifications
-                </li>
-                <li class="nav-item" data-section="categories">
-                    <i class="fas fa-book-open"></i> Categories (Courses)
-                </li>
-                <li class="nav-item" data-section="how-to-use">
-                    <i class="fas fa-question-circle"></i> How to Use App Videos
-                </li>
-            </ul>
-            <div class="sidebar-footer">
-                Made with ❤️ in INDIA 🇮🇳
-            </div>
-        </div>
-
         <div class="content" id="content">
-            <button class="toggle-sidebar-btn" id="toggleSidebarBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-
             <div id="home-section" class="section active home-section">
                 <span class="emoji-icon">🚀</span>
                 <h1>Welcome SkillNeast Admin Panel</h1>
                 <p class="text-muted">Manage your courses, content, and users effortlessly.</p>
-                
+
                 <div class="home-quote-section">
                     <p class="quote-text" id="homeQuoteText"></p>
                     <p class="quote-author" id="homeQuoteAuthor"></p>
@@ -535,8 +431,7 @@
                 </div>
                 <button id="sendNotificationButton" class="btn btn-success mt-2 w-100">Send Notification</button>
                 <small class="form-text text-muted mt-3">
-                    *Push notifications require Firebase Cloud Messaging (FCM) setup and server-side logic (e.g., Firebase Functions) to reach all users.
-                    This button only triggers a client-side function to initiate the process.
+                    *Push notifications require Firebase Cloud Messaging (FCM) setup and server-side logic (e.g., Firebase Functions) to reach all users. This button only triggers a client-side function to initiate the process.
                 </small>
             </div>
 
@@ -581,7 +476,6 @@
                     <p class="text-muted fst-italic">No videos added yet.</p>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -600,13 +494,31 @@
         <p class="loading-message">Processing...</p>
     </div>
 
+    <div class="bottom-navbar">
+        <a href="#" class="nav-item" data-section="categories-section">
+            <i class="fas fa-th-large"></i> Batches
+        </a>
+        <a href="#" class="nav-item" data-section="site-config-section">
+            <i class="fas fa-puzzle-piece"></i> Practice
+        </a>
+        <a href="#" class="nav-item active" data-section="home-section">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <a href="#" class="nav-item" data-section="how-to-use-section">
+            <i class="fas fa-book-open"></i> Study
+        </a>
+        <a href="#" class="nav-item" data-section="notifications-section">
+            <i class="fas fa-users"></i> Users
+        </a>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref as dbRef, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
         import { getMessaging, getToken as getMessagingToken, onMessage } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging.js";
-        
+
         const firebaseConfig = {
           apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
           authDomain: "adminneast.firebaseapp.com",
@@ -617,7 +529,6 @@
           appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
           measurementId: "G-PCH99BDF1S"
         };
-        
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -658,10 +569,10 @@
         };
 
         const msg = (text, type = 'success') => {
-            const alertsDiv = document.getElementById('alerts'); 
+            const alertsDiv = document.getElementById('alerts');
             // Check if the alerts div exists and is part of the currently active section
             // This prevents alerts from showing on other sections' UIs
-            if (alertsDiv && alertsDiv.closest('.section.active')) { 
+            if (alertsDiv && alertsDiv.closest('.section.active')) {
                 const el = document.createElement('div');
                 el.className = `alert alert-${type} fade show`;
                 el.textContent = text;
@@ -672,7 +583,7 @@
                     el.addEventListener('transitionend', () => el.remove(), { once: true });
                 }, 3000);
             } else {
-                console.log(`Alert (${type}): ${text}`); // Log alerts if not on active section
+                console.log(`Alert (${type}): ${text}`);
             }
         };
 
@@ -735,7 +646,7 @@
             quoteAuthorEl.textContent = `- ${quote.author}`;
         };
 
-        // --- Sidebar Navigation ---
+        // --- Bottom Navigation Bar Logic ---
         const showSection = (sectionId) => {
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -743,52 +654,53 @@
             document.getElementById(sectionId).classList.add('active');
             activeSection = sectionId; // Update active section tracker
 
-            // Update active state in sidebar nav
-            document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+            // Update active state in bottom navbar
+            document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
                 item.classList.remove('active');
-                if (item.dataset.section === sectionId.replace('-section', '')) {
+                if (item.dataset.section === sectionId) {
                     item.classList.add('active');
                 }
             });
-            // Auto collapse sidebar on small screens after selection
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('toggleSidebarBtn').classList.remove('shifted');
+
+            // Show "Welcome" section only on home
+            if (sectionId !== 'home-section') {
+                document.getElementById('home-section').style.display = 'none';
+            } else {
+                document.getElementById('home-section').style.display = 'flex'; // Home section is flex for centering
             }
         };
 
-        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const targetSectionId = item.dataset.section + '-section';
+        document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
+            item.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default link behavior
+                const targetSectionId = item.dataset.section;
                 showSection(targetSectionId);
             });
         });
 
-        document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('toggleSidebarBtn').classList.toggle('shifted');
-        });
 
-        // Initial check for sidebar collapsed state on load for small screens
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.add('collapsed');
-            document.getElementById('toggleSidebarBtn').classList.remove('shifted');
-        } else {
-            document.getElementById('sidebar').classList.remove('collapsed');
-            document.getElementById('toggleSidebarBtn').classList.add('shifted');
-        }
-        
-        // Adjust sidebar on window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                document.getElementById('sidebar').classList.remove('collapsed');
-                document.getElementById('toggleSidebarBtn').classList.add('shifted');
-            } else {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('toggleSidebarBtn').classList.remove('shifted');
+        // Helper function to get file extension from URL/name
+        function getFileExtension(url, name) {
+            if (name) {
+                const nameParts = name.split('.');
+                if (nameParts.length > 1) {
+                    return nameParts.pop();
+                }
             }
-        });
-
+            if (url) {
+                const urlParts = url.split('.');
+                if (urlParts.length > 1) {
+                    return urlParts.pop().split('?')[0].split('#')[0];
+                }
+                if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                    return 'youtube';
+                }
+                if (url.includes('drive.google.com')) {
+                    return 'gdrive';
+                }
+            }
+            return '';
+        }
 
         // --- Site Configuration (Global Links & Assets) Management ---
         const loadSiteConfig = () => {
@@ -827,28 +739,6 @@
             });
         };
 
-        // Helper function to get file extension from URL/name
-        function getFileExtension(url, name) {
-            if (name) {
-                const nameParts = name.split('.');
-                if (nameParts.length > 1) {
-                    return nameParts.pop();
-                }
-            }
-            if (url) {
-                const urlParts = url.split('.');
-                if (urlParts.length > 1) {
-                    return urlParts.pop().split('?')[0].split('#')[0];
-                }
-                if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                    return 'youtube';
-                }
-                if (url.includes('drive.google.com')) {
-                    return 'gdrive';
-                }
-            }
-            return '';
-        }
 
         // --- How to Use App Videos Management ---
         const loadHowToUseVideos = () => {
@@ -865,16 +755,18 @@
 
                 Object.entries(videos).forEach(([videoId, video]) => {
                     const videoItem = document.createElement('div');
-                    videoItem.className = 'how-to-use-video-item';
+                    videoItem.className = 'how-to-use-video-item card card-body mb-2'; /* */
                     videoItem.innerHTML = `
-                        <div>
-                            <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
-                            <strong>URL:</strong> <a href="${video.url}" target="_blank">${video.url || 'No URL'}</a><br>
-                            <strong>Description:</strong> <span contenteditable="true" data-id="${videoId}" data-field="description" class="video-description">${video.description || 'No description'}</span>
-                        </div>
-                        <div class="video-controls">
-                            <button class="btn btn-sm btn-info edit-how-to-use-video" data-id="${videoId}">Edit URL</button>
-                            <button class="btn btn-sm btn-danger delete-how-to-use-video" data-id="${videoId}">Delete</button>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
+                                <strong>URL:</strong> <a href="${video.url}" target="_blank">${video.url || 'No URL'}</a><br>
+                                <strong>Description:</strong> <span contenteditable="true" data-id="${videoId}" data-field="description" class="video-description">${video.description || 'No description'}</span>
+                            </div>
+                            <div class="video-controls">
+                                <button class="btn btn-sm btn-info edit-how-to-use-video" data-id="${videoId}">Edit URL</button>
+                                <button class="btn btn-sm btn-danger delete-how-to-use-video" data-id="${videoId}">Delete</button>
+                            </div>
                         </div>
                     `;
                     listContainer.appendChild(videoItem);
@@ -883,7 +775,7 @@
                     videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
                     videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
                         const newUrl = prompt('Enter new video URL:', video.url);
-                        if (newUrl !== null) { 
+                        if (newUrl !== null) {
                              updateHowToUseVideo(videoId, 'url', newUrl.trim());
                         }
                     });
@@ -967,11 +859,10 @@
             try {
                 console.log("Simulating sending notification:", { title, body, link });
                 msg('Notification send triggered (requires FCM backend setup)!', 'success');
-                
+
                 document.getElementById('notificationTitle').value = '';
                 document.getElementById('notificationBody').value = '';
                 document.getElementById('notificationLink').value = '';
-
             } catch (error) {
                 msg(`Error sending notification: ${error.message}`, 'danger');
             } finally {
@@ -979,7 +870,6 @@
             }
         };
         document.getElementById('sendNotificationButton').addEventListener('click', sendNotification);
-
 
         // Load and display categories
         const loadCategories = () => {
@@ -1071,7 +961,7 @@
                 const batchTypeChoice = await showConfirm('Is this a Direct Link Batch? (OK for Direct Link, Cancel for Regular Modules/Lectures)');
                 let title = prompt('Enter Batch title:');
                 if (!title) { msg('Batch title is required!', 'warning'); return; }
-                
+
                 const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
                 if (!thumbnailUrl) { msg('Thumbnail URL is required!', 'warning'); return; }
 
@@ -1101,11 +991,11 @@
                 if (!isContentDirectLink) {
                     originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
                     discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
-                    
+
                     originalPrice = originalPrice ? parseFloat(originalPrice) : null;
                     discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
                     isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
-                } else { 
+                } else {
                     isFree = true;
                     discountedPrice = 0;
                 }
@@ -1113,15 +1003,15 @@
                 try {
                     showLoading('Adding batch...');
                     const newRef = push(dbRef(db, `categories/${catId}/batches`));
-                    await set(newRef, { 
-                        title, 
-                        thumbnail: thumbnailUrl, 
+                    await set(newRef, {
+                        title,
+                        thumbnail: thumbnailUrl,
                         description,
-                        originalPrice: originalPrice, 
-                        discountedPrice: discountedPrice, 
-                        isFree: isFree, 
+                        originalPrice: originalPrice,
+                        discountedPrice: discountedPrice,
+                        isFree: isFree,
                         isNew: true,
-                        isContentDirectLink: isContentDirectLink, 
+                        isContentDirectLink: isContentDirectLink,
                         modules: modules,
                         directDriveLink: directDriveLink
                     });
@@ -1144,81 +1034,10 @@
                     const item = createBatchItem(catId, bId, batch);
                     batchesListContainer.append(item);
                 });
-            }, 
+            },
             (error) => {
                 msg(`Error loading batches: ${error.message}`, 'danger');
             });
-        };
-
-        const createBatchItem = (catId, bId, batch) => {
-            const div = document.createElement('div');
-            div.className = 'card mb-2 bg-light';
-            
-            const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ?
-                                 '<span class="fw-bold text-success">FREE</span>' :
-                                 (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
-            const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
-            
-            const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
-            const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
-
-            let dynamicContentHtml = '';
-
-            if (batch.isContentDirectLink) {
-                dynamicContentHtml = `
-                    <div class="mb-3 direct-link-container" style="display: ${directLinkSectionDisplay};">
-                        <label for="directDriveLink-${bId}-input" class="form-label">Direct Link:</label>
-                        <input type="url" class="form-control form-control-sm direct-drive-link" id="directDriveLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.directDriveLink || ''}" placeholder="e.g., https://example.com/your-content-link">
-                        <small class="form-text text-muted">User will be redirected to this link when they click "LET'S ROAR".</small>
-                    </div>
-                `;
-            } else {
-                dynamicContentHtml = `
-                    <div class="mb-3 normal-content-sections" style="display: ${normalContentSectionDisplay};">
-                        <label for="telegramCourseLink-${bId}" class="form-label">Telegram Course Link (Optional):</label>
-                        <input type="url" class="form-control form-control-sm mb-2 telegram-course-link" id="telegramCourseLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/your_course_channel">
-                        <small class="form-text text-muted">If this is not a free batch, the "Let's Roar" button will open this link.</small>
-                        <h6 class="mt-3 mb-2 text-muted">Modules:</h6>
-                        <div>
-                            <button class="btn btn-secondary btn-sm mb-2 add-module" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
-                            <div class="modules-list" id="modules-list-${bId}"></div>
-                        </div>
-                    </div>
-                `;
-            }
-
-
-            div.innerHTML = `
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 contenteditable="true" data-cat="${catId}" data-id="${bId}" class="batch-title flex-grow-1 me-2">${batch.title}</h6>
-                        <span class="badge ${batch.isNew ? 'bg-success' : 'bg-secondary'} me-2 toggle-isnew" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isNew ? 'NEW' : 'OLD'}</span>
-                        <span class="badge ${batch.isFree ? 'bg-info' : 'bg-warning'} me-2 toggle-isfree" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isFree ? 'FREE' : 'PAID'}</span>
-                        <span class="badge ${batch.isContentDirectLink ? 'bg-primary' : 'bg-secondary'} me-2 toggle-iscontentdirectlink" style="cursor:pointer;" data-cat="${catId}" data-bid="${bId}">${batch.isContentDirectLink ? 'DIRECT LINK' : 'NORMAL'}</span>
-                        <button class="btn btn-danger btn-sm delete-batch" data-cat="${catId}" data-id="${bId}">Delete Batch</button>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Thumbnail URL:</label>
-                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
-                        <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Description:</label>
-                        <textarea class="form-control form-control-sm batch-description" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Price:</label>
-                        <div class="d-flex align-items-center">
-                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="Original Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
-                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
-                            ${displayPrice} ${originalPriceStrikethrough}
-                        </div>
-                    </div>
-                    ${dynamicContentHtml}
-                </div>
-            `;
-            setupBatchEvents(div, catId, bId, batch);
-            return div;
         };
 
         const setupBatchEvents = (card, catId, bId, currentBatch) => {
@@ -1262,7 +1081,7 @@
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
                     msg('Original price updated', 'info');
-                } catch (error) { 
+                } catch (error) {
                     msg(`Error updating original price: ${error.message}`, 'danger');
                 }
             });
@@ -1339,7 +1158,6 @@
                     }
                 }
             });
-
             // --- Direct Link Specific Events ---
             const directDriveLinkInput = card.querySelector('.direct-drive-link');
             if (directDriveLinkInput) {
@@ -1371,7 +1189,6 @@
                     hideLoading();
                 }
             });
-
             // Listen for changes in modules for NORMAL batches
             const modulesListContainer = card.querySelector(`#modules-list-${bId}`);
             if (modulesListContainer) {
@@ -1387,6 +1204,80 @@
                     });
                 });
             }
+        };
+
+        const createBatchItem = (catId, bId, batch) => {
+            const div = document.createElement('div');
+            div.className = 'card mb-2 bg-light';
+
+            const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ?
+                '<span class="fw-bold text-success">FREE</span>' :
+                (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
+            const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
+            const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
+            const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
+
+            let dynamicContentHtml = '';
+            if (batch.isContentDirectLink) {
+                dynamicContentHtml = `
+                    <div class="mb-3 direct-link-container" style="display: ${directLinkSectionDisplay};">
+                        <label for="directDriveLink-${bId}-input" class="form-label">Direct Link:</label>
+                        <input type="url" class="form-control form-control-sm direct-drive-link"
+                            id="directDriveLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.directDriveLink || ''}" placeholder="e.g., https://example.com/your-content-link">
+                        <small class="form-text text-muted">User will be redirected to this link when they click "LET'S ROAR".</small>
+                    </div>
+                `;
+            } else {
+                dynamicContentHtml = `
+                    <div class="mb-3 normal-content-sections" style="display: ${normalContentSectionDisplay};">
+                        <label for="telegramCourseLink-${bId}" class="form-label">Telegram Course Link (Optional):</label>
+                        <input type="url" class="form-control
+                            form-control-sm mb-2 telegram-course-link" id="telegramCourseLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/your_course_channel">
+                        <small class="form-text text-muted">If this is not a free batch, the "Let's Roar" button will open this link.</small>
+                        <h6 class="mt-3 mb-2 text-muted">Modules:</h6>
+                        <div>
+                            <button class="btn btn-secondary btn-sm mb-2 add-module" data-cat="${catId}" data-bid="${bId}">+ Add Module</button>
+                            <div class="modules-list" id="modules-list-${bId}"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+
+            div.innerHTML = `
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 contenteditable="true" data-cat="${catId}" data-id="${bId}" class="batch-title flex-grow-1 me-2">${batch.title}</h6>
+                        <span class="badge ${batch.isNew ? 'bg-success' : 'bg-secondary'} me-2 toggle-isnew" style="cursor:pointer;"
+                            data-cat="${catId}" data-bid="${bId}">${batch.isNew ? 'NEW' : 'OLD'}</span>
+                        <span class="badge ${batch.isFree ? 'bg-info' : 'bg-warning'} me-2 toggle-isfree" style="cursor:pointer;"
+                            data-cat="${catId}" data-bid="${bId}">${batch.isFree ? 'FREE' : 'PAID'}</span>
+                        <span class="badge ${batch.isContentDirectLink ? 'bg-primary' : 'bg-secondary'} me-2 toggle-iscontentdirectlink" style="cursor:pointer;"
+                            data-cat="${catId}" data-bid="${bId}">${batch.isContentDirectLink ? 'DIRECT LINK' : 'NORMAL'}</span>
+                        <button class="btn btn-danger btn-sm delete-batch" data-cat="${catId}" data-id="${bId}">Delete Batch</button>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Thumbnail URL:</label>
+                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
+                        <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Description:</label>
+                        <textarea class="form-control form-control-sm batch-description" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Price:</label>
+                        <div class="d-flex align-items-center">
+                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="Original Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
+                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
+                            ${displayPrice} ${originalPriceStrikethrough}
+                        </div>
+                    </div>
+                    ${dynamicContentHtml}
+                </div>
+            `;
+            setupBatchEvents(div, catId, bId, batch);
+            return div;
         };
 
         const createModuleItem = (catId, bId, modId, module) => {
@@ -1405,6 +1296,91 @@
             setupModuleEvents(div, catId, bId, modId, module);
             return div;
         };
+
+        const createLectureResourceItem = (catId, bId, modId, itemId, item) => {
+            const div = document.createElement('div');
+            div.className = 'd-flex align-items-center mb-1 ps-3';
+
+            const itemTypeDisplay = item.type ? item.type.toUpperCase() : 'UNKNOWN';
+
+            const extension = getFileExtension(item.url, item.name).toLowerCase();
+            let iconClass = 'fas fa-file';
+            const videoAudioExtensions = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mp3', 'wav', 'ogg'];
+            const documentExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt'];
+            const archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz'];
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
+            const gemExtension = 'gem';
+
+            // Determine icon based on file type
+            if (videoAudioExtensions.includes(extension) || item.url.includes('youtube.com') || item.url.includes('youtu.be') || (item.url.includes('drive.google.com/file/d/') && item.type === 'lecture')) {
+                iconClass = 'fas fa-video';
+            } else if (extension === gemExtension) {
+                iconClass = 'fas fa-gem';
+            } else if (extension === 'pdf') {
+                iconClass = 'fas fa-file-pdf';
+            } else if (documentExtensions.includes(extension)) {
+                iconClass = 'fas fa-file-alt';
+            } else if (archiveExtensions.includes(extension)) {
+                iconClass = 'fas fa-file-archive';
+            } else if (imageExtensions.includes(extension)) {
+                iconClass = 'fas fa-image';
+            } else {
+                iconClass = 'fas fa-link';
+            }
+
+            div.innerHTML = `
+                <i class="${iconClass} me-2"></i>
+                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="name" class="item-name flex-grow-1 me-2">${item.name || 'Untitled'}</span>
+                <input type="url" class="form-control form-control-sm me-2 item-url-input" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="url" value="${item.url || ''}" placeholder="URL" style="width: 200px;">
+                <span class="badge ${item.type === 'lecture' ? 'bg-primary' : 'bg-info'} me-2 item-type-badge">${itemTypeDisplay}</span>
+                <button class="btn btn-sm btn-danger delete-item" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}">Delete</button>
+            `;
+            setupLectureResourceItemEvents(div, catId, bId, modId, itemId, item);
+            return div;
+        };
+
+        const setupLectureResourceItemEvents = (itemEl, catId, bId, modId, itemId, currentItem) => {
+            // Name editing
+            itemEl.querySelector('.item-name').addEventListener('blur', async (e) => {
+                const newName = e.target.textContent.trim();
+                if (newName && newName !== currentItem.name) {
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { name: newName });
+                        msg('Item name updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating item name: ${error.message}`, 'danger');
+                    }
+                }
+            });
+
+            // URL editing
+            itemEl.querySelector('.item-url-input').addEventListener('change', async (e) => {
+                const newUrl = e.target.value.trim();
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { url: newUrl });
+                    msg('Item URL updated', 'info');
+                } catch (error) {
+                    msg(`Error updating item URL: ${error.message}`, 'danger');
+                }
+            });
+
+            // Delete item
+            itemEl.querySelector('.delete-item').addEventListener('click', async () => {
+                const confirmDelete = await showConfirm('Are you sure you want to delete this item?');
+                if (confirmDelete) {
+                    showLoading('Deleting item...');
+                    try {
+                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
+                        msg('Item deleted!', 'danger');
+                    } catch (error) {
+                        msg(`Error deleting item: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+        };
+
 
         const setupModuleEvents = (card, catId, bId, modId, currentModule) => {
             // Module name editing
@@ -1436,11 +1412,10 @@
                 }
             });
 
-            // Add Lecture/Resource
+            // Add Lecture/Resource Button
             card.querySelector('.add-lecture').addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                
-                // Prompt for Name and URL
+
                 const itemName = prompt('Enter File Name (e.g., Lecture 1.mp4, Notes.pdf):');
                 if (!itemName) { msg('File Name is required!', 'warning'); return; }
 
@@ -1453,18 +1428,19 @@
                     let itemType = 'resource'; // Default to resource
 
                     const videoAudioExtensions = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mp3', 'wav', 'ogg'];
-                    const gemExtension = 'gem';
+                    const gemExtension = 'gem'; // .gem files are often custom video formats
 
-                    if (videoAudioExtensions.includes(extension) || itemUrl.includes('youtube.com') || itemUrl.includes('youtu.be') || itemUrl.includes('drive.google.com/file/d/')) {
+                    // Check if it's a video/audio file or YouTube/Google Drive video link
+                    if (videoAudioExtensions.includes(extension) || itemUrl.includes('youtube.com') || itemUrl.includes('youtu.be') || (itemUrl.includes('drive.google.com/file/d/') && !itemUrl.includes('export=download'))) {
                         itemType = 'lecture';
-                    } else if (gemExtension === extension) {
-                        itemType = 'lecture'; // .gem files are treated as lecture, will be downloaded on frontend
+                    } else if (extension === gemExtension) {
+                        itemType = 'lecture'; // Treat .gem as lecture
                     }
-                    
+
                     const newLectureRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
-                    await set(newLectureRef, { 
-                        name: itemName, 
-                        url: itemUrl, 
+                    await set(newLectureRef, {
+                        name: itemName,
+                        url: itemUrl,
                         type: itemType, // 'lecture' or 'resource'
                     });
                     msg(`'${itemName}' added as a ${itemType}!`, 'success');
@@ -1490,108 +1466,18 @@
             });
         };
 
-        // Helper function to create lecture/resource item
-        const createLectureResourceItem = (catId, bId, modId, itemId, item) => {
-            const div = document.createElement('div');
-            div.className = 'd-flex align-items-center mb-1 ps-3';
 
-            // Ensure item.type has a value before calling toUpperCase()
-            const itemTypeDisplay = item.type ? item.type.toUpperCase() : 'UNKNOWN'; 
-
-            const extension = getFileExtension(item.url, item.name).toLowerCase();
-            let iconClass = 'fas fa-file';
-
-            const videoAudioExtensions = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mp3', 'wav', 'ogg'];
-            const documentExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt'];
-            const archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz'];
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
-            const gemExtension = 'gem';
-
-            if (videoAudioExtensions.includes(extension) || item.url.includes('youtube.com') || item.url.includes('youtu.be') || item.url.includes('drive.google.com/file/d/')) {
-                iconClass = 'fas fa-video';
-            } else if (extension === gemExtension) {
-                iconClass = 'fas fa-gem';
-            } else if (extension === 'pdf') {
-                iconClass = 'fas fa-file-pdf';
-            } else if (documentExtensions.includes(extension)) {
-                iconClass = 'fas fa-file-alt';
-            } else if (archiveExtensions.includes(extension)) {
-                iconClass = 'fas fa-file-archive';
-            } else if (imageExtensions.includes(extension)) {
-                iconClass = 'fas fa-image';
-            } else {
-                iconClass = 'fas fa-link';
-            }
-
-            div.innerHTML = `
-                <i class="${iconClass} me-2"></i>
-                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="name" class="item-name flex-grow-1 me-2">${item.name || 'Untitled'}</span>
-                <input type="url" class="form-control form-control-sm me-2 item-url-input" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="url" value="${item.url || ''}" placeholder="URL" style="width: 200px;">
-                <span class="badge ${item.type === 'lecture' ? 'bg-primary' : 'bg-info'} me-2 item-type-badge">${itemTypeDisplay}</span>
-                <button class="btn btn-danger btn-sm delete-item" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}">Delete</button>
-            `;
-            setupLectureResourceEvents(div, catId, bId, modId, itemId, item);
-            return div;
-        };
-
-        // Helper function to set up lecture/resource events
-        const setupLectureResourceEvents = (card, catId, bId, modId, itemId, currentItem) => {
-            // Name editing
-            card.querySelector('.item-name').addEventListener('blur', async (e) => {
-                const newName = e.target.textContent.trim();
-                if (newName && newName !== currentItem.name) {
-                    try {
-                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { name: newName });
-                        msg('Item name updated', 'info');
-                    } catch (error) {
-                        msg(`Error updating item name: ${error.message}`, 'danger');
-                    }
-                }
-            });
-
-            // URL editing
-            card.querySelector('.item-url-input').addEventListener('change', async (e) => {
-                const newUrl = e.target.value.trim();
-                try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { url: newUrl });
-                    msg('Item URL updated', 'info');
-                } catch (error) {
-                    msg(`Error updating item URL: ${error.message}`, 'danger');
-                }
-            });
-
-            // Delete item
-            card.querySelector('.delete-item').addEventListener('click', async () => {
-                const confirmDelete = await showConfirm('Are you sure you want to delete this item?');
-                if (confirmDelete) {
-                    showLoading('Deleting item...');
-                    try {
-                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
-                        msg('Item deleted!', 'danger');
-                    } catch (error) {
-                        msg(`Error deleting item: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                }
-            });
-        };
-
-
-        // Initializations on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', async () => {
-            await authenticateFirebase();
+        // Initial load to show home section and setup events
+        document.addEventListener('DOMContentLoaded', () => {
+            authenticateFirebase();
             loadSiteConfig();
-            setupSiteConfigEvents();
-            loadHowToUseVideos();
             loadCategories();
-            
-            // Initial quote display and then update every 12 hours
+            loadHowToUseVideos(); // Ensure how-to-use videos are loaded
             updateHomePageQuote();
-            setInterval(updateHomePageQuote, 12 * 60 * 60 * 1000); // 12 hours in milliseconds
+            setInterval(updateHomePageQuote, 6 * 60 * 60 * 1000); // Update every 6 hours
 
-            // Show default section on load (Home)
-            showSection('home-section');
+            showSection('home-section'); // Initially show the home section
+            setupSiteConfigEvents(); // Ensure site config events are attached
         });
 
     </script>
