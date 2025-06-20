@@ -257,20 +257,92 @@
 
 
         /* Custom Modal (Confirm/Alert) Styles */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
         .custom-modal-content {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
             box-shadow: 0 5px 25px var(--shadow-color);
             color: var(--text-light);
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
         .custom-modal-content h5 {
             color: var(--accent-teal);
+            margin-bottom: 20px;
         }
         .custom-modal-content .modal-footer {
             justify-content: center; /* Center buttons */
             border-top: none; /* Remove default border */
-            padding-top: 0; /* Remove extra padding */
+            padding-top: 20px; /* Adjust padding */
+        }
+        .custom-modal-content .modal-footer .btn {
+            margin: 0 5px; /* Space out buttons */
+        }
+
+
+        /* Loading Spinner Overlay */
+        .loading-spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid var(--accent-teal); /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-message {
+            color: white;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Bottom Navigation Bar Styles (New for Admin Panel) */
@@ -372,7 +444,8 @@
 
             <div id="site-config-section" class="section">
                 <h5>Site Configuration (Global Settings)</h5>
-                <div id="alerts"></div> <div class="mb-3">
+                <div id="alerts"></div>
+                <div class="mb-3">
                     <label for="surpriseButtonLink" class="form-label">Today's Surprise Link</label>
                     <input type="url" class="form-control site-config-input" id="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise" data-key="surpriseButtonLink">
                     <small class="form-text text-muted">Link for the "Today's Surprise!" button on the homepage.</small>
@@ -387,7 +460,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="youtubeLink" class="form-label">YouTube Link (About Me)</label>
-                    <input type="url" class="form-control site-config-input" id="youtubeLink" placeholder="e.g., https://www.youtube.com/yourchannel" data-key="youtubeLink">
+                    <input type="url" class="form-control site-config-input" id="youtubeLink" placeholder="e.g., https://youtube.com/your_channel" data-key="youtubeLink">
                 </div>
                 <div class="mb-3">
                     <label for="instagramLink" class="form-label">Instagram Link (About Me)</label>
@@ -489,6 +562,20 @@
         </div>
     </div>
 
+    <div class="custom-modal-overlay" id="addLectureResourceModal">
+        <div class="custom-modal-content">
+            <h5 id="addLectureResourceMessage">Select Content Type</h5>
+            <div class="modal-body">
+                <p>Would you like to add a Lecture or a Resource?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="addLectureButton"><i class="fas fa-video me-2"></i> Lecture</button>
+                <button type="button" class="btn btn-info" id="addResourceButton"><i class="fas fa-file-alt me-2"></i> Resource</button>
+                <button type="button" class="btn btn-secondary" id="cancelAddLectureResource">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="loading-spinner-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-message">Processing...</p>
@@ -520,14 +607,14 @@
         import { getMessaging, getToken as getMessagingToken, onMessage } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging.js";
 
         const firebaseConfig = {
-          apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
-          authDomain: "adminneast.firebaseapp.com",
-          databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
-          projectId: "adminneast",
-          storageBucket: "adminneast.appspot.com",
-          messagingSenderId: "883877553418",
-          appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
-          measurementId: "G-PCH99BDF1S"
+            apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
+            authDomain: "adminneast.firebaseapp.com",
+            databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
+            projectId: "adminneast",
+            storageBucket: "adminneast.appspot.com",
+            messagingSenderId: "883877553418",
+            appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
+            measurementId: "G-PCH99BDF1S"
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -616,6 +703,34 @@
             });
         };
 
+        // Function to show the custom lecture/resource type selection modal
+        const showLectureResourceModal = () => {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('addLectureResourceModal');
+                const lectureBtn = document.getElementById('addLectureButton');
+                const resourceBtn = document.getElementById('addResourceButton');
+                const cancelBtn = document.getElementById('cancelAddLectureResource');
+
+                modal.classList.add('active');
+
+                const handleSelection = (type) => {
+                    modal.classList.remove('active');
+                    lectureBtn.removeEventListener('click', lectureClickHandler);
+                    resourceBtn.removeEventListener('click', resourceClickHandler);
+                    cancelBtn.removeEventListener('click', cancelClickHandler);
+                    resolve(type);
+                };
+
+                const lectureClickHandler = () => handleSelection('lecture');
+                const resourceClickHandler = () => handleSelection('resource');
+                const cancelClickHandler = () => handleSelection(null);
+
+                lectureBtn.addEventListener('click', lectureClickHandler);
+                resourceBtn.addEventListener('click', resourceClickHandler);
+                cancelBtn.addEventListener('click', cancelClickHandler);
+            });
+        };
+
         const showLoading = (message = "Processing...") => {
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.querySelector('.loading-message').textContent = message;
@@ -692,6 +807,7 @@
                 if (urlParts.length > 1) {
                     return urlParts.pop().split('?')[0].split('#')[0];
                 }
+                // No longer strictly rely on these for type, but good for extension if needed
                 if (url.includes('youtube.com') || url.includes('youtu.be')) {
                     return 'youtube';
                 }
@@ -1303,30 +1419,29 @@
 
             const itemTypeDisplay = item.type ? item.type.toUpperCase() : 'UNKNOWN';
 
-            const extension = getFileExtension(item.url, item.name).toLowerCase();
-            let iconClass = 'fas fa-file';
-            const videoAudioExtensions = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mp3', 'wav', 'ogg'];
-            const documentExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt'];
-            const archiveExtensions = ['zip', 'rar', '7z', 'tar', 'gz'];
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
-            const gemExtension = 'gem';
-
-            // Determine icon based on file type
-            if (videoAudioExtensions.includes(extension) || item.url.includes('youtube.com') || item.url.includes('youtu.be') || (item.url.includes('drive.google.com/file/d/') && item.type === 'lecture')) {
+            let iconClass = 'fas fa-file'; // Default icon
+            // Determine icon based on item.type, then fall back to extension if type is generic or missing.
+            if (item.type === 'lecture') {
                 iconClass = 'fas fa-video';
-            } else if (extension === gemExtension) {
-                iconClass = 'fas fa-gem';
-            } else if (extension === 'pdf') {
-                iconClass = 'fas fa-file-pdf';
-            } else if (documentExtensions.includes(extension)) {
-                iconClass = 'fas fa-file-alt';
-            } else if (archiveExtensions.includes(extension)) {
-                iconClass = 'fas fa-file-archive';
-            } else if (imageExtensions.includes(extension)) {
-                iconClass = 'fas fa-image';
-            } else {
-                iconClass = 'fas fa-link';
+            } else if (item.type === 'resource') {
+                const extension = getFileExtension(item.url, item.name).toLowerCase();
+                if (extension === 'pdf') {
+                    iconClass = 'fas fa-file-pdf';
+                } else if (['zip', 'rar', '7z'].includes(extension)) {
+                    iconClass = 'fas fa-file-archive';
+                } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                    iconClass = 'fas fa-image';
+                } else {
+                    iconClass = 'fas fa-link'; // Generic link for other resources
+                }
             }
+            // If item.type is not set, or is 'unknown', or if we want to add more specific icons for lectures,
+            // we can still use the getFileExtension as a fallback or for refinement.
+            const extension = getFileExtension(item.url, item.name).toLowerCase();
+            if (extension === 'gem') {
+                iconClass = 'fas fa-gem';
+            }
+
 
             div.innerHTML = `
                 <i class="${iconClass} me-2"></i>
@@ -1416,36 +1531,31 @@
             card.querySelector('.add-lecture').addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const itemName = prompt('Enter File Name (e.g., Lecture 1.mp4, Notes.pdf):');
+                // Show the new modal to ask for content type
+                const contentType = await showLectureResourceModal();
+
+                if (!contentType) { // User cancelled the selection
+                    msg('Content addition cancelled.', 'info');
+                    return;
+                }
+
+                const itemName = prompt('Enter File Name (e.g., Lecture 1, Notes for Module 1):');
                 if (!itemName) { msg('File Name is required!', 'warning'); return; }
 
-                const itemUrl = prompt('Enter File URL (YouTube/Direct Link/etc.):');
+                const itemUrl = prompt('Enter File URL (YouTube/Google Drive/Direct Link/etc.):');
                 if (!itemUrl) { msg('URL is required!', 'warning'); return; }
 
                 showLoading('Adding item...');
                 try {
-                    const extension = getFileExtension(itemUrl, itemName).toLowerCase();
-                    let itemType = 'resource'; // Default to resource
-
-                    const videoAudioExtensions = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mp3', 'wav', 'ogg'];
-                    const gemExtension = 'gem'; // .gem files are often custom video formats
-
-                    // Check if it's a video/audio file or YouTube/Google Drive video link
-                    if (videoAudioExtensions.includes(extension) || itemUrl.includes('youtube.com') || itemUrl.includes('youtu.be') || (itemUrl.includes('drive.google.com/file/d/') && !itemUrl.includes('export=download'))) {
-                        itemType = 'lecture';
-                    } else if (extension === gemExtension) {
-                        itemType = 'lecture'; // Treat .gem as lecture
-                    }
-
                     const newLectureRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
                     await set(newLectureRef, {
                         name: itemName,
                         url: itemUrl,
-                        type: itemType, // 'lecture' or 'resource'
+                        type: contentType // Use the selected content type ('lecture' or 'resource')
                     });
-                    msg(`'${itemName}' added as a ${itemType}!`, 'success');
+                    msg(`'${itemName}' added as a ${contentType}!`, 'success');
                 } catch (error) {
-                    msg(`Error adding lecture/resource: ${error.message}`, 'danger');
+                    msg(`Error adding ${contentType}: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
