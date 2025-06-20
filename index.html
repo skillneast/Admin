@@ -134,7 +134,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1060; /* Higher than Bootstrap modals */
+            z-index: 1060;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease;
@@ -361,8 +361,19 @@
             <button id="addCategory" class="btn btn-primary mt-2 w-100">Add Category</button>
         </div>
 
-
-        <div id="categoriesList" class="mt-4"></div>
+        <div id="categoriesList" class="mt-4">
+            <div class="mb-3 direct-link-container">
+                                        <label for="directDriveLink-someBatchId-input" class="form-label">Google Drive Direct Link:</label>
+                                        <input type="url" class="form-control form-control-sm direct-drive-link" id="directDriveLink-someBatchId-input" data-cat="someCatId" data-bid="someBatchId" value="https://drive.google.com/drive/folders/YOUR_ACTUAL_LINK_HERE" placeholder="e.g., https://drive.google.com/drive/folders/YOUR_FOLDER_ID">
+                                        <small class="form-text text-muted">User will be redirected to this link when they click "LET'S ROAR".</small>
+                                    </div>
+                                    </div>
+                            </div>
+                            </div>
+                    </div>
+                </div>
+            -->
+        </div>
     </div>
 
     <div class="custom-modal-overlay" id="customConfirmModal">
@@ -381,7 +392,6 @@
     </div>
 
     <script async defer src="https://accounts.google.com/gsi/client"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <script type="module">
@@ -403,18 +413,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        
+
         // --- GOOGLE DRIVE API CONFIGURATION ---
-        const GOOGLE_API_KEY = "AIzaSyAmgFl8LmLgTG71pS0iUjEVkwyYmSTnMcY"; // YOUR API KEY
-        const GOOGLE_CLIENT_ID = "709184072806-ehsmc8i6ikrmcqcv91c94fri5b1dge82.apps.googleusercontent.com"; // YOUR CLIENT ID
+        // These can potentially be removed if you are ONLY using direct links and not fetching folder contents
+        const GOOGLE_API_KEY = "AIzaSyAmgFl8LmLgTG71pS0iUjEVkwyYmSTnMcY";
+        const GOOGLE_CLIENT_ID = "709184072806-ehsmc8i6ikrmcqcv91c94fri5b1dge82.apps.googleusercontent.com";
 
         let isAuthenticated = false;
-        // Global variable for GIS Token Client
-        let tokenClient; 
-        // Flag to check if gapi.client is initialized
+        let tokenClient;
         let gapiClientInitialized = false;
-        // Promise resolver for pending authorization request
-        let pendingAuthPromiseResolve = null; 
+        let pendingAuthPromiseResolve = null;
 
         const authenticateFirebase = async () => {
             try {
@@ -525,294 +533,17 @@
         };
 
         // --- GOOGLE DRIVE API INTEGRATION FUNCTIONS WITH GIS ---
-        async function initGapiClient() {
-            if (gapiClientInitialized) {
-                console.log('gapi.client already initialized.');
-                return;
-            }
-
-            // Load gapi client library if not already loaded by GIS
-            // gapi.load('client') only loads client library; auth2 is handled by GIS
-            await new Promise(resolve => gapi.load('client', resolve)); 
-
-            // Initialize gapi.client (this initializes the client, not authorizes it)
-            await gapi.client.init({
-                apiKey: GOOGLE_API_KEY, 
-                clientId: GOOGLE_CLIENT_ID, // Use for gapi.client.init setup
-                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-                scope: 'https://www.googleapis.com/auth/drive.readonly'
-            });
-
-            // Initialize GIS Token Client
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: GOOGLE_CLIENT_ID, // Use your client ID here for GIS
-                scope: 'https://www.googleapis.com/auth/drive.readonly',
-                callback: (tokenResponse) => {
-                    // This callback fires when requestAccessToken() completes
-                    if (tokenResponse.error) {
-                        console.error('GIS Token request failed:', tokenResponse.error, tokenResponse.error_description);
-                        msg(`GIS Authorization failed: ${tokenResponse.error_description || tokenResponse.error}. Please ensure your OAuth consent screen is configured.`, 'danger');
-                        gapiClientInitialized = false; // Reset flag on error
-                        if (pendingAuthPromiseResolve) {
-                            pendingAuthPromiseResolve(false); // Resolve with false on error
-                            pendingAuthPromiseResolve = null;
-                        }
-                    } else {
-                        // Set the received access token to gapi.client for subsequent API calls
-                        gapi.client.setToken(tokenResponse);
-                        console.log('GIS token obtained and gapi.client updated.');
-                        gapiClientInitialized = true; // Set flag to true once token is set
-                        if (pendingAuthPromiseResolve) {
-                            pendingAuthPromiseResolve(true); // Resolve with true on success
-                            pendingAuthPromiseResolve = null;
-                        }
-                    }
-                },
-                error_callback: (error) => { // This callback is for errors during initTokenClient setup itself
-                    console.error('GIS initTokenClient error_callback:', error);
-                    msg(`GIS Token Client initialization error: ${error.type}. Check your Client ID and consent screen.`, 'danger');
-                    gapiClientInitialized = false;
-                    if (pendingAuthPromiseResolve) {
-                        pendingAuthPromiseResolve(false); // Resolve with false on error
-                        pendingAuthPromiseResolve = null;
-                    }
-                }
-            });
-            console.log('GIS Token Client initialized.');
-        }
-
-        // Function to ensure authorization before API call
-        async function ensureGoogleAuthorization() {
-            // First, ensure gapi.client and tokenClient are initialized
-            if (!gapiClientInitialized || !tokenClient) {
-                try {
-                    await initGapiClient(); // Initialize them if not already
-                } catch (error) {
-                    console.error("Initialization failed prior to authorization:", error);
-                    throw new Error('Google API Client initialization failed prior to authorization request.');
-                }
-            }
-
-            // Request a new access token if none is available or it's expired
-            if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
-                console.log('Requesting new access token...');
-                
-                // Create a new Promise that will resolve when tokenClient.callback is called
-                const authPromise = new Promise(resolve => {
-                    pendingAuthPromiseResolve = resolve; // Store the resolve function globally
-                });
-
-                // This call will trigger the GIS consent pop-up if user is not already authorized
-                tokenClient.requestAccessToken(); 
-                
-                // Wait for the authPromise to resolve (meaning tokenClient.callback has fired)
-                const success = await authPromise;
-                if (!success) {
-                    throw new Error('Failed to obtain Google access token. User might have denied consent.');
-                }
-            }
-        }
-
-        // Function to fetch contents of a Google Drive folder
-        async function fetchDriveFolderContents(folderId) {
-            if (!folderId) return [];
-            try {
-                // Ensure authorization before fetching content
-                await ensureGoogleAuthorization();
-
-                // Double check if token is available after authorization
-                if (!gapi.client.getToken() || gapi.client.getToken().expires_at < Date.now()) {
-                    throw new Error('Google access token not available after authorization attempt. (Pre-API call check)');
-                }
-
-                let allFiles = [];
-                // Recursive helper function to traverse folders
-                async function fetchFilesRecursive(currentFolderId) {
-                    let currentPageToken = null;
-                    do {
-                        // List files within the current folder
-                        const response = await gapi.client.drive.files.list({
-                            'q': `'${currentFolderId}' in parents and trashed = false`, // Query for files in the current folder, not trashed
-                            'fields': 'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, exportLinks, parents)', // Request specific fields including parents
-                            'pageSize': 100, // Number of files per page
-                            'pageToken': currentPageToken // Token for pagination
-                        });
-                        const files = response.result.files;
-                        if (files && files.length > 0) {
-                            for (const file of files) {
-                                let type = 'file';
-                                let url = file.webViewLink; // Default view link
-
-                                // Handle folders recursively
-                                if (file.mimeType === 'application/vnd.google-apps.folder') {
-                                    type = 'folder';
-                                    url = file.webViewLink;
-                                    allFiles.push({ // Store folder info
-                                        id: file.id,
-                                        name: file.name,
-                                        type: type,
-                                        mimeType: file.mimeType,
-                                        url: url,
-                                        parents: file.parents || []
-                                    });
-                                    await fetchFilesRecursive(file.id); // Recurse into sub-folder
-                                } else {
-                                    // Determine file type and appropriate URL for embedding/downloading
-                                    if (file.mimeType.startsWith('video/')) {
-                                        type = 'video';
-                                        url = `https://drive.google.com/uc?export=preview&id=${file.id}`; // Embeddable format for videos
-                                    } else if (file.mimeType === 'application/pdf') {
-                                        type = 'pdf';
-                                        url = file.exportLinks?.['application/pdf'] || file.webContentLink || file.webViewLink;
-                                    } else if (file.mimeType.startsWith('image/')) {
-                                        type = 'image';
-                                        url = file.webContentLink || file.webViewLink;
-                                    } else if (file.mimeType.includes('zip') || file.mimeType.includes('rar') || file.mimeType.includes('tar')) {
-                                        type = 'archive';
-                                        url = file.webContentLink || file.webViewLink;
-                                    } else if (file.mimeType.includes('application/octet-stream') || !file.mimeType) {
-                                        type = 'gem'; // Generic type for other files
-                                        url = file.webContentLink || file.webViewLink;
-                                    }
-
-                                    // Fallback URL if specific content/export links are missing
-                                    if (!url) url = file.webViewLink;
-
-                                    allFiles.push({
-                                        id: file.id,
-                                        name: file.name,
-                                        type: type,
-                                        mimeType: file.mimeType,
-                                        url: url,
-                                        parents: file.parents || []
-                                    });
-                                }
-                            }
-                        }
-                        currentPageToken = response.result.nextPageToken; // Get next page token for pagination
-                    } while (currentPageToken); // Continue until no more pages
-                }
-
-                await fetchFilesRecursive(folderId); // Start recursive fetch from the initial folderId
-
-                // Filter out duplicate files (can happen with recursive fetches)
-                const uniqueFiles = [];
-                const seenIds = new Set();
-                for (const file of allFiles) {
-                    if (!seenIds.has(file.id)) {
-                        uniqueFiles.push(file);
-                        seenIds.add(file.id);
-                    }
-                }
-                return uniqueFiles;
-
-            } catch (error) {
-                console.error("Error fetching Google Drive folder contents:", error);
-                const errorDetails = error.details || error.message || 'unknown error';
-                msg(`Error fetching Google Drive contents: ${errorDetails}. Check folder ID and sharing permissions.`, 'danger');
-                throw error; // Re-throw the error for higher-level error handling
-            }
-        }
+        // (These functions can be removed/commented out if you are only using direct links)
+        async function initGapiClient() { /* ... existing code ... */ }
+        async function ensureGoogleAuthorization() { /* ... existing code ... */ }
+        async function fetchDriveFolderContents(folderId) { /* ... existing code ... */ }
 
 
         // --- How to Use App Videos Management ---
-        const loadHowToUseVideos = () => {
-            const videosRef = dbRef(db, 'siteConfig/howToUseVideos');
-            onValue(videosRef, (snapshot) => {
-                const videos = snapshot.val() || {};
-                const listContainer = document.getElementById('howToUseVideosList');
-                listContainer.innerHTML = '';
-
-                if (Object.keys(videos).length === 0) {
-                    listContainer.innerHTML = '<p class="text-muted fst-italic">No videos added yet.</p>';
-                    return;
-                }
-
-                Object.entries(videos).forEach(([videoId, video]) => {
-                    const videoItem = document.createElement('div');
-                    videoItem.className = 'how-to-use-video-item';
-                    videoItem.innerHTML = `
-                        <div>
-                            <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
-                            <strong>URL:</strong> <a href="${video.url}" target="_blank">${video.url || 'No URL'}</a><br>
-                            <strong>Description:</strong> <span contenteditable="true" data-id="${videoId}" data-field="description" class="video-description">${video.description || 'No description'}</span>
-                        </div>
-                        <div class="video-controls">
-                            <button class="btn btn-sm btn-info edit-how-to-use-video" data-id="${videoId}">Edit URL</button>
-                            <button class="btn btn-sm btn-danger delete-how-to-use-video" data-id="${videoId}">Delete</button>
-                        </div>
-                    `;
-                    listContainer.appendChild(videoItem);
-
-                    videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
-                    videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
-                    videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
-                        const newUrl = prompt('Enter new video URL:', video.url);
-                        if (newUrl !== null) { 
-                             updateHowToUseVideo(videoId, 'url', newUrl.trim());
-                        }
-                    });
-                    videoItem.querySelector('.delete-how-to-use-video').addEventListener('click', () => deleteHowToUseVideo(videoId));
-                });
-            }, (error) => {
-                msg(`Error loading how-to-use videos: ${error.message}`, 'danger');
-            });
-        };
-
-        const addHowToUseVideo = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const title = document.getElementById('howToUseVideoTitle').value.trim();
-            const url = document.getElementById('howToUseVideoUrl').value.trim();
-            const description = document.getElementById('howToUseVideoDescription').value.trim();
-
-            if (!title || !url) {
-                msg('Video title and URL are required!', 'warning');
-                return;
-            }
-
-            showLoading('Adding video...');
-            try {
-                const newRef = push(dbRef(db, `siteConfig/howToUseVideos`));
-                await set(newRef, { title: title, url: url, description: description });
-                msg('Video added successfully!', 'success');
-                document.getElementById('howToUseVideoTitle').value = '';
-                document.getElementById('howToUseVideoUrl').value = '';
-                document.getElementById('howToUseVideoDescription').value = '';
-            } catch (error) {
-                msg(`Error adding video: ${error.message}`, 'danger');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        const updateHowToUseVideo = async (videoId, field, value) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            showLoading('Updating video...');
-            try {
-                await update(dbRef(db, `siteConfig/howToUseVideos/${videoId}`), { [field]: value });
-                msg('Video updated!', 'info');
-            } catch (error) {
-                msg(`Error updating video: ${error.message}`, 'danger');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        const deleteHowToUseVideo = async (videoId) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const confirm = await showConfirm('Are you sure you want to delete this video?');
-            if (confirm) {
-                showLoading('Deleting video...');
-                try {
-                    await remove(dbRef(db, `siteConfig/howToUseVideos/${videoId}`));
-                    msg('Video deleted!', 'danger');
-                } catch (error) {
-                    msg(`Error deleting video: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                }
-            }
-        };
+        const loadHowToUseVideos = () => { /* ... existing code ... */ };
+        const addHowToUseVideo = async () => { /* ... existing code ... */ };
+        const updateHowToUseVideo = async (videoId, field, value) => { /* ... existing code ... */ };
+        const deleteHowToUseVideo = async (videoId) => { /* ... existing code ... */ };
         document.getElementById('addHowToUseVideo').addEventListener('click', addHowToUseVideo);
 
         // Load and display categories
@@ -844,7 +575,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="categoryImageUrl-${catId}" class="form-label">Category Image URL:</label>
-                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.}</p>'}
+                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
                             <input type="url" class="form-control form-control-sm mt-2 category-image-url" id="categoryImageUrl-${catId}" data-id="${catId}" value="${cat.imageUrl || ''}" placeholder="e.g., https://example.com/image.jpg">
                         </div>
                         <hr>
@@ -902,7 +633,7 @@
             card.querySelector('.add-batch').onclick = async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const batchTypeChoice = await showConfirm('Is this a Google Drive Content batch? (OK for Drive, Cancel for Regular Modules/Lectures)');
+                const batchTypeChoice = await showConfirm('Is this a Google Drive Direct Link Batch? (OK for Direct Link, Cancel for Regular Modules/Lectures)');
                 let title = prompt('Enter Batch title:');
                 if (!title) { msg('Batch title is required!', 'warning'); return; }
                 
@@ -914,82 +645,30 @@
                 if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
 
                 let isContentDirectLink = batchTypeChoice;
-                let googleDriveFolderId = null;
-                let modules = {};
-                let driveContent = null;
+                let directDriveLink = null; // New field for direct link
+                let modules = null; // Will be null for direct link batches
+                let driveContent = null; // Will be null for direct link batches
 
                 if (isContentDirectLink) {
-                    googleDriveFolderId = prompt('Enter Google Drive Folder ID:');
-                    if (!googleDriveFolderId) {
-                        msg('Google Drive Folder ID is required for this batch type! Batch not added.', 'warning');
+                    directDriveLink = prompt('Enter Google Drive Direct Link (for redirection):');
+                    if (!directDriveLink) {
+                        msg('Google Drive Direct Link is required for this batch type! Batch not added.', 'warning');
                         return;
                     }
-
-                    showLoading('Fetching Drive contents...');
-                    try {
-                        const fetchedDriveItems = await fetchDriveFolderContents(googleDriveFolderId);
-                        if (!fetchedDriveItems || fetchedDriveItems.length === 0) {
-                            msg('Failed to fetch Drive contents or folder is empty. Batch not added. Check folder ID or permissions.', 'danger');
-                            return;
-                        }
-
-                        const directFiles = fetchedDriveItems.filter(item =>
-                            item.parents.includes(googleDriveFolderId) && item.type !== 'folder'
-                        );
-                        const subFolders = fetchedDriveItems.filter(item =>
-                            item.parents.includes(googleDriveFolderId) && item.type === 'folder'
-                        );
-
-                        if (subFolders.length > 0) {
-                            for (const folder of subFolders) {
-                                const moduleId = push(dbRef(db, 'dummy')).key;
-                                const moduleLectures = fetchedDriveItems.filter(item =>
-                                    item.parents.includes(folder.id) && item.type !== 'folder'
-                                ).map(item => ({
-                                    id: item.id,
-                                    name: item.name,
-                                    url: item.url,
-                                    type: item.type,
-                                    mimeType: item.mimeType
-                                }));
-                                modules[moduleId] = {
-                                    name: folder.name,
-                                    driveId: folder.id,
-                                    lectures: moduleLectures.sort((a,b) => (a.name || '').localeCompare(b.name || '')),
-                                    type: 'drive-module'
-                                };
-                            }
-                        } else {
-                            const moduleId = push(dbRef(db, 'dummy')).key;
-                            modules[moduleId] = {
-                                name: `${title} Content`,
-                                isAutoGenerated: true,
-                                lectures: directFiles.map(item => ({
-                                    id: item.id,
-                                    name: item.name,
-                                    url: item.url,
-                                    type: item.type,
-                                    mimeType: item.mimeType
-                                })).sort((a,b) => (a.name || '').localeCompare(b.name || '')),
-                                type: 'drive-module-single'
-                            };
-                        }
-
-                        msg('Drive contents fetched and structured into modules!', 'success');
-                    } catch (err) {
-                        console.error('Error fetching Drive content on add:', err);
-                        msg(`Error fetching Drive content: ${err.message}. Batch not added. Check browser console.`, 'danger');
-                        return;
-                    } finally {
-                        hideLoading();
-                    }
+                    modules = null; // Ensure modules are null for direct link
+                    driveContent = null; // Ensure driveContent is null for direct link
+                } else {
+                    // Existing logic for modules (if batchTypeChoice was Cancel)
+                    // You might want to ask for module details here, or leave them empty initially
+                    // For simplicity, let's keep modules null for now if not direct link and no module creation logic is added here.
+                    modules = {}; // Initialize as empty object for regular batches
                 }
 
                 let originalPrice = null;
                 let discountedPrice = null;
                 let isFree = false;
 
-                if (!isContentDirectLink) {
+                if (!isContentDirectLink) { // Only ask for price if it's not a direct link batch
                     originalPrice = prompt('Enter Original Price (e.g., 999 or leave empty if free):');
                     discountedPrice = prompt('Enter Discounted Price (e.g., 499 or 0 for FREE):');
                     
@@ -997,7 +676,7 @@
                     discountedPrice = discountedPrice ? parseFloat(discountedPrice) : null;
                     isFree = (discountedPrice === 0) || (originalPrice === null && discountedPrice === null);
                 } else { 
-                    isFree = true;
+                    isFree = true; // Direct link batches are always free
                     discountedPrice = 0;
                 }
 
@@ -1013,9 +692,10 @@
                         isFree: isFree, 
                         isNew: true,
                         isContentDirectLink: isContentDirectLink, 
-                        googleDriveFolderId: isContentDirectLink ? googleDriveFolderId : null, 
-                        driveContent: null,
-                        modules: modules
+                        googleDriveFolderId: null, // Always null for this new approach
+                        driveContent: null, // Always null for this new approach
+                        modules: modules, // Will be null if isContentDirectLink is true
+                        directDriveLink: directDriveLink // Store the direct link
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -1050,96 +730,19 @@
                                  '<span class="fw-bold text-success">FREE</span>' :
                                  (batch.discountedPrice !== null ? `₹${batch.discountedPrice}` : (batch.originalPrice !== null ? `₹${batch.originalPrice}` : 'Price N/A'));
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
+            
+            // Determine which content section to display based on isContentDirectLink
             const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
-            const googleDriveSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
+            const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
 
             let dynamicContentHtml = '';
+
             if (batch.isContentDirectLink) {
-                let driveContentPreviewHtml = '<p class="text-muted fst-italic">No Drive contents or modules found for this batch.</p>';
-
-                if (batch.modules && Object.keys(batch.modules).length > 0) {
-                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
-                    const sortedModules = Object.entries(batch.modules).sort(([, modA], [, modB]) => (modA.name || '').localeCompare(modB.name || ''));
-
-                    sortedModules.forEach(([moduleId, module], modIndex) => {
-                        driveContentPreviewHtml += `
-                            <li class="drive-content-list-item">
-                                <i class="fas fa-folder text-info"></i>
-                                <strong>Module:</strong> <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-field="name" class="drive-content-name-editable">${module.name || 'Untitled Module'}</span>
-                                <button class="btn btn-sm btn-secondary ms-2 view-module-contents" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}">View Contents</button>
-                                <button class="btn btn-sm btn-danger ms-2 delete-module" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}">Delete Module</button>
-                            </li>
-                        `;
-                        driveContentPreviewHtml += `<ul class="list-unstyled ms-4 mt-2 mb-2 drive-module-lectures-list" id="module-lectures-${moduleId}" style="display: none;">`;
-                        if (module.lectures && module.lectures.length > 0) {
-                             const sortedLectures = module.lectures.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
-                            sortedLectures.forEach((lecture, lecIndex) => {
-                                let lectureIcon = '';
-                                let lectureColor = '';
-                                if (lecture.type === 'video') { lectureIcon = 'fas fa-video'; lectureColor = 'text-primary'; }
-                                else if (lecture.type === 'pdf') { lectureIcon = 'fas fa-file-pdf'; lectureColor = 'text-danger'; }
-                                else if (lecture.type === 'image') { lectureIcon = 'fas fa-image'; lectureColor = 'text-success'; }
-                                else if (lecture.type === 'archive') { lectureIcon = 'fas fa-file-archive'; lectureColor = 'text-warning'; }
-                                else { lectureIcon = 'fas fa-file'; lectureColor = 'text-secondary'; }
-
-                                driveContentPreviewHtml += `
-                                    <li class="drive-content-list-item">
-                                        <i class="${lectureIcon} ${lectureColor}"></i>
-                                        <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}" data-field="name" class="drive-content-name-editable">${lecture.name || 'Untitled Lecture'}</span>
-                                        <input type="url" contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}" data-field="url" class="form-control form-control-sm ms-2 drive-content-url-editable" value="${lecture.url || ''}" placeholder="URL">
-                                        <button class="btn btn-sm btn-danger ms-2 delete-lecture-from-module" data-cat="${catId}" data-bid="${bId}" data-modid="${moduleId}" data-idx="${lecIndex}">Delete</button>
-                                    </li>
-                                `;
-                            });
-                        } else {
-                            driveContentPreviewHtml += '<li class="text-muted fst-italic">No lectures in this module.</li>';
-                        }
-                        driveContentPreviewHtml += `</ul>`;
-                    });
-                    driveContentPreviewHtml += '</ul>';
-                }
-                else if (batch.driveContent && batch.driveContent.length > 0) {
-                    driveContentPreviewHtml = '<ul class="list-unstyled mt-2 drive-content-preview-list">';
-                    const driveContentArray = Array.isArray(batch.driveContent)
-                                              ? batch.driveContent
-                                              : Object.values(batch.driveContent);
-
-                    const sortedContents = driveContentArray.sort((a, b) => {
-                        if (a.type === 'folder' && b.type !== 'folder') return -1;
-                        if (a.type !== 'folder' && b.type === 'folder') return 1;
-                        return (a.name || '').localeCompare(b.name || '');
-                    });
-                    sortedContents.forEach((item, index) => {
-                        let itemIcon = '';
-                        let itemColor = '';
-                        if (item.type === 'folder') { itemIcon = 'fas fa-folder'; itemColor = 'text-info'; }
-                        else if (item.type === 'video') { itemIcon = 'fas fa-video'; itemColor = 'text-primary'; }
-                        else if (item.type === 'pdf') { itemIcon = 'fas fa-file-pdf'; lectureColor = 'text-danger'; }
-                        else if (item.type === 'image') { itemIcon = 'fas fa-image'; lectureColor = 'text-success'; }
-                        else if (item.type === 'archive') { itemIcon = 'fas fa-file-archive'; lectureColor = 'text-warning'; }
-                        else { itemIcon = 'fas fa-file'; lectureColor = 'text-secondary'; }
-
-                        driveContentPreviewHtml += `
-                            <li class="drive-content-list-item">
-                                <i class="${itemIcon} ${itemColor}"></i>
-                                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-idx="${index}" data-field="name" class="drive-content-name-editable">${item.name || 'Untitled'}</span>
-                                <input type="url" contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-idx="${index}" data-field="url" class="form-control form-control-sm ms-2 drive-content-url-editable" value="${item.url || ''}" placeholder="URL">
-                                <button class="btn btn-sm btn-danger ms-2 delete-drive-content-item" data-cat="${catId}" data-bid="${bId}" data-idx="${index}">Delete</button>
-                            </li>`;
-                    });
-                    driveContentPreviewHtml += '</ul>';
-                }
-
                 dynamicContentHtml = `
-                    <div class="mb-3 google-drive-folder-id-container" style="display: ${googleDriveSectionDisplay};">
-                        <label for="googleDriveFolderId-${bId}-input" class="form-label">Google Drive Folder ID:</label>
-                        <input type="text" class="form-control form-control-sm google-drive-folder-id" id="googleDriveFolderId-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.googleDriveFolderId || ''}" placeholder="e.g., 1_abcdefg1234567890">
-                        <small class="form-text text-muted">Copy the folder ID from your Google Drive URL. Ex: drive.google.com/drive/folders/<span class="fw-bold">FOLDER_ID</span></small>
-                        <button class="btn btn-sm btn-info mt-2 refresh-drive-content" data-cat="${catId}" data-bid="${bId}">Refresh Drive Content</button>
-                        <div class="mt-2 p-2 border rounded drive-content-preview">
-                            <h6>Drive Contents:</h6>
-                            ${driveContentPreviewHtml}
-                        </div>
+                    <div class="mb-3 direct-link-container" style="display: ${directLinkSectionDisplay};">
+                        <label for="directDriveLink-${bId}-input" class="form-label">Google Drive Direct Link:</label>
+                        <input type="url" class="form-control form-control-sm direct-drive-link" id="directDriveLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.directDriveLink || ''}" placeholder="e.g., https://drive.google.com/drive/folders/YOUR_FOLDER_ID">
+                        <small class="form-text text-muted">User will be redirected to this link when they click "LET'S ROAR".</small>
                     </div>
                 `;
             } else {
@@ -1169,7 +772,7 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Thumbnail URL:</label>
-                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.}</p>'}
+                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
                         <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
                     </div>
                     <div class="mb-2">
@@ -1187,7 +790,6 @@
                     ${dynamicContentHtml}
                 </div>
             `;
-            // Add event listeners for new elements
             setupBatchEvents(div, catId, bId, batch);
             return div;
         };
@@ -1205,7 +807,6 @@
                     }
                 }
             });
-
             // Batch thumbnail URL
             card.querySelector('.batch-thumbnail-url').addEventListener('change', async (e) => {
                 const newThumbnail = e.target.value.trim();
@@ -1216,7 +817,6 @@
                     msg(`Error updating batch thumbnail: ${error.message}`, 'danger');
                 }
             });
-
             // Batch description
             card.querySelector('.batch-description').addEventListener('blur', async (e) => {
                 const newDescription = e.target.value.trim();
@@ -1229,7 +829,6 @@
                     }
                 }
             });
-
             // Batch original price
             card.querySelector('.batch-original-price').addEventListener('change', async (e) => {
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
@@ -1240,7 +839,6 @@
                     msg(`Error updating original price: ${error.message}`, 'danger');
                 }
             });
-
             // Batch discounted price
             card.querySelector('.batch-discounted-price').addEventListener('change', async (e) => {
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
@@ -1251,7 +849,6 @@
                     msg(`Error updating discounted price: ${error.message}`, 'danger');
                 }
             });
-
             // Toggle isNew status
             card.querySelector('.toggle-isnew').addEventListener('click', async (e) => {
                 const newValue = !currentBatch.isNew;
@@ -1262,7 +859,6 @@
                     msg(`Error updating isNew status: ${error.message}`, 'danger');
                 }
             });
-
             // Toggle isFree status
             card.querySelector('.toggle-isfree').addEventListener('click', async (e) => {
                 const newValue = !currentBatch.isFree;
@@ -1273,24 +869,24 @@
                     msg(`Error updating isFree status: ${error.message}`, 'danger');
                 }
             });
-
             // Toggle isContentDirectLink status
             const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
             if (toggleIsContentDirectLink) {
                 toggleIsContentDirectLink.addEventListener('click', async () => {
                     const newValue = !currentBatch.isContentDirectLink;
-                    const confirm = await showConfirm(`Are you sure you want to change this batch to ${newValue ? 'Google Drive Content' : 'Normal Modules'}? This will reset modules/driveContent structure.`);
+                    const confirm = await showConfirm(`Are you sure you want to change this batch to ${newValue ? 'Google Drive Direct Link' : 'Normal Modules'}? This will reset modules/direct link.`);
                     if (confirm) {
                         showLoading('Updating batch type...');
                         try {
                             const updates = {
                                 isContentDirectLink: newValue,
-                                googleDriveFolderId: null,
-                                driveContent: null,
-                                modules: null,
-                                originalPrice: null,
-                                discountedPrice: 0,
-                                isFree: true
+                                googleDriveFolderId: null, // Ensure this is always null now
+                                driveContent: null, // Ensure this is always null now
+                                modules: null, // Modules will be null if direct link is true
+                                directDriveLink: null, // Direct link will be null if direct link is false
+                                originalPrice: null, // Reset price on type change
+                                discountedPrice: 0, // Reset price on type change
+                                isFree: true // Default to free on type change
                             };
                             await update(dbRef(db, `categories/${catId}/batches/${bId}`), updates);
                             msg('Batch type updated and content reset. Please re-enter details.', 'info');
@@ -1319,271 +915,86 @@
                 }
             });
 
-            // --- Google Drive Specific Events ---
-            const googleDriveFolderIdInput = card.querySelector('.google-drive-folder-id');
-            if (googleDriveFolderIdInput) {
-                googleDriveFolderIdInput.addEventListener('change', async (e) => {
-                    const newFolderId = e.target.value.trim();
+            // --- Direct Drive Link Specific Events ---
+            const directDriveLinkInput = card.querySelector('.direct-drive-link');
+            if (directDriveLinkInput) {
+                directDriveLinkInput.addEventListener('change', async (e) => {
+                    const newLink = e.target.value.trim();
                     try {
-                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { googleDriveFolderId: newFolderId });
-                        msg('Google Drive Folder ID updated!', 'info');
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { directDriveLink: newLink });
+                        msg('Google Drive Direct Link updated!', 'info');
                     } catch (error) {
-                        msg(`Error updating Google Drive Folder ID: ${error.message}`, 'danger');
+                        msg(`Error updating Google Drive Direct Link: ${error.message}`, 'danger');
                     }
                 });
             }
 
-            const refreshDriveContentButton = card.querySelector('.refresh-drive-content');
-            if (refreshDriveContentButton) {
-                refreshDriveContentButton.addEventListener('click', async () => {
-                    const folderIdInput = card.querySelector(`.google-drive-folder-id[data-cat="${catId}"][data-bid="${bId}"]`);
-                    const folderId = folderIdInput.value.trim();
-                    if (!folderId) {
-                        msg('Google Drive Folder ID is required to refresh contents!', 'warning');
-                        return;
-                    }
-                    showLoading('Refreshing Drive contents...');
-                    try {
-                        const fetchedDriveItems = await fetchDriveFolderContents(folderId);
-                        if (!fetchedDriveItems || fetchedDriveItems.length === 0) {
-                            msg('Failed to fetch Drive contents or folder is empty. Check folder ID or permissions.', 'danger');
-                            await update(dbRef(db, `categories/${catId}/batches/${bId}`), { modules: null, driveContent: null });
-                            return;
-                        }
+            // --- Normal Content (Modules/Lectures) specific events (retained but won't be used if isContentDirectLink is true) ---
+            // These event listeners for modules and lectures (add-module, view-module-contents, delete-module, editable names/urls)
+            // will still exist in the HTML and JS but will only be displayed and functional
+            // if 'isContentDirectLink' for the batch is false (i.e., it's a 'NORMAL' batch).
 
-                        let newModules = {};
-                        const directFiles = fetchedDriveItems.filter(item =>
-                            item.parents.includes(folderId) && item.type !== 'folder'
-                        );
-                        const subFolders = fetchedDriveItems.filter(item =>
-                            item.parents.includes(folderId) && item.type === 'folder'
-                        );
+            // Handle "Add Module" for NORMAL batches
+            card.querySelector('.add-module')?.addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const moduleName = prompt('Enter Module Name:');
+                if (!moduleName) { msg('Module name is required!', 'warning'); return; }
 
-                        if (subFolders.length > 0) {
-                            for (const folder of subFolders) {
-                                const moduleId = push(dbRef(db, 'dummy')).key;
-                                const moduleLectures = fetchedDriveItems.filter(item =>
-                                    item.parents.includes(folder.id) && item.type !== 'folder'
-                                ).map(item => ({
-                                    id: item.id,
-                                    name: item.name,
-                                    url: item.url,
-                                    type: item.type,
-                                    mimeType: item.mimeType
-                                }));
-                                newModules[moduleId] = {
-                                    name: folder.name,
-                                    driveId: folder.id,
-                                    lectures: moduleLectures.sort((a,b) => (a.name || '').localeCompare(b.name || '')),
-                                    type: 'drive-module'
-                                };
-                            }
-                        } else {
-                            const moduleId = push(dbRef(db, 'dummy')).key;
-                            newModules[moduleId] = {
-                                name: `${currentBatch.title} Content`,
-                                isAutoGenerated: true,
-                                lectures: directFiles.map(item => ({
-                                    id: item.id,
-                                    name: item.name,
-                                    url: item.url,
-                                    type: item.type,
-                                    mimeType: item.mimeType
-                                })).sort((a,b) => (a.name || '').localeCompare(b.name || '')),
-                                type: 'drive-module-single'
-                            };
-                        }
-
-                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), {
-                            googleDriveFolderId: folderId,
-                            modules: newModules,
-                            driveContent: null
-                        });
-                        msg('Drive contents refreshed and modules updated!', 'success');
-                    } catch (error) {
-                        msg(`Error refreshing Drive content: ${error.message}`, 'danger');
-                    } finally {
-                        hideLoading();
-                    }
-                });
-            }
-
-            // Handle "View Contents" button clicks for modules
-            card.querySelectorAll('.view-module-contents').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const moduleId = e.target.dataset.modid;
-                    const lecturesList = card.querySelector(`#module-lectures-${moduleId}`);
-                    if (lecturesList) {
-                        lecturesList.style.display = lecturesList.style.display === 'none' ? 'block' : 'none';
-                        e.target.textContent = lecturesList.style.display === 'none' ? 'View Contents' : 'Hide Contents';
-                    }
-                });
+                showLoading('Adding module...');
+                try {
+                    const newModuleRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
+                    await set(newModuleRef, { name: moduleName, lectures: {} }); // Initialize lectures as an empty object
+                    msg('Module added successfully!', 'success');
+                } catch (error) {
+                    msg(`Error adding module: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
             });
 
-            // Update module name (if contenteditable)
-            card.querySelectorAll('.drive-content-name-editable[data-modid]').forEach(el => {
-                el.addEventListener('blur', async (e) => {
-                    const newName = e.target.textContent.trim();
-                    const moduleId = e.target.dataset.modid;
-
-                    if (newName && newName !== e.target.dataset.originalValue) {
-                        showLoading('Updating module name...');
-                        try {
-                            await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}`), { name: newName });
-                            msg('Module name updated!', 'info');
-                        } catch (error) {
-                            msg(`Error updating module name: ${error.message}`, 'danger');
-                        } finally {
-                            hideLoading();
-                        }
-                    }
-                    e.target.dataset.originalValue = newName;
-                });
-                el.addEventListener('focus', (e) => {
-                    e.target.dataset.originalValue = e.target.textContent.trim();
-                });
-            });
-
-            // Update lecture name/URL within modules
-            card.querySelectorAll('.drive-content-name-editable[data-idx][data-modid], .drive-content-url-editable[data-idx][data-modid]').forEach(el => {
-                el.addEventListener('blur', async (e) => {
-                    const newValue = e.target.tagName === 'INPUT' ? e.target.value.trim() : e.target.textContent.trim();
-                    const lectureIndex = parseInt(e.target.dataset.idx);
-                    const moduleId = e.target.dataset.modid;
-                    const field = e.target.dataset.field;
-
-                    if (newValue && newValue !== e.target.dataset.originalValue) {
-                        showLoading('Updating lecture details...');
-                        try {
-                            const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
-                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
-                            const currentLectures = snapshot.val() || [];
-                            if (currentLectures[lectureIndex]) {
-                                currentLectures[lectureIndex][field] = newValue;
-                                await set(lecturesRef, currentLectures);
-                                msg('Lecture updated!', 'info');
-                            }
-                        } catch (error) {
-                            msg(`Error updating lecture: ${error.message}`, 'danger');
-                        } finally {
-                            hideLoading();
-                        }
-                    }
-                    e.target.dataset.originalValue = newValue;
-                });
-                el.addEventListener('focus', (e) => {
-                    e.target.dataset.originalValue = e.target.tagName === 'INPUT' ? e.target.value.trim() : e.target.textContent.trim();
-                });
-            });
-
-            // Delete module (for Drive batches)
-            card.querySelectorAll('.delete-module').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const moduleId = e.target.dataset.modid;
-                    const confirm = await showConfirm('Are you sure you want to delete this module and all its lectures?');
-                    if (confirm) {
-                        showLoading('Deleting module...');
-                        try {
-                            await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}`));
-                            msg('Module deleted!', 'danger');
-                        } catch (error) {
-                            msg(`Error deleting module: ${error.message}`, 'danger');
-                        } finally {
-                            hideLoading();
-                        }
-                    }
-                });
-            });
-
-            // Delete lecture from module (for Drive batches)
-            card.querySelectorAll('.delete-lecture-from-module').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const lectureIndex = parseInt(e.target.dataset.idx);
-                    const moduleId = e.target.dataset.modid;
-                    const confirm = await showConfirm('Are you sure you want to delete this lecture?');
-                    if (confirm) {
-                        showLoading('Deleting lecture...');
-                        try {
-                            const lecturesRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${moduleId}/lectures`);
-                            const snapshot = await new Promise(resolve => onValue(lecturesRef, resolve, { onlyOnce: true }));
-                            const currentLectures = snapshot.val() || [];
-                            if (currentLectures[lectureIndex]) {
-                                currentLectures.splice(lectureIndex, 1);
-                                await set(lecturesRef, currentLectures);
-                                msg('Lecture deleted!', 'danger');
-                            }
-                        } catch (error) {
-                            msg(`Error deleting lecture: ${error.message}`, 'danger');
-                        } finally {
-                            hideLoading();
-                        }
-                    }
-                });
-            });
-
-            // --- Normal Batch Modules and Lectures (old structure) ---
+            // Listen for changes in modules for NORMAL batches
             const modulesListContainer = card.querySelector(`#modules-list-${bId}`);
             if (modulesListContainer) {
-                // Load modules for this batch (if it's a normal batch)
                 onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), (snapshot) => {
                     modulesListContainer.innerHTML = '';
-                    const moduleData = snapshot.val() || {};
-                    if (Object.keys(moduleData).length === 0) {
+                    const modulesData = snapshot.val() || {};
+                    if (Object.keys(modulesData).length === 0) {
                         modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
                     }
-                    Object.entries(moduleData).forEach(([mId, module]) => {
-                        const moduleItem = createModuleItem(catId, bId, mId, module);
+                    Object.entries(modulesData).forEach(([modId, module]) => {
+                        const moduleItem = createModuleItem(catId, bId, modId, module);
                         modulesListContainer.append(moduleItem);
                     });
                 });
-
-                card.querySelector('.add-module').addEventListener('click', async () => {
-                    if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                    const moduleName = prompt('Enter Module Name:');
-                    if (moduleName) {
-                        try {
-                            showLoading('Adding module...');
-                            const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
-                            await set(newRef, { name: moduleName });
-                            msg('Module added!', 'success');
-                        } catch (error) {
-                            msg(`Error adding module: ${error.message}`, 'danger');
-                        } finally {
-                            hideLoading();
-                        }
-                    }
-                });
             }
         };
 
-        const createModuleItem = (catId, bId, mId, module) => {
+        // Helper function to create module item for NORMAL batches (retained)
+        const createModuleItem = (catId, bId, modId, module) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 bg-secondary text-white'; // Slightly different style for modules
+            div.className = 'card mb-2 bg-light';
             div.innerHTML = `
                 <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-id="${mId}" class="module-name flex-grow-1 me-2">${module.name}</h6>
-                        <button class="btn btn-danger btn-sm delete-module" data-cat="${catId}" data-bid="${bId}" data-id="${mId}">Delete Module</button>
+                        <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-id="${modId}" class="module-name flex-grow-1 me-2">${module.name}</h6>
+                        <button class="btn btn-sm btn-secondary add-lecture" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}">+ Add Lecture</button>
+                        <button class="btn btn-danger btn-sm delete-module" data-cat="${catId}" data-bid="${bId}" data-id="${modId}">Delete Module</button>
                     </div>
-                    <hr class="border-white-50">
-                    <h6 class="mb-2">Lectures:</h6>
-                    <div>
-                        <button class="btn btn-info btn-sm mb-2 add-lecture" data-cat="${catId}" data-bid="${bId}" data-id="${mId}">+ Add Lecture</button>
-                        <div class="lectures-list" id="lectures-list-${mId}"></div>
-                    </div>
+                    <div class="lectures-list" id="lectures-list-${modId}"></div>
                 </div>
             `;
-            setupModuleEvents(div, catId, bId, mId, module);
+            setupModuleEvents(div, catId, bId, modId, module);
             return div;
         };
 
-        const setupModuleEvents = (card, catId, bId, mId, currentModule) => {
+        // Helper function to set up module events for NORMAL batches (retained)
+        const setupModuleEvents = (card, catId, bId, modId, currentModule) => {
             // Module name editing
             card.querySelector('.module-name').addEventListener('blur', async (e) => {
                 const newName = e.target.textContent.trim();
                 if (newName && newName !== currentModule.name) {
                     try {
-                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`), { name: newName });
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`), { name: newName });
                         msg('Module name updated', 'info');
                     } catch (error) {
                         msg(`Error updating module name: ${error.message}`, 'danger');
@@ -1591,14 +1002,14 @@
                 }
             });
 
-            // Delete Module (for normal batches)
-            card.querySelector('.delete-module').addEventListener('click', async (e) => {
+            // Delete Module
+            card.querySelector('.delete-module').addEventListener('click', async () => {
                 const confirmDelete = await showConfirm('Are you sure you want to delete this module and all its lectures?');
                 if (confirmDelete) {
+                    showLoading('Deleting module...');
                     try {
-                        showLoading('Deleting module and content...');
-                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}`));
-                        msg('Module and its contents deleted!', 'danger');
+                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`));
+                        msg('Module deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting module: ${error.message}`, 'danger');
                     } finally {
@@ -1610,17 +1021,17 @@
             // Add Lecture
             card.querySelector('.add-lecture').addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-                const lectureTitle = prompt('Enter Lecture Title:');
-                if (!lectureTitle) { msg('Lecture title is required!', 'warning'); return; }
-
-                const lectureUrl = prompt('Enter Video/Content URL (e.g., YouTube embed URL, GDrive shareable link):');
+                const lectureName = prompt('Enter Lecture Name:');
+                if (!lectureName) { msg('Lecture name is required!', 'warning'); return; }
+                const lectureUrl = prompt('Enter Lecture URL (YouTube/Drive):');
                 if (!lectureUrl) { msg('Lecture URL is required!', 'warning'); return; }
 
+                showLoading('Adding lecture...');
                 try {
-                    showLoading('Adding lecture...');
-                    const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`));
-                    await set(newRef, { title: lectureTitle, url: lectureUrl });
-                    msg('Lecture added!', 'success');
+                    const lectureArrayRef = dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`);
+                    const newLectureRef = push(lectureArrayRef); // Use push for array-like structure
+                    await set(newLectureRef, { name: lectureName, url: lectureUrl, type: 'video' }); // Default type for simplicity
+                    msg('Lecture added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding lecture: ${error.message}`, 'danger');
                 } finally {
@@ -1629,51 +1040,54 @@
             });
 
             // Load and display lectures for this module
-            const lecturesListContainer = card.querySelector(`#lectures-list-${mId}`);
-            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures`), (snapshot) => {
+            const lecturesListContainer = card.querySelector(`#lectures-list-${modId}`);
+            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`), (snapshot) => {
                 lecturesListContainer.innerHTML = '';
-                const lectureData = snapshot.val() || {};
-                if (Object.keys(lectureData).length === 0) {
+                const lecturesData = snapshot.val() || {};
+                if (Object.keys(lecturesData).length === 0) {
                     lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures in this module.</p>';
                 }
-                Object.entries(lectureData).forEach(([lId, lecture]) => {
-                    const lectureItem = createLectureItem(catId, bId, mId, lId, lecture);
+                Object.entries(lecturesData).forEach(([lecId, lecture]) => {
+                    const lectureItem = createLectureItem(catId, bId, modId, lecId, lecture);
                     lecturesListContainer.append(lectureItem);
                 });
             });
         };
 
-        const createLectureItem = (catId, bId, mId, lId, lecture) => {
+        // Helper function to create lecture item for NORMAL batches (retained)
+        const createLectureItem = (catId, bId, modId, lecId, lecture) => {
             const div = document.createElement('div');
-            div.className = 'd-flex justify-content-between align-items-center mb-1 py-1 px-2 border rounded bg-white text-dark'; // Style for lecture item
+            div.className = 'd-flex align-items-center mb-1 ps-3';
             div.innerHTML = `
-                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}" class="lecture-title flex-grow-1 me-2">${lecture.title}</span>
-                <input type="url" class="form-control form-control-sm me-2 lecture-url" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}" value="${lecture.url || ''}" placeholder="Lecture URL">
-                <button class="btn btn-danger btn-sm delete-lecture" data-cat="${catId}" data-bid="${bId}" data-modid="${mId}" data-id="${lId}">Delete</button>
+                <i class="fas fa-video me-2"></i>
+                <span contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${lecId}" data-field="name" class="lecture-name flex-grow-1 me-2">${lecture.name}</span>
+                <input type="url" class="form-control form-control-sm me-2 lecture-url-input" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${lecId}" data-field="url" value="${lecture.url || ''}" placeholder="Lecture URL" style="width: 200px;">
+                <button class="btn btn-danger btn-sm delete-lecture" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${lecId}">Delete</button>
             `;
-            setupLectureEvents(div, catId, bId, mId, lId, lecture);
+            setupLectureEvents(div, catId, bId, modId, lecId, lecture);
             return div;
         };
 
-        const setupLectureEvents = (card, catId, bId, mId, lId, currentLecture) => {
-            // Lecture title editing
-            card.querySelector('.lecture-title').addEventListener('blur', async (e) => {
-                const newTitle = e.target.textContent.trim();
-                if (newTitle && newTitle !== currentLecture.title) {
+        // Helper function to set up lecture events for NORMAL batches (retained)
+        const setupLectureEvents = (card, catId, bId, modId, lecId, currentLecture) => {
+            // Lecture name editing
+            card.querySelector('.lecture-name').addEventListener('blur', async (e) => {
+                const newName = e.target.textContent.trim();
+                if (newName && newName !== currentLecture.name) {
                     try {
-                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { title: newTitle });
-                        msg('Lecture title updated', 'info');
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`), { name: newName });
+                        msg('Lecture name updated', 'info');
                     } catch (error) {
-                        msg(`Error updating lecture title: ${error.message}`, 'danger');
+                        msg(`Error updating lecture name: ${error.message}`, 'danger');
                     }
                 }
             });
 
             // Lecture URL editing
-            card.querySelector('.lecture-url').addEventListener('change', async (e) => {
+            card.querySelector('.lecture-url-input').addEventListener('change', async (e) => {
                 const newUrl = e.target.value.trim();
                 try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`), { url: newUrl });
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`), { url: newUrl });
                     msg('Lecture URL updated', 'info');
                 } catch (error) {
                     msg(`Error updating lecture URL: ${error.message}`, 'danger');
@@ -1681,12 +1095,12 @@
             });
 
             // Delete Lecture
-            card.querySelector('.delete-lecture').addEventListener('click', async (e) => {
+            card.querySelector('.delete-lecture').addEventListener('click', async () => {
                 const confirmDelete = await showConfirm('Are you sure you want to delete this lecture?');
                 if (confirmDelete) {
+                    showLoading('Deleting lecture...');
                     try {
-                        showLoading('Deleting lecture...');
-                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${mId}/lectures/${lId}`));
+                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`));
                         msg('Lecture deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting lecture: ${error.message}`, 'danger');
@@ -1698,45 +1112,17 @@
         };
 
 
-        // Initial calls
+        // Initializations on DOMContentLoaded
         document.addEventListener('DOMContentLoaded', async () => {
             await authenticateFirebase();
-            // Initialize GIS and gapi client for Google Drive API calls
-            try {
-                // GIS will now prompt for sign-in/consent automatically when requestAccessToken is called
-                await initGapiClient(); 
-            } catch (error) {
-                console.error("Initial GIS/gapi.client setup failed:", error);
-            }
-
             loadSiteConfig();
             setupSiteConfigEvents();
             loadHowToUseVideos();
-            loadCategories();
+            loadCategories(); // This will trigger rendering of categories and batches
+            // No need to initialize gapi.client or GIS if you are ONLY using direct links
+            // If you uncomment fetchDriveFolderContents, you will need to re-enable initGapiClient();
         });
 
-        // Add Category button event listener
-        document.getElementById('addCategory').addEventListener('click', async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const categoryName = document.getElementById('categoryName').value.trim();
-            const categoryImageUrl = document.getElementById('categoryImageUrl').value.trim();
-            if (categoryName) {
-                try {
-                    showLoading('Adding category...');
-                    const newRef = push(dbRef(db, `categories`));
-                    await set(newRef, { name: categoryName, imageUrl: categoryImageUrl || null });
-                    msg('Category added!', 'success');
-                    document.getElementById('categoryName').value = '';
-                    document.getElementById('categoryImageUrl').value = '';
-                } catch (error) {
-                    msg(`Error adding category: ${error.message}`, 'danger');
-                } finally {
-                    hideLoading();
-                }
-            } else {
-                msg('Category name cannot be empty!', 'warning');
-            }
-        });
     </script>
 </body>
 </html>
