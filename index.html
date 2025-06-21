@@ -43,25 +43,23 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Ensure body takes full height */
+            min-height: 100vh;
         }
 
         .main-wrapper {
             display: flex;
             flex-direction: column;
             width: 100%;
-            flex-grow: 1; /* Allows it to take available space */
-            padding-bottom: 70px; /* Space for the fixed bottom navbar */
+            flex-grow: 1;
+            padding-bottom: 70px;
         }
 
-        /* Content Area Styles */
         .content {
             flex-grow: 1;
             padding: 20px;
             position: relative;
         }
 
-        /* Section Specific Styles */
         .section {
             background-color: var(--card-bg);
             padding: 30px;
@@ -69,7 +67,7 @@
             box-shadow: 0 5px 15px var(--shadow-color);
             margin-bottom: 30px;
             border: 1px solid var(--border-color);
-            display: none; /* Hidden by default, shown by JS */
+            display: none;
         }
 
         .section.active {
@@ -134,17 +132,16 @@
         .alert {
             margin-top: 15px;
             border-radius: 8px;
-            background-color: rgba(0, 173, 181, 0.2); /* Soft background for alerts */
+            background-color: rgba(0, 173, 181, 0.2);
             border-color: var(--accent-teal);
             color: var(--text-light);
         }
         .alert-danger { background-color: rgba(220, 53, 69, 0.2); border-color: var(--accent-red); }
         .alert-success { background-color: rgba(40, 167, 69, 0.2); border-color: var(--accent-green); }
         .alert-info { background-color: rgba(0, 123, 255, 0.2); border-color: var(--accent-blue); }
-        .alert-warning { background-color: rgba(255, 193, 7, 0.2); border-color: #FFC107; color: #FFC107; } /* Warning text color adjusted */
+        .alert-warning { background-color: rgba(255, 193, 7, 0.2); border-color: #FFC107; color: #FFC107; }
 
 
-        /* Cards for dynamic content (categories, batches, modules) */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -196,13 +193,12 @@
         .item-type-badge.bg-primary { background-color: var(--accent-blue) !important; }
         .item-type-badge.bg-info { background-color: var(--accent-teal) !important; }
 
-        /* Home section styles */
         .home-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - 100px); /* Adjust based on header/footer */
+            min-height: calc(100vh - 100px);
             text-align: center;
         }
         .home-section h1 {
@@ -211,7 +207,7 @@
             font-size: 3em;
             color: var(--accent-teal);
             margin-bottom: 20px;
-            text-shadow: 2px 2px 5px var(--shadow-color);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
             animation: fadeInScale 1s ease-out;
         }
         .home-section .emoji-icon {
@@ -229,7 +225,6 @@
             100% { transform: translateY(0); }
         }
 
-        /* Quote Section on Homepage */
         .home-quote-section {
             background-color: var(--secondary-dark);
             padding: 25px;
@@ -255,8 +250,7 @@
             font-size: 1em;
         }
 
-
-        /* Custom Modal (Confirm/Alert) Styles */
+        /* Custom Modal (Confirm/Alert/Type selection) Styles */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -292,14 +286,13 @@
             margin-bottom: 20px;
         }
         .custom-modal-content .modal-footer {
-            justify-content: center; /* Center buttons */
-            border-top: none; /* Remove default border */
-            padding-top: 20px; /* Adjust padding */
+            justify-content: center;
+            border-top: none;
+            padding-top: 20px;
         }
         .custom-modal-content .modal-footer .btn {
-            margin: 0 5px; /* Space out buttons */
+            margin: 0 5px;
         }
-
 
         /* Loading Spinner Overlay */
         .loading-spinner-overlay {
@@ -325,8 +318,8 @@
         }
 
         .loading-spinner {
-            border: 5px solid #f3f3f3; /* Light grey */
-            border-top: 5px solid var(--accent-teal); /* Blue */
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-teal);
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -345,20 +338,20 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Bottom Navigation Bar Styles (New for Admin Panel) */
+        /* Bottom Navigation Bar Styles */
         .bottom-navbar {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: var(--bottom-nav-bg); /* Black for bottom nav */
+            background-color: var(--bottom-nav-bg);
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 10px 0;
             z-index: 1000;
-            color: var(--bottom-nav-item); /* White default icon/text color */
+            color: var(--bottom-nav-item);
         }
 
         .bottom-navbar .nav-item {
@@ -366,34 +359,34 @@
             flex-direction: column;
             align-items: center;
             text-decoration: none;
-            color: inherit; /* Inherit from parent .bottom-navbar */
+            color: inherit;
             font-size: 0.8em;
             font-weight: 500;
             padding: 5px 0;
-            flex: 1; /* Distribute space evenly */
+            flex: 1;
             transition: color 0.2s ease, transform 0.2s ease;
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            -webkit-tap-highlight-color: transparent;
         }
 
         .bottom-navbar .nav-item i {
-            font-size: 1.5em; /* Icon size */
+            font-size: 1.5em;
             margin-bottom: 5px;
-            color: inherit; /* Inherit from nav-item */
+            color: inherit;
             transition: color 0.2s ease;
         }
 
         .bottom-navbar .nav-item.active {
-            color: var(--bottom-nav-active); /* Active color (Accent Teal) */
+            color: var(--bottom-nav-active);
             font-weight: 700;
         }
 
         .bottom-navbar .nav-item.active i {
-            color: var(--bottom-nav-active); /* Active icon color (Accent Teal) */
+            color: var(--bottom-nav-active);
         }
 
         .bottom-navbar .nav-item:hover {
             transform: translateY(-2px);
-            color: var(--bottom-nav-active); /* Hover effect */
+            color: var(--bottom-nav-active);
         }
 
         .bottom-navbar .nav-item:active {
@@ -404,7 +397,7 @@
         @media (max-width: 768px) {
             .content {
                 padding: 15px;
-                padding-bottom: 80px; /* Adjust padding for mobile bottom navbar */
+                padding-bottom: 80px;
             }
             .home-section h1 {
                 font-size: 2.2em;
@@ -444,7 +437,61 @@
 
             <div id="site-config-section" class="section">
                 <h5>Site Configuration (Global Settings)</h5>
-                <div id="alerts"></div>
+                <div id="alerts"></div> 
+
+                <hr class="my-4" style="border-color: var(--border-color);">
+                <h5>Telegram Channels Banner (WE NEED) Controls</h5>
+                <div class="mb-3 form-check form-switch">
+                    <input class="form-check-input site-config-input" type="checkbox" role="switch" id="telegramBannerVisible" data-key="telegramBannerVisible">
+                    <label class="form-check-label" for="telegramBannerVisible">Show "WE NEED" Banner</label>
+                </div>
+                <div class="mb-3">
+                    <label for="telegramBannerTitle" class="form-label">Telegram Banner Main Title (Use &lt;br&gt; for new line)</label>
+                    <input type="text" class="form-control site-config-input" id="telegramBannerTitle" placeholder="e.g., JOIN OUR OFFICIAL <br> TELEGRAM CHANNELS" data-key="telegramBannerTitle">
+                </div>
+                <div class="mb-3">
+                    <label for="telegramBannerChannelList" class="form-label">Telegram Channels List (Pipe separated | for new line, supports HTML/emojis)</label>
+                    <textarea class="form-control site-config-input" id="telegramBannerChannelList" rows="4" placeholder="e.g., • Study Ratna ✨|• RATNA Official 📣|• Anime Speaks 🐉|• Code with RATNA 💻" data-key="telegramBannerChannelList"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="telegramBannerButtonText" class="form-label">Telegram Banner Button Text</label>
+                    <input type="text" class="form-control site-config-input" id="telegramBannerButtonText" placeholder="e.g., CLICK HERE!" data-key="telegramBannerButtonText">
+                </div>
+                <div class="mb-3">
+                    <label for="telegramBannerButtonLink" class="form-label">Telegram Banner Button Link (Main Telegram Group)</label>
+                    <input type="url" class="form-control site-config-input" id="telegramBannerButtonLink" placeholder="e.g., https://t.me/your_main_group" data-key="telegramBannerButtonLink">
+                </div>
+                <div class="mb-3">
+                    <label for="telegramBannerSupportText" class="form-label">Telegram Banner Support Text</label>
+                    <input type="text" class="form-control site-config-input" id="telegramBannerSupportText" placeholder="e.g., YOUR SUPPORT !!" data-key="telegramBannerSupportText">
+                </div>
+
+                <hr class="my-4" style="border-color: var(--border-color);">
+                <h5>Discover Notice (Namo Buddhaya Everyone) Controls</h5>
+                <div class="mb-3 form-check form-switch">
+                    <input class="form-check-input site-config-input" type="checkbox" role="switch" id="discoverNoticeVisible" data-key="discoverNoticeVisible">
+                    <label class="form-check-label" for="discoverNoticeVisible">Show Discover Notice</label>
+                </div>
+                <div class="mb-3">
+                    <label for="discoverNoticeHeaderEmoji" class="form-label">Discover Notice Header Emoji (e.g., 🙏)</label>
+                    <input type="text" class="form-control site-config-input" id="discoverNoticeHeaderEmoji" placeholder="e.g., 🙏" data-key="discoverNoticeHeaderEmoji">
+                </div>
+                <div class="mb-3">
+                    <label for="discoverNoticeImageUrl" class="form-label">Discover Notice Image URL (Optional)</label>
+                    <input type="url" class="form-control site-config-input" id="discoverNoticeImageUrl" placeholder="e.g., https://example.com/discover.jpg" data-key="discoverNoticeImageUrl">
+                    <small class="form-text text-muted">Image will appear below the header.</small>
+                </div>
+                <div class="mb-3">
+                    <label for="discoverNoticeTitle" class="form-label">Discover Notice Main Title</label>
+                    <input type="text" class="form-control site-config-input" id="discoverNoticeTitle" placeholder="e.g., DISCOVER OUR APP'S DELIGHTS!" data-key="discoverNoticeTitle">
+                </div>
+                <div class="mb-3">
+                    <label for="discoverNoticePoints" class="form-label">Discover Notice Points (Pipe separated | for new point, supports HTML/emojis)</label>
+                    <textarea class="form-control site-config-input" id="discoverNoticePoints" rows="5" placeholder="e.g., 🚫 Don't buy this App from AnyOne...|🤝 Join Us on Telegram..." data-key="discoverNoticePoints"></textarea>
+                </div>
+
+                <hr class="my-4" style="border-color: var(--border-color);">
+                
                 <div class="mb-3">
                     <label for="surpriseButtonLink" class="form-label">Today's Surprise Link</label>
                     <input type="url" class="form-control site-config-input" id="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise" data-key="surpriseButtonLink">
@@ -460,7 +507,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="youtubeLink" class="form-label">YouTube Link (About Me)</label>
-                    <input type="url" class="form-control site-config-input" id="youtubeLink" placeholder="e.g., https://youtube.com/your_channel" data-key="youtubeLink">
+                    <input type="url" class="form-control site-config-input" id="youtubeLink" placeholder="e.g., https://www.youtube.com/yourchannel" data-key="youtubeLink">
                 </div>
                 <div class="mb-3">
                     <label for="instagramLink" class="form-label">Instagram Link (About Me)</label>
@@ -607,14 +654,14 @@
         import { getMessaging, getToken as getMessagingToken, onMessage } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
-            authDomain: "adminneast.firebaseapp.com",
-            databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
-            projectId: "adminneast",
-            storageBucket: "adminneast.appspot.com",
-            messagingSenderId: "883877553418",
-            appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
-            measurementId: "G-PCH99BDF1S"
+          apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
+          authDomain: "adminneast.firebaseapp.com",
+          databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
+          projectId: "adminneast",
+          storageBucket: "adminneast.appspot.com",
+          messagingSenderId: "883877553418",
+          appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
+          measurementId: "G-PCH99BDF1S"
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -622,18 +669,14 @@
         const messaging = getMessaging(app);
 
         let isAuthenticated = false;
-        let activeSection = 'home-section'; // Track the currently active section
+        let activeSection = 'home-section';
 
-        // Quotes for homepage
         const homePageQuotes = [
             { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
             { quote: "Success is not final, failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" },
             { quote: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
             { quote: "The mind is everything. What you think you become.", author: "Buddha" },
-            { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
-            { quote: "Learning never exhausts the mind.", author: "Leonardo da Vinci" },
-            { quote: "The beautiful thing about learning is that no one can take it away from you.", author: "B.B. King" },
-            { quote: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela" }
+            { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" }
         ];
         let currentQuoteIndex = 0;
 
@@ -657,8 +700,6 @@
 
         const msg = (text, type = 'success') => {
             const alertsDiv = document.getElementById('alerts');
-            // Check if the alerts div exists and is part of the currently active section
-            // This prevents alerts from showing on other sections' UIs
             if (alertsDiv && alertsDiv.closest('.section.active')) {
                 const el = document.createElement('div');
                 el.className = `alert alert-${type} fade show`;
@@ -703,7 +744,6 @@
             });
         };
 
-        // Function to show the custom lecture/resource type selection modal
         const showLectureResourceModal = () => {
             return new Promise((resolve) => {
                 const modal = document.getElementById('addLectureResourceModal');
@@ -753,7 +793,6 @@
                 return;
             }
 
-            // Cycle through quotes
             currentQuoteIndex = (currentQuoteIndex + 1) % homePageQuotes.length;
             const quote = homePageQuotes[currentQuoteIndex];
 
@@ -767,9 +806,8 @@
                 section.classList.remove('active');
             });
             document.getElementById(sectionId).classList.add('active');
-            activeSection = sectionId; // Update active section tracker
+            activeSection = sectionId;
 
-            // Update active state in bottom navbar
             document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
                 item.classList.remove('active');
                 if (item.dataset.section === sectionId) {
@@ -777,22 +815,20 @@
                 }
             });
 
-            // Show "Welcome" section only on home
             if (sectionId !== 'home-section') {
                 document.getElementById('home-section').style.display = 'none';
             } else {
-                document.getElementById('home-section').style.display = 'flex'; // Home section is flex for centering
+                document.getElementById('home-section').style.display = 'flex';
             }
         };
 
         document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
             item.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent default link behavior
+                event.preventDefault();
                 const targetSectionId = item.dataset.section;
                 showSection(targetSectionId);
             });
         });
-
 
         // Helper function to get file extension from URL/name
         function getFileExtension(url, name) {
@@ -807,7 +843,6 @@
                 if (urlParts.length > 1) {
                     return urlParts.pop().split('?')[0].split('#')[0];
                 }
-                // No longer strictly rely on these for type, but good for extension if needed
                 if (url.includes('youtube.com') || url.includes('youtu.be')) {
                     return 'youtube';
                 }
@@ -825,8 +860,12 @@
                 const config = snapshot.val() || {};
                 document.querySelectorAll('.site-config-input').forEach(input => {
                     const key = input.dataset.key;
-                    if (config.hasOwnProperty(key) && config[key] !== null) {
-                        input.value = config[key];
+                    if (input.type === 'checkbox') {
+                        input.checked = config.hasOwnProperty(key) ? config[key] : false;
+                    } else {
+                        if (config.hasOwnProperty(key) && config[key] !== null) {
+                            input.value = config[key];
+                        }
                     }
                 });
             }, (error) => {
@@ -839,7 +878,13 @@
                 if (!input.dataset.listenerAdded) {
                     input.addEventListener('change', async (e) => {
                         const key = e.target.dataset.key;
-                        const value = e.target.value.trim();
+                        let value;
+                        if (e.target.type === 'checkbox') {
+                            value = e.target.checked;
+                        } else {
+                            value = e.target.value.trim();
+                        }
+
                         try {
                             showLoading('Updating site config...');
                             await update(dbRef(db, `siteConfig`), { [key]: value });
@@ -871,7 +916,7 @@
 
                 Object.entries(videos).forEach(([videoId, video]) => {
                     const videoItem = document.createElement('div');
-                    videoItem.className = 'how-to-use-video-item card card-body mb-2'; /* */
+                    videoItem.className = 'how-to-use-video-item card card-body mb-2';
                     videoItem.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
@@ -1291,6 +1336,7 @@
             // Handle "Add Module" for NORMAL batches
             card.querySelector('.add-module')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+
                 const moduleName = prompt('Enter Module Name:');
                 if (!moduleName) { msg('Module name is required!', 'warning'); return; }
 
@@ -1419,8 +1465,7 @@
 
             const itemTypeDisplay = item.type ? item.type.toUpperCase() : 'UNKNOWN';
 
-            let iconClass = 'fas fa-file'; // Default icon
-            // Determine icon based on item.type, then fall back to extension if type is generic or missing.
+            let iconClass = 'fas fa-file';
             if (item.type === 'lecture') {
                 iconClass = 'fas fa-video';
             } else if (item.type === 'resource') {
@@ -1431,17 +1476,12 @@
                     iconClass = 'fas fa-file-archive';
                 } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
                     iconClass = 'fas fa-image';
+                } else if (extension === 'gem') {
+                    iconClass = 'fas fa-gem';
                 } else {
-                    iconClass = 'fas fa-link'; // Generic link for other resources
+                    iconClass = 'fas fa-link';
                 }
             }
-            // If item.type is not set, or is 'unknown', or if we want to add more specific icons for lectures,
-            // we can still use the getFileExtension as a fallback or for refinement.
-            const extension = getFileExtension(item.url, item.name).toLowerCase();
-            if (extension === 'gem') {
-                iconClass = 'fas fa-gem';
-            }
-
 
             div.innerHTML = `
                 <i class="${iconClass} me-2"></i>
@@ -1531,10 +1571,9 @@
             card.querySelector('.add-lecture').addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                // Show the new modal to ask for content type
                 const contentType = await showLectureResourceModal();
 
-                if (!contentType) { // User cancelled the selection
+                if (!contentType) {
                     msg('Content addition cancelled.', 'info');
                     return;
                 }
@@ -1551,7 +1590,7 @@
                     await set(newLectureRef, {
                         name: itemName,
                         url: itemUrl,
-                        type: contentType // Use the selected content type ('lecture' or 'resource')
+                        type: contentType
                     });
                     msg(`'${itemName}' added as a ${contentType}!`, 'success');
                 } catch (error) {
@@ -1576,20 +1615,17 @@
             });
         };
 
-
-        // Initial load to show home section and setup events
         document.addEventListener('DOMContentLoaded', () => {
             authenticateFirebase();
             loadSiteConfig();
             loadCategories();
-            loadHowToUseVideos(); // Ensure how-to-use videos are loaded
+            loadHowToUseVideos();
             updateHomePageQuote();
-            setInterval(updateHomePageQuote, 6 * 60 * 60 * 1000); // Update every 6 hours
+            setInterval(updateHomePageQuote, 6 * 60 * 60 * 1000);
 
-            showSection('home-section'); // Initially show the home section
-            setupSiteConfigEvents(); // Ensure site config events are attached
+            showSection('home-section');
+            setupSiteConfigEvents();
         });
-
     </script>
 </body>
 </html>
