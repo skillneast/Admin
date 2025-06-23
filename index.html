@@ -10,26 +10,26 @@
     <style>
         :root {
             /* Dark Theme Colors */
-            --primary-dark: #1a1a1a; /* Overall background */
-            --secondary-dark: #2c2c2c; /* Card/Section background */
-            --bottom-nav-bg: #000000; /* Black for bottom nav */
-            --bottom-nav-item: #ffffff; /* White default icon/text color */
-            --bottom-nav-active: #00ADB5; /* Accent teal for active as per website theme */
-            --card-bg: #222222; /* Card backgrounds */
-            --text-light: #f0f0f0; /* Main text color */
-            --text-muted: #b0b0b0; /* Muted text */
-            --accent-blue: #007bff; /* Primary accent for buttons/active states */
-            --accent-teal: #00ADB5; /* Secondary accent/highlight */
-            --accent-green: #28a745; /* Success */
-            --accent-red: #dc3545; /* Danger/Error */
-            --border-color: rgba(255, 255, 255, 0.1); /* Subtle borders */
-            --shadow-color: rgba(0, 0, 0, 0.4); /* General shadow color */
-            --input-bg: #333333; /* Input field background */
-            --input-border: #444444; /* Input field border */
-            --hover-item: #3a3a3a; /* For navigation item hover (if applicable) */
-            --quote-text: #E0E0E0; /* Specific for quote text */
-            --quote-author: #FFD700; /* Gold for quote author */
-            --highlight-gold: #FFD700; /* Added for consistency with website code */
+            --primary-dark: #1a1a1a;
+            --secondary-dark: #2c2c2c;
+            --bottom-nav-bg: #000000;
+            --bottom-nav-item: #ffffff;
+            --bottom-nav-active: #00ADB5;
+            --card-bg: #222222;
+            --text-light: #f0f0f0;
+            --text-muted: #b0b0b0;
+            --accent-blue: #007bff;
+            --accent-teal: #00ADB5;
+            --accent-green: #28a745;
+            --accent-red: #dc3545;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --input-bg: #333333;
+            --input-border: #444444;
+            --hover-item: #3a3a3a;
+            --quote-text: #E0E0E0;
+            --quote-author: #FFD700;
+            --highlight-gold: #FFD700;
         }
 
         body {
@@ -194,6 +194,59 @@
         .item-type-badge.bg-primary { background-color: var(--accent-blue) !important; }
         .item-type-badge.bg-info { background-color: var(--accent-teal) !important; }
 
+        /* Login Screen Styles */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-card h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 2.2em;
+            color: var(--accent-teal);
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .login-card .form-control {
+            margin-bottom: 20px;
+            height: 50px;
+            font-size: 1.1em;
+        }
+
+        .login-card .btn-primary {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+        }
+
+        /* Home Section Styles */
         .home-section {
             display: flex;
             flex-direction: column;
@@ -251,7 +304,7 @@
             font-size: 1em;
         }
 
-        /* NEW: Website Stats Section Styles */
+        /* Website Stats Section Styles */
         .website-stats-section {
             background-color: var(--secondary-dark);
             padding: 20px;
@@ -279,9 +332,9 @@
             color: var(--accent-teal);
         }
 
-        /* NEW: Homepage Announcements List Styles (Renamed for consistency) */
+        /* Homepage Announcements List Styles (Renamed for consistency) */
         #websiteNotificationsList .home-announcement-item {
-            background-color: rgba(0, 173, 181, 0.1); /* Light background for items */
+            background-color: rgba(0, 173, 181, 0.1);
             border: 1px solid var(--accent-teal);
             border-radius: 8px;
             padding: 10px 15px;
@@ -320,7 +373,7 @@
         }
 
         #websiteNotificationsList .home-announcement-item .announcement-controls button:hover {
-            color: var(--error-red);
+            color: var(--accent-red);
         }
         #websiteNotificationsList .home-announcement-item .announcement-controls button.edit-btn:hover {
             color: var(--accent-blue);
@@ -502,7 +555,21 @@
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <h2>SkillNeast Admin Login</h2>
+            <div id="loginAlerts" class="alert alert-danger" style="display: none;"></div>
+            <div class="mb-3">
+                <input type="email" class="form-control" id="adminEmail" placeholder="Enter Admin Email">
+            </div>
+            <div class="mb-3">
+                <input type="password" class="form-control" id="adminPassword" placeholder="Enter Admin Password">
+            </div>
+            <button class="btn btn-primary" id="loginButton">Login</button>
+        </div>
+    </div>
+
+    <div class="main-wrapper" id="mainWrapper" style="display: none;">
         <div class="content" id="content">
             <div id="home-section" class="section active home-section">
                 <span class="emoji-icon">🚀</span>
@@ -519,6 +586,8 @@
                     <p>Real-time Active Users: <span id="activeUsersCount">0</span></p>
                     <p>Total Website Visits: <span id="totalVisitsCount">0</span></p>
                 </div>
+
+                <button id="logoutButton" class="btn btn-danger mt-4">Logout</button>
             </div>
 
             <div id="site-config-section" class="section">
@@ -527,7 +596,6 @@
 
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h5>Telegram Channels Banner (WE NEED) Controls</h5>
-            
                 <div class="mb-3 form-check form-switch">
                     <input class="form-check-input site-config-input" type="checkbox" role="switch" id="telegramBannerVisible" data-key="telegramBannerVisible">
                     <label class="form-check-label" for="telegramBannerVisible">Show "WE NEED" Banner</label>
@@ -770,7 +838,7 @@
         <p class="loading-message">Processing...</p>
     </div>
 
-    <div class="bottom-navbar">
+    <div class="bottom-navbar" id="bottomNavbar" style="display: none;">
         <a href="#" class="nav-item" data-section="categories-section">
             <i class="fas fa-th-large"></i> Batches
         </a>
@@ -792,7 +860,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref as dbRef, push, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"; // signInWithEmailAndPassword and signOut imported
+
+        // Replace with your actual Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
             authDomain: "adminneast.firebaseapp.com",
@@ -803,11 +873,13 @@
             appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
             measurementId: "G-PCH99BDF1S"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
         let isAuthenticated = false;
         let activeSection = 'home-section';
+        const REAUTHENTICATION_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
 
         const homePageQuotes = [
             { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -818,31 +890,9 @@
         ];
         let currentQuoteIndex = 0;
 
-        const authenticateFirebase = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                    isAuthenticated = true;
-                    console.log("Admin Panel: Signed in with custom token.");
-                } else {
-                    const userCredential = await signInAnonymously(auth);
-                    isAuthenticated = true;
-                    console.log("Admin Panel: Signed in anonymously.");
-                }
-            } catch (error) {
-                console.error("Admin Panel Firebase authentication error:", error);
-                const alertsDiv = document.getElementById('alerts');
-                if (alertsDiv) {
-                    alertsDiv.innerHTML = `<div class="alert alert-danger fade show">Authentication failed: ${error.message}. Please check Firebase config & authorized domains.</div>`;
-                } else {
-                    alert(`Authentication failed: ${error.message}. Please check Firebase config & authorized domains.`);
-                }
-                isAuthenticated = false;
-            }
-        };
-
-        const msg = (text, type = 'success') => {
-            const alertsDiv = document.getElementById('alerts');
+        // Custom alert/message function
+        const msg = (text, type = 'success', targetId = 'alerts') => {
+            const alertsDiv = document.getElementById(targetId);
             if (alertsDiv) {
                 const el = document.createElement('div');
                 el.className = `alert alert-${type} fade show`;
@@ -860,6 +910,7 @@
             }
         };
 
+        // Custom confirm modal
         const showConfirm = (message) => {
             return new Promise((resolve) => {
                 const modalOverlay = document.getElementById('customConfirmModal');
@@ -888,6 +939,8 @@
                 cancelButton.addEventListener('click', handleCancel);
             });
         };
+
+        // Modal for adding lecture/resource type
         const showLectureResourceModal = () => {
             return new Promise((resolve) => {
                 const modal = document.getElementById('addLectureResourceModal');
@@ -914,6 +967,8 @@
                 cancelBtn.addEventListener('click', cancelClickHandler);
             });
         };
+
+        // Loading spinner
         const showLoading = (message = "Processing...") => {
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.querySelector('.loading-message').textContent = message;
@@ -925,6 +980,7 @@
             loadingOverlay.classList.remove('active');
         };
 
+        // Update homepage quote
         const updateHomePageQuote = () => {
             const quoteTextEl = document.getElementById('homeQuoteText');
             const quoteAuthorEl = document.getElementById('homeQuoteAuthor');
@@ -941,6 +997,8 @@
             quoteTextEl.textContent = `"${quote.quote}"`;
             quoteAuthorEl.textContent = `- ${quote.author}`;
         };
+
+        // Show specific section and highlight bottom nav
         const showSection = (sectionId) => {
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -956,23 +1014,22 @@
             });
             if (sectionId === 'home-section') {
                 document.getElementById('home-section').style.display = 'flex';
-                // Ensure flex for homepage layout
             } else {
                 document.getElementById('home-section').style.display = 'block';
-                // Ensure block for other sections
             }
-
 
             // Load data specific to the section when it becomes active
             if (sectionId === 'site-config-section') {
                 loadHowToUseVideos();
-                loadWebsiteNotifications(); /*  */ // NEW: Load website announcements when entering site config
+                loadWebsiteNotifications(); /* */ // NEW: Load website announcements when entering site config
             } else if (sectionId === 'request-courses-section') {
                 loadRequestCourses();
             } else if (sectionId === 'home-section') {
-                listenForWebsiteStats(); /*  */ // Start listening for stats when on home section
+                listenForWebsiteStats();
             }
         };
+
+        // Bottom navigation item click handler
         document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
             item.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -980,6 +1037,8 @@
                 showSection(targetSectionId);
             });
         });
+
+        // Get file extension from URL or name
         function getFileExtension(url, name) {
             if (name) {
                 const nameParts = name.split('.');
@@ -1002,6 +1061,7 @@
             return '';
         }
 
+        // Load site configuration from Firebase
         const loadSiteConfig = () => {
             const configRef = dbRef(db, 'siteConfig');
             onValue(configRef, (snapshot) => {
@@ -1023,10 +1083,16 @@
             });
         };
 
+        // Setup event listeners for site configuration inputs
         const setupSiteConfigEvents = () => {
             document.querySelectorAll('.site-config-input').forEach(input => {
                 if (!input.dataset.listenerAdded) {
                     input.addEventListener('change', async (e) => {
+                        if (!isAuthenticated) { // Check authentication before allowing changes
+                            msg('You must be logged in to make changes!', 'danger', 'alerts');
+                            e.target.checked = !e.target.checked; // Revert checkbox if not authenticated
+                            return;
+                        }
                         const key = e.target.dataset.key;
                         let value;
                         if (e.target.type === 'checkbox') {
@@ -1049,7 +1115,7 @@
                 }
             });
 
-            document.getElementById('addWebsiteNotificationButton').addEventListener('click', addWebsiteNotification); /*  */ // Renamed button listener
+            document.getElementById('addWebsiteNotificationButton').addEventListener('click', addWebsiteNotification);
         };
 
         // --- How to Use App Videos Management ---
@@ -1099,6 +1165,7 @@
             });
         };
 
+        // Add how-to-use video
         const addHowToUseVideo = async () => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             const title = document.getElementById('howToUseVideoTitle').value.trim();
@@ -1106,7 +1173,8 @@
             const description = document.getElementById('howToUseVideoDescription').value.trim();
 
             if (!title || !url) {
-                msg('Video title and URL are required!', 'warning'); return;
+                msg('Video title and URL are required!', 'warning');
+                return;
             }
 
             showLoading('Adding video...');
@@ -1124,6 +1192,7 @@
             }
         };
 
+        // Update how-to-use video
         const updateHowToUseVideo = async (videoId, field, value) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             showLoading('Updating video...');
@@ -1137,6 +1206,7 @@
             }
         };
 
+        // Delete how-to-use video
         const deleteHowToUseVideo = async (videoId) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             const confirm = await showConfirm('Are you sure you want to delete this video?');
@@ -1163,7 +1233,8 @@
             const link = document.getElementById('notificationLink').value.trim();
 
             if (!title || !body) {
-                msg('Notification title and body are required!', 'warning'); return;
+                msg('Notification title and body are required!', 'warning');
+                return;
             }
 
             showLoading('Sending notification...');
@@ -1190,60 +1261,61 @@
         document.getElementById('sendNotificationButton').addEventListener('click', sendNotification);
 
         // NEW: Website Homepage Notifications Management (replaces old homeAnnouncements)
-        const websiteNotificationsRef = dbRef(db, 'notifications'); /*  */ // Use the same notifications path as push notifications for consistency
+        const websiteNotificationsRef = dbRef(db, 'notifications');
 
-        const addWebsiteNotification = async () => { /*  */
+        const addWebsiteNotification = async () => { /* */
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-            const title = document.getElementById('websiteNotificationTitle').value.trim(); /*  */
-            const body = document.getElementById('websiteNotificationBody').value.trim(); /*  */
-            const link = document.getElementById('websiteNotificationLink').value.trim(); /*  */
+            const title = document.getElementById('websiteNotificationTitle').value.trim();
+            const body = document.getElementById('websiteNotificationBody').value.trim();
+            const link = document.getElementById('websiteNotificationLink').value.trim();
 
-            if (!title || !body) { /*  */
-                msg('Notification title and message are required!', 'warning'); return; /*  */
+            if (!title || !body) { /* */
+                msg('Notification title and message are required!', 'warning');
+                return; /* */
             }
 
-            showLoading('Adding Homepage Notification...'); /*  */
+            showLoading('Adding Homepage Notification...');
             try {
-                await push(websiteNotificationsRef, { /*  */
-                    title: title, /*  */
-                    body: body, /*  */
-                    link: link || null, /*  */
-                    timestamp: serverTimestamp() /*  */
+                await push(websiteNotificationsRef, { /* */
+                    title: title, /* */
+                    body: body, /* */
+                    link: link || null,
+                    timestamp: serverTimestamp() /* */
                 });
-                msg('Homepage Notification added successfully!', 'success'); /*  */
-                document.getElementById('websiteNotificationTitle').value = ''; /*  */
-                document.getElementById('websiteNotificationBody').value = ''; /*  */
-                document.getElementById('websiteNotificationLink').value = ''; /*  */
+                msg('Homepage Notification added successfully!', 'success');
+                document.getElementById('websiteNotificationTitle').value = '';
+                document.getElementById('websiteNotificationBody').value = '';
+                document.getElementById('websiteNotificationLink').value = '';
             } catch (error) {
-                msg(`Error adding Homepage Notification: ${error.message}`, 'danger'); /*  */
+                msg(`Error adding Homepage Notification: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); /*  */
+                hideLoading();
             }
         };
 
-        const loadWebsiteNotifications = () => { /*  */
-            onValue(websiteNotificationsRef, (snapshot) => { /*  */
-                const notifications = snapshot.val() || {}; /*  */
-                renderWebsiteNotifications(notifications); /*  */
+        const loadWebsiteNotifications = () => { /* */
+            onValue(websiteNotificationsRef, (snapshot) => { /* */
+                const notifications = snapshot.val() || {}; /* */
+                renderWebsiteNotifications(notifications); /* */
             }, (error) => {
-                msg(`Error loading homepage notifications: ${error.message}`, 'danger'); /*  */
+                msg(`Error loading homepage notifications: ${error.message}`, 'danger');
             });
         };
 
-        const renderWebsiteNotifications = (notifications) => { /*  */
-            const listContainer = document.getElementById('websiteNotificationsList'); /*  */
-            listContainer.innerHTML = ''; /*  */
-            if (Object.keys(notifications).length === 0) { /*  */
-                listContainer.innerHTML = '<p class="text-muted fst-italic">No homepage notifications added yet.</p>'; /*  */
-                return; /*  */
+        const renderWebsiteNotifications = (notifications) => { /* */
+            const listContainer = document.getElementById('websiteNotificationsList');
+            listContainer.innerHTML = '';
+            if (Object.keys(notifications).length === 0) { /* */
+                listContainer.innerHTML = '<p class="text-muted fst-italic">No homepage notifications added yet.</p>';
+                return; /* */
             }
 
-            const sortedNotifications = Object.entries(notifications).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0)); /*  */
-            sortedNotifications.forEach(([id, notification]) => { /*  */
-                const itemDiv = document.createElement('div'); /*  */
-                itemDiv.className = 'home-announcement-item card card-body mb-2'; /*  */ // Reusing styling
-                itemDiv.dataset.id = id; /*  */
+            const sortedNotifications = Object.entries(notifications).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0));
+            sortedNotifications.forEach(([id, notification]) => { /* */
+                const itemDiv = document.createElement('div'); /* */
+                itemDiv.className = 'home-announcement-item card card-body mb-2'; /* */
+                itemDiv.dataset.id = id; /* */
 
                 itemDiv.innerHTML = `
                     <p><strong>Title:</strong> <span contenteditable="true" data-field="title">${notification.title || 'Untitled'}</span></p>
@@ -1252,84 +1324,85 @@
                     <div class="announcement-controls mt-2">
                         <button class="btn btn-sm btn-danger delete-website-notification" data-id="${id}">Delete</button>
                     </div>
-                `; /*  */
-                listContainer.appendChild(itemDiv); /*  */
+                `;
+                listContainer.appendChild(itemDiv);
 
-                itemDiv.querySelector('[contenteditable][data-field="title"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'title', e.target.textContent)); /*  */
-                itemDiv.querySelector('[contenteditable][data-field="body"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'body', e.target.textContent)); /*  */
-                itemDiv.querySelector('input[type="url"][data-field="link"]')?.addEventListener('change', (e) => updateWebsiteNotification(id, 'link', e.target.value)); /*  */
-                itemDiv.querySelector('.delete-website-notification').addEventListener('click', () => deleteWebsiteNotification(id)); /*  */
+                itemDiv.querySelector('[contenteditable][data-field="title"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'title', e.target.textContent));
+                itemDiv.querySelector('[contenteditable][data-field="body"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'body', e.target.textContent));
+                itemDiv.querySelector('input[type="url"][data-field="link"]')?.addEventListener('change', (e) => updateWebsiteNotification(id, 'link', e.target.value));
+                itemDiv.querySelector('.delete-website-notification').addEventListener('click', () => deleteWebsiteNotification(id));
             });
         };
 
-        const updateWebsiteNotification = async (id, field, value) => { /*  */
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } /*  */
-            showLoading('Updating notification...'); /*  */
+        const updateWebsiteNotification = async (id, field, value) => { /* */
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            showLoading('Updating notification...');
             try {
-                await update(dbRef(db, `notifications/${id}`), { [field]: value || null }); /*  */
-                msg('Homepage Notification updated!', 'info'); /*  */
+                await update(dbRef(db, `notifications/${id}`), { [field]: value || null });
+                msg('Homepage Notification updated!', 'info');
             } catch (error) {
-                msg(`Error updating notification: ${error.message}`, 'danger'); /*  */
+                msg(`Error updating notification: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); /*  */
+                hideLoading();
             }
         };
 
-        const deleteWebsiteNotification = async (id) => { /*  */
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } /*  */
-            const confirm = await showConfirm('Are you sure you want to delete this homepage notification?'); /*  */
-            if (confirm) { /*  */
-                showLoading('Deleting notification...'); /*  */
+        const deleteWebsiteNotification = async (id) => { /* */
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const confirm = await showConfirm('Are you sure you want to delete this homepage notification?');
+            if (confirm) { /* */
+                showLoading('Deleting notification...');
                 try {
-                    await remove(dbRef(db, `notifications/${id}`)); /*  */
-                    msg('Homepage Notification deleted!', 'danger'); /*  */
+                    await remove(dbRef(db, `notifications/${id}`));
+                    msg('Homepage Notification deleted!', 'danger');
                 } catch (error) {
-                    msg(`Error deleting notification: ${error.message}`, 'danger'); /*  */
+                    msg(`Error deleting notification: ${error.message}`, 'danger');
                 } finally {
-                    hideLoading(); /*  */
+                    hideLoading();
                 }
             }
         };
 
         // NEW: Website Analytics Live Data Listener
-        const websiteStatsRef = dbRef(db, 'websiteStats'); /*  */ // Assumed Firebase path for website stats
+        const websiteStatsRef = dbRef(db, 'websiteStats');
 
-        const listenForWebsiteStats = () => { /*  */
-            onValue(websiteStatsRef, (snapshot) => { /*  */
-                const stats = snapshot.val() || { activeUsers: 0, totalVisits: 0 }; /*  */
-                document.getElementById('activeUsersCount').textContent = stats.activeUsers || 0; /*  */
-                document.getElementById('totalVisitsCount').textContent = stats.totalVisits || 0; /*  */
+        const listenForWebsiteStats = () => { /* */
+            onValue(websiteStatsRef, (snapshot) => { /* */
+                const stats = snapshot.val() || { activeUsers: 0, totalVisits: 0 }; /* */
+                document.getElementById('activeUsersCount').textContent = stats.activeUsers || 0; /* */
+                document.getElementById('totalVisitsCount').textContent = stats.totalVisits || 0;
             }, (error) => {
-                console.error("Error listening for website stats:", error); /*  */
-                document.getElementById('activeUsersCount').textContent = 'N/A'; /*  */
-                document.getElementById('totalVisitsCount').textContent = 'N/A'; /*  */
+                console.error("Error listening for website stats:", error); /* */
+                document.getElementById('activeUsersCount').textContent = 'N/A'; /* */
+                document.getElementById('totalVisitsCount').textContent = 'N/A'; /* */
             });
         };
 
         // --- Request Courses Post Management ---
-        const requestCoursesRef = dbRef(db, 'requestCourses'); /*  */ // Firebase ref for request courses
+        const requestCoursesRef = dbRef(db, 'requestCourses');
 
-        const loadRequestCourses = () => { /*  */
-            onValue(requestCoursesRef, (snapshot) => { /*  */
-                const requests = snapshot.val() || {}; /*  */
-                renderRequestCourses(requests); /*  */
+        const loadRequestCourses = () => { /* */
+            onValue(requestCoursesRef, (snapshot) => { /* */
+                const requests = snapshot.val() || {}; /* */
+                renderRequestCourses(requests); /* */
             }, (error) => {
-                msg(`Error loading request courses: ${error.message}`, 'danger'); /*  */
+                msg(`Error loading request courses: ${error.message}`, 'danger');
             });
         };
-        const renderRequestCourses = (requests) => { /*  */
-            const listContainer = document.getElementById('requestCoursesAdminList'); /*  */ // Correct ID for list container
-            listContainer.innerHTML = ''; /*  */
-            if (Object.keys(requests).length === 0) { /*  */
-                listContainer.innerHTML = '<p class="text-muted fst-italic">No request course posts added yet.</p>'; /*  */
-                return; /*  */
+
+        const renderRequestCourses = (requests) => { /* */
+            const listContainer = document.getElementById('requestCoursesAdminList');
+            listContainer.innerHTML = '';
+            if (Object.keys(requests).length === 0) { /* */
+                listContainer.innerHTML = '<p class="text-muted fst-italic">No request course posts added yet.</p>';
+                return; /* */
             }
 
             // Sort by timestamp descending (newest first)
-            const sortedRequests = Object.entries(requests).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0)); /*  */
-            sortedRequests.forEach(([requestId, request]) => { /*  */
-                const requestItem = document.createElement('div'); /*  */
-                requestItem.className = 'card mb-2'; /*  */ // Reusing card styling
+            const sortedRequests = Object.entries(requests).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0));
+            sortedRequests.forEach(([requestId, request]) => { /* */
+                const requestItem = document.createElement('div'); /* */
+                requestItem.className = 'card mb-2'; /* */
                 requestItem.innerHTML = `
                     <div class="card-body py-2">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1357,84 +1430,85 @@
                             Reactions: ❤️ ${request.reactions?.["❤️"] || 0} | 😂 ${request.reactions?.["😂"] || 0} | 👍 ${request.reactions?.["👍"] || 0} | 🌟 ${request.reactions?.["🌟"] || 0}
                         </div>
                     </div>
-                `; /*  */
-                listContainer.appendChild(requestItem); /*  */
+                `;
+                listContainer.appendChild(requestItem);
 
                 // Attach event listeners for inline editing and deletion
-                requestItem.querySelector('.request-title').addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent)); /*  */
-                requestItem.querySelector('.request-description').addEventListener('blur', (e) => updateRequestCourse(requestId, 'description', e.target.value)); /*  */
-                requestItem.querySelector('.request-image-url').addEventListener('change', (e) => updateRequestCourse(requestId, 'imageUrl', e.target.value)); /*  */
-                requestItem.querySelector('.request-button-text').addEventListener('blur', (e) => updateRequestCourse(requestId, 'buttonText', e.target.value)); /*  */
-                requestItem.querySelector('.request-button-link').addEventListener('change', (e) => updateRequestCourse(requestId, 'buttonLink', e.target.value)); /*  */
-                requestItem.querySelector('.delete-request').addEventListener('click', () => deleteRequestCourse(requestId)); /*  */
+                requestItem.querySelector('.request-title').addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent));
+                requestItem.querySelector('.request-description').addEventListener('blur', (e) => updateRequestCourse(requestId, 'description', e.target.value));
+                requestItem.querySelector('.request-image-url').addEventListener('change', (e) => updateRequestCourse(requestId, 'imageUrl', e.target.value));
+                requestItem.querySelector('.request-button-text').addEventListener('blur', (e) => updateRequestCourse(requestId, 'buttonText', e.target.value));
+                requestItem.querySelector('.request-button-link').addEventListener('change', (e) => updateRequestCourse(requestId, 'buttonLink', e.target.value));
+                requestItem.querySelector('.delete-request').addEventListener('click', () => deleteRequestCourse(requestId));
             });
         };
-        const addRequestCourse = async () => { /*  */
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } /*  */
 
-            const title = document.getElementById('requestCourseTitle').value.trim(); /*  */
-            const description = document.getElementById('requestCourseDescription').value.trim(); /*  */
-            const imageUrl = document.getElementById('requestCourseImageUrl').value.trim(); /*  */
-            const buttonText = document.getElementById('requestCourseButtonText').value.trim(); /*  */
-            const buttonLink = document.getElementById('requestCourseButtonLink').value.trim(); /*  */
-            if (!title) { msg('Request Course Title is required!', 'warning'); return; } /*  */
+        const addRequestCourse = async () => { /* */
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-            showLoading('Adding request course...'); /*  */
+            const title = document.getElementById('requestCourseTitle').value.trim();
+            const description = document.getElementById('requestCourseDescription').value.trim();
+            const imageUrl = document.getElementById('requestCourseImageUrl').value.trim();
+            const buttonText = document.getElementById('requestCourseButtonText').value.trim();
+            const buttonLink = document.getElementById('requestCourseButtonLink').value.trim();
+            if (!title) { msg('Request Course Title is required!', 'warning'); return; }
+
+            showLoading('Adding request course...');
             try {
-                const newRef = push(requestCoursesRef); /*  */
-                await set(newRef, { /*  */
-                    title, /*  */
-                    description: description || null, /*  */
-                    imageUrl: imageUrl || null, /*  */
-                    buttonText: buttonText || null, /*  */
-                    buttonLink: buttonLink || null, /*  */
-                    timestamp: serverTimestamp(), /*  */
-                    reactions: { "❤️": 0, "😂": 0, "👍": 0, "🌟": 0 } /*  */ // Initialize reactions
+                const newRef = push(requestCoursesRef);
+                await set(newRef, { /* */
+                    title, /* */
+                    description: description || null, /* */
+                    imageUrl: imageUrl || null, /* */
+                    buttonText: buttonText || null,
+                    buttonLink: buttonLink || null, /* */
+                    timestamp: serverTimestamp(), /* */
+                    reactions: { "❤️": 0, "😂": 0, "👍": 0, "🌟": 0 }
                 });
-                msg('Request course added successfully!', 'success'); /*  */
+                msg('Request course added successfully!', 'success');
                 // Clear fields after successful addition
-                document.getElementById('requestCourseTitle').value = ''; /*  */
-                document.getElementById('requestCourseDescription').value = ''; /*  */
-                document.getElementById('requestCourseImageUrl').value = ''; /*  */
-                document.getElementById('requestCourseButtonText').value = ''; /*  */
-                document.getElementById('requestCourseButtonLink').value = ''; /*  */
+                document.getElementById('requestCourseTitle').value = '';
+                document.getElementById('requestCourseDescription').value = '';
+                document.getElementById('requestCourseImageUrl').value = '';
+                document.getElementById('requestCourseButtonText').value = '';
+                document.getElementById('requestCourseButtonLink').value = '';
             } catch (error) {
-                msg(`Error adding request course: ${error.message}`, 'danger'); /*  */
+                msg(`Error adding request course: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); /*  */
+                hideLoading();
             }
         };
 
-        const updateRequestCourse = async (requestId, field, value) => { /*  */
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } /*  */
-            showLoading('Updating request course...'); /*  */
+        const updateRequestCourse = async (requestId, field, value) => { /* */
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            showLoading('Updating request course...');
             try {
                 // Firebase sets null for empty strings when using update, which is fine.
-                await update(dbRef(db, `requestCourses/${requestId}`), { [field]: value || null }); /*  */
-                msg('Request course updated!', 'info'); /*  */
+                await update(dbRef(db, `requestCourses/${requestId}`), { [field]: value || null });
+                msg('Request course updated!', 'info');
             } catch (error) {
-                msg(`Error updating request course: ${error.message}`, 'danger'); /*  */
+                msg(`Error updating request course: ${error.message}`, 'danger');
             } finally {
-                hideLoading(); /*  */
+                hideLoading();
             }
         };
 
-        const deleteRequestCourse = async (requestId) => { /*  */
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; } /*  */
-            const confirmDelete = await showConfirm('Are you sure you want to delete this request course post?'); /*  */
+        const deleteRequestCourse = async (requestId) => { /* */
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const confirmDelete = await showConfirm('Are you sure you want to delete this request course post?');
             if (confirmDelete) {
-                showLoading('Deleting request course...'); /*  */
+                showLoading('Deleting request course...');
                 try {
-                    await remove(dbRef(db, `requestCourses/${requestId}`)); /*  */
-                    msg('Request course deleted!', 'danger'); /*  */
+                    await remove(dbRef(db, `requestCourses/${requestId}`));
+                    msg('Request course deleted!', 'danger');
                 } catch (error) {
-                    msg(`Error deleting request course: ${error.message}`, 'danger'); /*  */
+                    msg(`Error deleting request course: ${error.message}`, 'danger');
                 } finally {
-                    hideLoading(); /*  */
+                    hideLoading();
                 }
             }
         };
-        document.getElementById('addRequestCourse').addEventListener('click', addRequestCourse); /*  */
+        document.getElementById('addRequestCourse').addEventListener('click', addRequestCourse);
 
 
         // Load and display categories
@@ -1484,6 +1558,11 @@
         const setupCategoryEvents = (card, catId, currentImageUrl) => {
             const nameEl = card.querySelector('.cat-name');
             nameEl.addEventListener('blur', async () => {
+                if (!isAuthenticated) { // Check authentication before allowing changes
+                    msg('You must be logged in to make changes!', 'danger');
+                    nameEl.textContent = nameEl.dataset.originalName; // Revert changes
+                    return;
+                }
                 const newName = nameEl.textContent.trim();
                 if (newName && newName !== nameEl.dataset.originalName) {
                     try {
@@ -1498,6 +1577,11 @@
 
             const imageUrlInput = card.querySelector('.category-image-url');
             imageUrlInput.addEventListener('change', async (e) => {
+                if (!isAuthenticated) { // Check authentication before allowing changes
+                    msg('You must be logged in to make changes!', 'danger');
+                    e.target.value = currentImageUrl; // Revert changes
+                    return;
+                }
                 const newImageUrl = e.target.value.trim();
                 try {
                     await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl });
@@ -1507,6 +1591,7 @@
                 }
             });
             card.querySelector('.delete-cat').addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
                 if (confirmDelete) { // Changed 'confirm' to 'confirmDelete' for consistency
                     try {
@@ -1608,6 +1693,7 @@
         const setupBatchEvents = (card, catId, bId, currentBatch) => {
             // Batch title editing
             card.querySelector('.batch-title').addEventListener('blur', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentBatch.title; return; }
                 const newTitle = e.target.textContent.trim();
                 if (newTitle && newTitle !== currentBatch.title) {
                     try {
@@ -1620,6 +1706,7 @@
             });
             // Batch thumbnail URL
             card.querySelector('.batch-thumbnail-url').addEventListener('change', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.thumbnail; return; }
                 const newThumbnail = e.target.value.trim();
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { thumbnail: newThumbnail });
@@ -1630,6 +1717,7 @@
             });
             // Batch description
             card.querySelector('.batch-description').addEventListener('blur', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.description; return; }
                 const newDescription = e.target.value.trim();
                 if (newDescription && newDescription !== currentBatch.description) {
                     try {
@@ -1642,6 +1730,7 @@
             });
             // Batch original price
             card.querySelector('.batch-original-price').addEventListener('change', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.originalPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
@@ -1652,6 +1741,7 @@
             });
             // Batch discounted price
             card.querySelector('.batch-discounted-price').addEventListener('change', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.discountedPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { discountedPrice: newPrice });
@@ -1662,6 +1752,7 @@
             });
             // Toggle isNew status
             card.querySelector('.toggle-isnew').addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const newValue = !currentBatch.isNew;
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isNew: newValue });
@@ -1672,6 +1763,7 @@
             });
             // Toggle isFree status
             card.querySelector('.toggle-isfree').addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const newValue = !currentBatch.isFree;
                 try {
                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isFree: newValue });
@@ -1684,6 +1776,7 @@
             const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
             if (toggleIsContentDirectLink) {
                 toggleIsContentDirectLink.addEventListener('click', async () => {
+                    if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                     const newValue = !currentBatch.isContentDirectLink;
                     const confirm = await showConfirm(`Are you sure you want to change this batch to ${newValue ? 'Direct Link' : 'Normal Modules'}? This will reset content structure.`);
                     if (confirm) {
@@ -1710,6 +1803,7 @@
 
             // Delete Batch
             card.querySelector('.delete-batch').addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures?');
                 if (confirmDelete) {
                     try {
@@ -1727,6 +1821,7 @@
             const directDriveLinkInput = card.querySelector('.direct-drive-link');
             if (directDriveLinkInput) {
                 directDriveLinkInput.addEventListener('change', async (e) => {
+                    if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.directDriveLink || ''; return; }
                     const newLink = e.target.value.trim();
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { directDriveLink: newLink });
@@ -1761,7 +1856,8 @@
                 onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), (snapshot) => {
                     modulesListContainer.innerHTML = '';
                     const modulesData = snapshot.val() || {};
-                    if (Object.keys(modulesData).length === 0) {
+                    if (Object.keys(modulesData).length === 0)
+                    {
                         modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
                     }
                     Object.entries(modulesData).forEach(([modId, module]) => {
@@ -1816,68 +1912,82 @@
                             data-cat="${catId}" data-bid="${bId}">${batch.isNew ? 'NEW' : 'OLD'}</span>
                         <span class="badge ${batch.isFree ? 'bg-info' : 'bg-warning'} me-2 toggle-isfree" style="cursor:pointer;"
                             data-cat="${catId}" data-bid="${bId}">${batch.isFree ? 'FREE' : 'PAID'}</span>
-                        <span class="badge ${batch.isContentDirectLink ? 'bg-primary' : 'bg-secondary'} me-2 toggle-iscontentdirectlink" style="cursor:pointer;"
-                            data-cat="${catId}" data-bid="${bId}">${batch.isContentDirectLink ? 'DIRECT LINK' : 'NORMAL'}</span>
-                        <button class="btn btn-danger btn-sm delete-batch" data-cat="${catId}" data-id="${bId}">Delete Batch</button>
+                        <button class="btn btn-danger btn-sm delete-batch" data-id="${bId}">Delete Batch</button>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Thumbnail URL:</label>
-                        ${batch.thumbnail ? `<img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">` : '<p class="text-muted">No thumbnail.</p>'}
-                        <input type="url" class="form-control form-control-sm mt-1 batch-thumbnail-url" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="Thumbnail URL">
+                    <div class="mb-3">
+                        <label for="batchThumbnailUrl-${bId}" class="form-label">Thumbnail URL:</label>
+                        <img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">
+                        <input type="url" class="form-control form-control-sm mt-2 batch-thumbnail-url" id="batchThumbnailUrl-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="e.g., https://example.com/thumbnail.jpg">
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Description:</label>
-                        <textarea class="form-control form-control-sm batch-description" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
+                    <div class="mb-3">
+                        <label for="batchDescription-${bId}" class="form-label">Description:</label>
+                        <textarea class="form-control form-control-sm batch-description" id="batchDescription-${bId}" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Price:</label>
-                        <div class="d-flex align-items-center">
-                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-original-price" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="Original Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
-                            <input type="number" step="0.01" class="form-control form-control-sm me-2 batch-discounted-price" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="Discounted Price" style="width: 120px; display: ${batch.isFree || batch.isContentDirectLink ? 'none' : 'block'};">
-                            ${displayPrice} ${originalPriceStrikethrough}
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="batchOriginalPrice-${bId}" class="form-label">Original Price:</label>
+                            <input type="number" class="form-control form-control-sm batch-original-price" id="batchOriginalPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
+                        </div>
+                        <div class="col">
+                            <label for="batchDiscountedPrice-${bId}" class="form-label">Discounted Price:</label>
+                            <input type="number" class="form-control form-control-sm batch-discounted-price" id="batchDiscountedPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for Free)">
                         </div>
                     </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input toggle-iscontentdirectlink" type="checkbox" role="switch"
+                            id="isContentDirectLink-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isContentDirectLink ? 'checked' : ''}>
+                        <label class="form-check-label" for="isContentDirectLink-${bId}">Is Direct Link Batch (No Modules)</label>
+                    </div>
                     ${dynamicContentHtml}
-                </div>
-            `;
-            setupBatchEvents(div, catId, bId, batch); // Pass the created div for event setup
+                </div>`;
+            setupBatchEvents(div, catId, bId, batch);
             return div;
         };
 
-        // Functions for module and lecture management within batches
+
         const createModuleItem = (catId, bId, modId, module) => {
             const div = document.createElement('div');
-            div.className = 'card bg-white p-2 mb-2'; // Smaller card for modules
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 contenteditable="true" class="module-name flex-grow-1 me-2">${module.name}</h6>
-                    <button class="btn btn-sm btn-danger delete-module" data-cat="${catId}" data-bid="${bId}" data-mod="${modId}">Delete Module</button>
-                </div>
-                <button class="btn btn-sm btn-info add-lecture-resource" data-cat="${catId}" data-bid="${bId}" data-mod="${modId}">+ Add Lecture/Resource</button>
-                <div class="lectures-list mt-2" id="lectures-list-${modId}"></div>
-            `;
+            div.className = 'card mb-2 bg-secondary';
 
-            // Add module name edit listener
-            div.querySelector('.module-name').addEventListener('blur', async (e) => {
+            div.innerHTML = `
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" class="module-name flex-grow-1 me-2">${module.name}</h6>
+                        <button class="btn btn-danger btn-sm delete-module" data-id="${modId}">Delete Module</button>
+                    </div>
+                    <hr>
+                    <h6 class="mb-2 text-muted">Lectures & Resources:</h6>
+                    <div>
+                        <button class="btn btn-secondary btn-sm mb-2 add-lecture-resource" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}">+ Add Content</button>
+                        <div class="lectures-list" id="lectures-list-${modId}"></div>
+                    </div>
+                </div>`;
+            setupModuleEvents(div, catId, bId, modId, module);
+            return div;
+        };
+
+        const setupModuleEvents = (card, catId, bId, modId, currentModule) => {
+            card.querySelector('.module-name').addEventListener('blur', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentModule.name; return; }
                 const newName = e.target.textContent.trim();
-                if (newName && newName !== module.name) {
+                if (newName && newName !== currentModule.name) {
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`), { name: newName });
-                        msg('Module name updated!', 'info');
+                        msg('Module name updated', 'info');
                     } catch (error) {
                         msg(`Error updating module name: ${error.message}`, 'danger');
                     }
                 }
             });
 
-            // Add module delete listener
-            div.querySelector('.delete-module').addEventListener('click', async () => {
-                const confirm = await showConfirm('Are you sure you want to delete this module and all its contents (lectures/resources)?');
-                if (confirm) {
-                    showLoading('Deleting module...');
+            card.querySelector('.delete-module').addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
+                const confirmDelete = await showConfirm('Are you sure you want to delete this module and all its lectures/resources?');
+                if (confirmDelete) {
+                    showLoading('Deleting module and content...');
                     try {
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`));
-                        msg('Module deleted!', 'danger');
+                        msg('Module and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting module: ${error.message}`, 'danger');
                     } finally {
@@ -1886,131 +1996,262 @@
                 }
             });
 
-            // Add lecture/resource button listener
-            div.querySelector('.add-lecture-resource').addEventListener('click', async () => {
+            card.querySelector('.add-lecture-resource').addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-                const type = await showLectureResourceModal(); // Use the modal to ask for type
-                if (!type) {
-                    msg('Content type not selected. Adding cancelled.', 'info');
-                    return;
-                }
+                const contentType = await showLectureResourceModal();
+                if (!contentType) { msg('Content addition cancelled.', 'info'); return; }
 
-                const name = prompt(`Enter ${type === 'lecture' ? 'Lecture' : 'Resource'} Name:`);
-                if (!name) { msg(`${type === 'lecture' ? 'Lecture' : 'Resource'} name is required!`, 'warning'); return; }
+                const itemName = prompt(`Enter ${contentType === 'lecture' ? 'Lecture' : 'Resource'} Name:`);
+                if (!itemName) { msg('Name is required!', 'warning'); return; }
 
-                const url = prompt(`Enter ${type === 'lecture' ? 'Video (YouTube/Drive) URL' : 'Resource (PDF/Drive/Link) URL'}:`);
-                if (!url) { msg(`${type === 'lecture' ? 'Video' : 'Resource'} URL is required!`, 'warning'); return; }
+                const itemUrl = prompt(`Enter ${contentType === 'lecture' ? 'Video' : 'File'} URL:`);
+                if (!itemUrl) { msg('URL is required!', 'warning'); return; }
 
-                showLoading(`Adding ${type}...`);
+                showLoading(`Adding ${contentType}...`);
                 try {
-                    const newLectureRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
-                    await set(newLectureRef, { name, url, type });
-                    msg(`${type === 'lecture' ? 'Lecture' : 'Resource'} added successfully!`, 'success');
+                    const newItemRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
+                    await set(newItemRef, { name: itemName, url: itemUrl, type: contentType });
+                    msg(`${contentType === 'lecture' ? 'Lecture' : 'Resource'} added successfully!`, 'success');
                 } catch (error) {
-                    msg(`Error adding ${type}: ${error.message}`, 'danger');
+                    msg(`Error adding ${contentType}: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
             });
 
-            // Listen for lectures/resources within this module
+            const lecturesListContainer = card.querySelector(`#lectures-list-${modId}`);
             onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`), (snapshot) => {
-                const lecturesListContainer = div.querySelector(`#lectures-list-${modId}`);
                 lecturesListContainer.innerHTML = '';
                 const lecturesData = snapshot.val() || {};
                 if (Object.keys(lecturesData).length === 0) {
-                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures or resources in this module.</p>';
+                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No content in this module.</p>';
                 }
-                Object.entries(lecturesData).forEach(([lecId, lecture]) => {
-                    const lectureItem = document.createElement('div');
-                    lectureItem.className = 'card bg-light p-2 mb-2 d-flex align-items-center';
-                    const itemTypeBadgeClass = (lecture.type === 'lecture' ? 'bg-primary' : 'bg-info');
-                    const itemTypeIcon = (lecture.type === 'lecture' ? 'fas fa-video' : 'fas fa-file-alt');
+                Object.entries(lecturesData).forEach(([itemId, item]) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'card card-body mb-2';
+                    const itemTypeClass = item.type === 'lecture' ? 'bg-primary' : 'bg-info';
+                    let itemIcon = item.type === 'lecture' ? 'fas fa-video' : 'fas fa-file-alt'; // Default
 
-                    // Determine file icon for resources
-                    let fileIcon = '';
-                    if (lecture.type === 'resource') {
-                        const fileExt = getFileExtension(lecture.url, lecture.name).toLowerCase();
-                        if (fileExt === 'pdf') fileIcon = 'fas fa-file-pdf';
-                        else if (fileExt === 'zip' || fileExt === 'rar' || fileExt === '7z') fileIcon = 'fas fa-file-archive';
-                        else if (fileExt === 'jpg' || fileExt === 'jpeg' || fileExt === 'png' || fileExt === 'gif') fileIcon = 'fas fa-image';
-                        else if (fileExt === 'youtube') fileIcon = 'fab fa-youtube'; /*  */ // Corrected to use fab for YouTube
-                        else if (fileExt === 'gdrive') fileIcon = 'fab fa-google-drive'; /*  */ // Corrected to use fab for Google Drive
-                        else fileIcon = 'fas fa-link'; // Default for other resource links
+                    if (item.type === 'resource') {
+                        const fileExtension = getFileExtension(item.url, item.name).toLowerCase();
+                        if (fileExtension === 'pdf') {
+                            itemIcon = 'fas fa-file-pdf';
+                        } else if (['zip', 'rar', '7z'].includes(fileExtension)) {
+                            itemIcon = 'fas fa-file-archive';
+                        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                            itemIcon = 'fas fa-image';
+                        } else if (fileExtension === 'gem') {
+                            itemIcon = 'fas fa-gem';
+                        }
                     }
 
-                    // Fixed: Added defensive check for lecture.type before .toUpperCase()
-                    lectureItem.innerHTML = `
-                        ${lecture.thumbnail ? `<img src="${lecture.thumbnail}" class="thumbnail-preview" alt="Thumbnail">` : ''}
-                        <span contenteditable="true" class="item-name flex-grow-1 me-2">${lecture.name || 'Untitled Item'}</span>
-                        <span class="item-type-badge ${itemTypeBadgeClass}"><i class="${fileIcon || itemTypeIcon} me-1"></i> ${(lecture.type ? lecture.type.toUpperCase() : 'UNKNOWN')}</span>
-                        <button class="btn btn-sm btn-info ms-2 edit-lecture-resource" data-cat="${catId}" data-bid="${bId}" data-mod="${modId}" data-lec="${lecId}" data-type="${lecture.type || 'unknown'}">Edit</button>
-                        <button class="btn btn-sm btn-danger ms-2 delete-lecture-resource" data-cat="${catId}" data-bid="${bId}" data-mod="${modId}" data-lec="${lecId}">Delete</button>
+                    itemDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="name" class="item-name flex-grow-1 me-2">${item.name}</h6>
+                            <span class="badge ${itemTypeClass} me-2">${item.type}</span>
+                            <button class="btn btn-danger btn-sm delete-item" data-id="${itemId}">Delete</button>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">URL:</label>
+                            <input type="url" class="form-control form-control-sm item-url" data-id="${itemId}" data-field="url" value="${item.url || ''}" placeholder="Content URL">
+                        </div>
                     `;
-                    lecturesListContainer.appendChild(lectureItem);
+                    lecturesListContainer.append(itemDiv);
 
-                    // Add lecture/resource name edit listener
-                    lectureItem.querySelector('.item-name').addEventListener('blur', async (e) => {
-                        const newName = e.target.textContent.trim();
-                        if (newName && newName !== lecture.name) {
-                            try {
-                                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`), { name: newName });
-                                msg('Item name updated!', 'info');
-                            } catch (error) {
-                                msg(`Error updating item name: ${error.message}`, 'danger');
-                            }
-                        }
-                    });
-
-                    // Add lecture/resource edit (URL) listener
-                    lectureItem.querySelector('.edit-lecture-resource').addEventListener('click', async () => {
-                        const newUrl = prompt(`Enter new ${lecture.type === 'lecture' ? 'video' : 'resource'} URL:`, lecture.url);
-                        if (newUrl !== null) {
-                            showLoading(`Updating ${lecture.type} URL...`);
-                            try {
-                                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`), { url: newUrl.trim() });
-                                msg('Item URL updated!', 'info');
-                            } catch (error) {
-                                msg(`Error updating item URL: ${error.message}`, 'danger');
-                            } finally {
-                                hideLoading();
-                            }
-                        }
-                    });
-
-                    // Add lecture/resource delete listener
-                    lectureItem.querySelector('.delete-lecture-resource').addEventListener('click', async () => {
-                        const confirm = await showConfirm(`Are you sure you want to delete this ${lecture.type}?`);
-                        if (confirm) {
-                            showLoading(`Deleting ${lecture.type}...`);
-                            try {
-                                await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${lecId}`));
-                                msg('Item deleted!', 'danger');
-                            } catch (error) {
-                                msg(`Error deleting item: ${error.message}`, 'danger');
-                            } finally {
-                                hideLoading();
-                            }
-                        }
-                    });
+                    itemDiv.querySelector('.item-name').addEventListener('blur', (e) => updateLectureResource(catId, bId, modId, itemId, 'name', e.target.textContent));
+                    itemDiv.querySelector('.item-url').addEventListener('change', (e) => updateLectureResource(catId, bId, modId, itemId, 'url', e.target.value));
+                    itemDiv.querySelector('.delete-item').addEventListener('click', () => deleteLectureResource(catId, bId, modId, itemId));
                 });
             });
-
-            return div;
         };
 
-        // Initial calls
-        document.addEventListener('DOMContentLoaded', () => {
-            authenticateFirebase();
+        const addCategory = async () => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const categoryName = document.getElementById('categoryName').value.trim();
+            const categoryImageUrl = document.getElementById('categoryImageUrl').value.trim();
+
+            if (!categoryName) {
+                msg('Category name is required!', 'warning');
+                return;
+            }
+
+            showLoading('Adding category...');
+            try {
+                const newCatRef = push(dbRef(db, 'categories'));
+                await set(newCatRef, {
+                    name: categoryName,
+                    imageUrl: categoryImageUrl || null,
+                    batches: {}
+                });
+                msg('Category added successfully!', 'success');
+                document.getElementById('categoryName').value = '';
+                document.getElementById('categoryImageUrl').value = '';
+            } catch (error) {
+                msg(`Error adding category: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        };
+        document.getElementById('addCategory').addEventListener('click', addCategory);
+
+        const updateLectureResource = async (catId, bId, modId, itemId, field, value) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            showLoading('Updating content...');
+            try {
+                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { [field]: value });
+                msg('Content updated!', 'info');
+            } catch (error) {
+                msg(`Error updating content: ${error.message}`, 'danger');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        const deleteLectureResource = async (catId, bId, modId, itemId) => {
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            const confirmDelete = await showConfirm('Are you sure you want to delete this content item?');
+            if (confirmDelete) {
+                showLoading('Deleting content...');
+                try {
+                    await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
+                    msg('Content item deleted!', 'danger');
+                } catch (error) {
+                    msg(`Error deleting content: ${error.message}`, 'danger');
+                } finally {
+                    hideLoading();
+                }
+            }
+        };
+
+        // Login/Logout Logic
+        const loginScreen = document.getElementById('loginScreen');
+        const mainWrapper = document.getElementById('mainWrapper');
+        const bottomNavbar = document.getElementById('bottomNavbar');
+        const adminEmailInput = document.getElementById('adminEmail'); // New email input
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const loginAlerts = document.getElementById('loginAlerts');
+
+        let reauthTimer = null;
+
+        const setReauthTimer = () => {
+            if (reauthTimer) clearTimeout(reauthTimer);
+            reauthTimer = setTimeout(() => {
+                logoutUser();
+                msg('For security, please re-login.', 'warning', 'loginAlerts');
+            }, REAUTHENTICATION_INTERVAL);
+        };
+
+        const loginUser = async () => {
+            const email = adminEmailInput.value;
+            const password = adminPasswordInput.value;
+
+            if (!email || !password) {
+                loginAlerts.textContent = 'Please enter both email and password.';
+                loginAlerts.style.display = 'block';
+                return;
+            }
+
+            try {
+                showLoading('Logging in...');
+                await signInWithEmailAndPassword(auth, email, password);
+                // On successful login, Firebase onAuthStateChanged listener will handle UI update
+            } catch (error) {
+                hideLoading();
+                let errorMessage = 'Login Failed. Invalid credentials.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Too many login attempts. Please try again later.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email format.';
+                } else {
+                    errorMessage = `Login error: ${error.message}`;
+                }
+                loginAlerts.textContent = errorMessage;
+                loginAlerts.style.display = 'block';
+                console.error("Login Error:", error);
+            }
+        };
+
+        const logoutUser = async () => {
+            try {
+                await signOut(auth);
+                // On successful logout, Firebase onAuthStateChanged listener will handle UI update
+            } catch (error) {
+                console.error("Logout Error:", error);
+                msg(`Logout failed: ${error.message}`, 'danger', 'loginAlerts');
+            }
+        };
+
+        loginButton.addEventListener('click', loginUser);
+        adminEmailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginUser();
+            }
+        });
+        adminPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginUser();
+            }
+        });
+        logoutButton.addEventListener('click', logoutUser);
+
+        const initAdminPanel = () => {
+            updateHomePageQuote();
+            setInterval(updateHomePageQuote, 60 * 60 * 1000); // Update quote every hour
             loadSiteConfig();
             setupSiteConfigEvents();
             loadCategories();
-            // No direct call to loadHowToUseVideos or loadRequestCourses here, as they are called when respective sections are opened.
-            
-            // Initial call for website stats when admin panel loads on home section
-            listenForWebsiteStats(); /*  */
+            showSection('home-section'); // Default to home section on login
+            listenForWebsiteStats(); // Start listening for stats once logged in
+        };
+
+        // Firebase Auth State Listener
+        // This listener automatically runs when the page loads and whenever the user's login state changes.
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                isAuthenticated = true;
+                loginScreen.classList.add('hidden');
+                mainWrapper.style.display = 'flex';
+                bottomNavbar.style.display = 'flex';
+                adminEmailInput.value = ''; // Clear fields on successful login
+                adminPasswordInput.value = '';
+                loginAlerts.style.display = 'none'; // Hide login errors
+                initAdminPanel(); // Initialize the admin panel features
+                setReauthTimer(); // Start/reset re-authentication timer
+                hideLoading(); // Hide loading after successful login
+            } else {
+                // User is signed out or not authenticated
+                isAuthenticated = false;
+                loginScreen.classList.remove('hidden'); // Show login screen
+                mainWrapper.style.display = 'none'; // Hide main content
+                bottomNavbar.style.display = 'none'; // Hide bottom nav
+                adminEmailInput.value = ''; // Clear fields on logout
+                adminPasswordInput.value = '';
+                
+                // Show a re-login message if they were previously logged in but session expired
+                // This check is a bit tricky with onAuthStateChanged as it fires on first load too.
+                // A better session management would involve tokens or a flag in localStorage.
+                // For now, if onAuthStateChanged indicates logged out, assume re-login needed.
+                msg('Please log in to access the admin panel.', 'info', 'loginAlerts');
+                
+                localStorage.removeItem('adminLoggedIn'); // Ensure local storage is clean
+                localStorage.removeItem('lastLoginTime');
+                if (reauthTimer) clearTimeout(reauthTimer); // Clear any running re-auth timer
+                hideLoading(); // Ensure loading is hidden on logout/initial unauthenticated state
+            }
         });
+
+        // Initial loading state when the page first loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show a loading spinner until Firebase determines auth state via onAuthStateChanged
+            showLoading('Checking authentication...');
+        });
+
     </script>
 </body>
 </html>
