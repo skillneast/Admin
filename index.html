@@ -304,34 +304,6 @@
             font-size: 1em;
         }
 
-        /* Website Stats Section Styles */
-        .website-stats-section {
-            background-color: var(--secondary-dark);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            margin-bottom: 30px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .website-stats-section h5 {
-            color: var(--highlight-gold);
-            margin-bottom: 15px;
-        }
-
-        .website-stats-section p {
-            font-size: 1.1em;
-            color: var(--text-light);
-            margin: 10px 0;
-        }
-
-        .website-stats-section p span {
-            font-weight: 700;
-            color: var(--accent-teal);
-        }
-
         /* Homepage Announcements List Styles (Renamed for consistency) */
         #websiteNotificationsList .home-announcement-item {
             background-color: rgba(0, 173, 181, 0.1);
@@ -1387,7 +1359,8 @@
             try {
                 await update(dbRef(db, `notifications/${id}`), { [field]: value || null });
                 msg('Homepage Notification updated!', 'info');
-            } catch (error) {
+            }
+            catch (error) {
                 msg(`Error updating notification: ${error.message}`, 'danger');
             } finally {
                 hideLoading();
@@ -1848,6 +1821,82 @@
                 }
             });
 
+            // Mark as New/Old buttons (NEWLY ADDED Logic)
+            card.querySelector('.mark-as-new-batch')?.addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const confirmMark = await showConfirm('Are you sure you want to mark this batch as NEW? This will display a "NEW!" tag and potentially trigger a notification on the website.');
+                if (confirmMark) {
+                    showLoading('Marking batch as NEW...');
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
+                            isNew: true, 
+                            timestamp: serverTimestamp() // Update timestamp to make it appear newest
+                        });
+                        msg('Batch marked as NEW!', 'success');
+                    } catch (error) {
+                        msg(`Error marking batch as new: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+
+            card.querySelector('.mark-as-old-batch')?.addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const confirmMark = await showConfirm('Are you sure you want to mark this batch as OLD? This will remove the "NEW!" tag on the website.');
+                if (confirmMark) {
+                    showLoading('Marking batch as OLD...');
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
+                            isNew: false // Simply set isNew to false
+                        });
+                        msg('Batch marked as OLD!', 'info');
+                    } catch (error) {
+                        msg(`Error marking batch as old: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+
+            // Mark as Free/Paid buttons (NEWLY ADDED Logic)
+            card.querySelector('.mark-as-free-batch')?.addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const confirmMark = await showConfirm('Are you sure you want to mark this batch as FREE?');
+                if (confirmMark) {
+                    showLoading('Marking batch as FREE...');
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
+                            isFree: true,
+                            discountedPrice: 0, // Set discounted price to 0 if free
+                            originalPrice: null // Clear original price if free
+                        });
+                        msg('Batch marked as FREE!', 'success');
+                    } catch (error) {
+                        msg(`Error marking batch as free: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+
+            card.querySelector('.mark-as-paid-batch')?.addEventListener('click', async () => {
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const confirmMark = await showConfirm('Are you sure you want to mark this batch as PAID?');
+                if (confirmMark) {
+                    showLoading('Marking batch as PAID...');
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
+                            isFree: false // Set to false if paid
+                        });
+                        msg('Batch marked as PAID!', 'info');
+                    } catch (error) {
+                        msg(`Error marking batch as paid: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
 
             // Toggle isContentDirectLink status
             const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
@@ -2008,7 +2057,7 @@
             const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
             const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
             
-            // Batch Type Tag (Free/Paid) - NEWLY ADDED
+            // Batch Type Tag (Free/Paid) - NEWLY ADDED for website visibility
             const batchTypeTag = batch.isFree ? 
                                 `<span class="badge bg-success ms-2">FREE</span>` :
                                 (batch.discountedPrice !== null && batch.discountedPrice === 0 ? // If discounted price is 0, also show FREE
@@ -2056,11 +2105,13 @@
                             <input type="number" step="0.01" class="form-control form-control-sm batch-discounted-price" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for Free)">
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <button class="btn btn-sm btn-info toggle-iscontentdirectlink">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap"> <button class="btn btn-sm btn-info toggle-iscontentdirectlink mb-2">
                             ${batch.isContentDirectLink ? 'Change to Modules' : 'Change to Direct Link'}
                         </button>
-                        <button class="btn btn-sm btn-primary update-batch-notification" data-id="${bId}">Send Update Notification</button> <button class="btn btn-sm btn-danger delete-batch" data-id="${bId}">Delete Batch</button>
+                        <button class="btn btn-sm btn-primary update-batch-notification mb-2" data-id="${bId}">Send Update Notification</button>
+                        <button class="btn btn-sm btn-primary mark-as-new-batch mb-2" data-id="${bId}">Mark as NEW</button>
+                        <button class="btn btn-sm btn-warning mark-as-old-batch mb-2" data-id="${bId}">Mark as OLD</button>
+                        <button class="btn btn-sm btn-success mark-as-free-batch mb-2" data-id="${bId}">Mark as FREE</button> <button class="btn btn-sm btn-info mark-as-paid-batch mb-2" data-id="${bId}">Mark as PAID</button> <button class="btn btn-sm btn-danger delete-batch mb-2" data-id="${bId}">Delete Batch</button>
                     </div>
 
                     <div style="display: ${directLinkSectionDisplay};">
