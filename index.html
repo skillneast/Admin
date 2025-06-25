@@ -601,7 +601,8 @@
                     <label class="form-check-label" for="telegramBannerVisible">Show "WE NEED" Banner</label>
                 </div>
                 <div class="mb-3">
-                    <label for="telegramBannerTitle" class="form-label">Telegram Banner Main Title (Use <br> for new line)</label>
+                    <label for="telegramBannerTitle" class="form-label">Telegram 
+                        Banner Main Title (Use <br> for new line)</label>
                     <input type="text" class="form-control site-config-input" id="telegramBannerTitle" placeholder="e.g., JOIN OUR OFFICIAL <br> TELEGRAM CHANNELS" data-key="telegramBannerTitle">
                 </div>
                 <div class="mb-3">
@@ -609,7 +610,8 @@
                     <textarea class="form-control site-config-input" id="telegramBannerChannelList" rows="4" placeholder="e.g., • Study Ratna ✨|• RATNA Official 📣|• Anime Speaks 🐉|• Code with RATNA 💻" data-key="telegramBannerChannelList"></textarea>
                 </div>
                 <div class="mb-3">
-                    <label for="telegramBannerButtonText" class="form-label">Telegram Banner Button Text</label>
+                    <label for="telegramBannerButtonText" class="form-label">Telegram 
+                        Banner Button Text</label>
                     <input type="text" class="form-control site-config-input" id="telegramBannerButtonText" placeholder="e.g., CLICK HERE!" data-key="telegramBannerButtonText">
                 </div>
                 <div class="mb-3">
@@ -724,6 +726,7 @@
                     <label for="websiteNotificationLink" class="form-label">Notification Link (Optional)</label>
                     <input type="url" class="form-control" id="websiteNotificationLink" placeholder="e.g., https://skillneast.com/latest-news">
                 </div>
+            
                 <button id="addWebsiteNotificationButton" class="btn btn-primary mt-2 w-100">Add Homepage Notification</button>
                 <small class="form-text text-muted mt-3">
                     These notifications will appear on your website's homepage, in the notification bell popup.
@@ -840,7 +843,8 @@
 
     <div class="bottom-navbar" id="bottomNavbar" style="display: none;">
         <a href="#" class="nav-item" data-section="categories-section">
-            <i class="fas fa-th-large"></i> Batches
+            <i class="fas fa-th-large"></i>
+            Batches
         </a>
         <a href="#" class="nav-item" data-section="site-config-section">
             <i class="fas fa-cog"></i> Settings
@@ -856,11 +860,10 @@
         </a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref as dbRef, push, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"; // signInWithEmailAndPassword and signOut imported
+        import { getDatabase, ref as dbRef, push, set, update, remove, onValue, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; // 'increment' added here
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
         // Replace with your actual Firebase config
         const firebaseConfig = {
@@ -873,7 +876,6 @@
             appId: "1:883877553418:web:84ce8200f4b471bfffc6f3",
             measurementId: "G-PCH99BDF1S"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -918,6 +920,12 @@
                 const okButton = document.getElementById('customConfirmOK');
                 const cancelButton = document.getElementById('customConfirmCancel');
 
+                if (!modalOverlay || !modalMessage || !okButton || !cancelButton) { // Safety check
+                    console.error("Custom confirm modal elements not found.");
+                    resolve(false); // Resolve false if elements are missing
+                    return;
+                }
+
                 modalMessage.textContent = message;
                 modalOverlay.classList.add('active');
 
@@ -939,7 +947,6 @@
                 cancelButton.addEventListener('click', handleCancel);
             });
         };
-
         // Modal for adding lecture/resource type
         const showLectureResourceModal = () => {
             return new Promise((resolve) => {
@@ -947,6 +954,12 @@
                 const lectureBtn = document.getElementById('addLectureButton');
                 const resourceBtn = document.getElementById('addResourceButton');
                 const cancelBtn = document.getElementById('cancelAddLectureResource');
+
+                if (!modal || !lectureBtn || !resourceBtn || !cancelBtn) { // Safety check
+                    console.error("Lecture/Resource modal elements not found.");
+                    resolve(null); // Resolve null if elements are missing
+                    return;
+                }
 
                 modal.classList.add('active');
 
@@ -967,23 +980,28 @@
                 cancelBtn.addEventListener('click', cancelClickHandler);
             });
         };
-
         // Loading spinner
         const showLoading = (message = "Processing...") => {
             const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.querySelector('.loading-message').textContent = message;
-            loadingOverlay.classList.add('active');
+            if (loadingOverlay) { // Safety check
+                loadingOverlay.querySelector('.loading-message').textContent = message;
+                loadingOverlay.classList.add('active');
+            }
         };
 
         const hideLoading = () => {
             const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.classList.remove('active');
+            if (loadingOverlay) { // Safety check
+                loadingOverlay.classList.remove('active');
+            }
         };
 
         // Update homepage quote
         const updateHomePageQuote = () => {
             const quoteTextEl = document.getElementById('homeQuoteText');
             const quoteAuthorEl = document.getElementById('homeQuoteAuthor');
+
+            if (!quoteTextEl || !quoteAuthorEl) return; // Safety check
 
             if (homePageQuotes.length === 0) {
                 quoteTextEl.textContent = "No quotes available.";
@@ -997,13 +1015,15 @@
             quoteTextEl.textContent = `"${quote.quote}"`;
             quoteAuthorEl.textContent = `- ${quote.author}`;
         };
-
         // Show specific section and highlight bottom nav
         const showSection = (sectionId) => {
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
-            document.getElementById(sectionId).classList.add('active');
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) { // Safety check
+                targetSection.classList.add('active');
+            }
             activeSection = sectionId;
 
             document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
@@ -1013,15 +1033,15 @@
                 }
             });
             if (sectionId === 'home-section') {
-                document.getElementById('home-section').style.display = 'flex';
+                if (targetSection) targetSection.style.display = 'flex';
             } else {
-                document.getElementById('home-section').style.display = 'block';
+                if (targetSection) targetSection.style.display = 'block';
             }
 
             // Load data specific to the section when it becomes active
             if (sectionId === 'site-config-section') {
                 loadHowToUseVideos();
-                loadWebsiteNotifications(); /* */ // NEW: Load website announcements when entering site config
+                loadWebsiteNotifications();
             } else if (sectionId === 'request-courses-section') {
                 loadRequestCourses();
             } else if (sectionId === 'home-section') {
@@ -1037,7 +1057,6 @@
                 showSection(targetSectionId);
             });
         });
-
         // Get file extension from URL or name
         function getFileExtension(url, name) {
             if (name) {
@@ -1115,9 +1134,8 @@
                 }
             });
 
-            document.getElementById('addWebsiteNotificationButton').addEventListener('click', addWebsiteNotification);
+            document.getElementById('addWebsiteNotificationButton')?.addEventListener('click', addWebsiteNotification); // Optional chaining
         };
-
         // --- How to Use App Videos Management ---
         const howToUseVideosRef = dbRef(db, 'siteConfig/howToUseVideos');
         const loadHowToUseVideos = () => {
@@ -1125,6 +1143,8 @@
             onValue(videosRef, (snapshot) => {
                 const videos = snapshot.val() || {};
                 const listContainer = document.getElementById('howToUseVideosList');
+                if (!listContainer) return; // Safety check
+
                 listContainer.innerHTML = '';
 
                 if (Object.keys(videos).length === 0) {
@@ -1150,15 +1170,15 @@
                     `;
                     listContainer.appendChild(videoItem);
 
-                    videoItem.querySelector('.video-title').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
-                    videoItem.querySelector('.video-description').addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
-                    videoItem.querySelector('.edit-how-to-use-video').addEventListener('click', () => {
+                    videoItem.querySelector('.video-title')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent)); // Optional chaining for safety
+                    videoItem.querySelector('.video-description')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent)); // Optional chaining for safety
+                    videoItem.querySelector('.edit-how-to-use-video')?.addEventListener('click', () => { // Optional chaining for safety
                         const newUrl = prompt('Enter new video URL:', video.url);
                         if (newUrl !== null) {
                             updateHowToUseVideo(videoId, 'url', newUrl.trim());
                         }
                     });
-                    videoItem.querySelector('.delete-how-to-use-video').addEventListener('click', () => deleteHowToUseVideo(videoId));
+                    videoItem.querySelector('.delete-how-to-use-video')?.addEventListener('click', () => deleteHowToUseVideo(videoId)); // Optional chaining for safety
                 });
             }, (error) => {
                 msg(`Error loading how-to-use videos: ${error.message}`, 'danger');
@@ -1168,9 +1188,18 @@
         // Add how-to-use video
         const addHowToUseVideo = async () => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const title = document.getElementById('howToUseVideoTitle').value.trim();
-            const url = document.getElementById('howToUseVideoUrl').value.trim();
-            const description = document.getElementById('howToUseVideoDescription').value.trim();
+            const titleInput = document.getElementById('howToUseVideoTitle');
+            const urlInput = document.getElementById('howToUseVideoUrl');
+            const descriptionInput = document.getElementById('howToUseVideoDescription');
+
+            if (!titleInput || !urlInput || !descriptionInput) { // Safety check
+                msg('Video input fields not found!', 'danger');
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            const url = urlInput.value.trim();
+            const description = descriptionInput.value.trim();
 
             if (!title || !url) {
                 msg('Video title and URL are required!', 'warning');
@@ -1182,9 +1211,9 @@
                 const newRef = push(howToUseVideosRef);
                 await set(newRef, { title: title, url: url, description: description });
                 msg('Video added successfully!', 'success');
-                document.getElementById('howToUseVideoTitle').value = '';
-                document.getElementById('howToUseVideoUrl').value = '';
-                document.getElementById('howToUseVideoDescription').value = '';
+                titleInput.value = '';
+                urlInput.value = '';
+                descriptionInput.value = '';
             } catch (error) {
                 msg(`Error adding video: ${error.message}`, 'danger');
             } finally {
@@ -1222,15 +1251,24 @@
                 }
             }
         };
-        document.getElementById('addHowToUseVideo').addEventListener('click', addHowToUseVideo);
+        document.getElementById('addHowToUseVideo')?.addEventListener('click', addHowToUseVideo); // Optional chaining for safety
 
         // --- Push Notification Management (for bell icon notifications sent to all users) ---
         const sendNotification = async () => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-            const title = document.getElementById('notificationTitle').value.trim();
-            const body = document.getElementById('notificationBody').value.trim();
-            const link = document.getElementById('notificationLink').value.trim();
+            const titleInput = document.getElementById('notificationTitle');
+            const bodyInput = document.getElementById('notificationBody');
+            const linkInput = document.getElementById('notificationLink');
+
+            if (!titleInput || !bodyInput || !linkInput) { // Safety check
+                msg('Notification input fields not found!', 'danger');
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            const body = bodyInput.value.trim();
+            const link = linkInput.value.trim();
 
             if (!title || !body) {
                 msg('Notification title and body are required!', 'warning');
@@ -1249,44 +1287,51 @@
                 console.log("Notification sent to Firebase Realtime Database:", { title, body, link });
                 msg('Notification sent!', 'success');
 
-                document.getElementById('notificationTitle').value = '';
-                document.getElementById('notificationBody').value = '';
-                document.getElementById('notificationLink').value = '';
+                titleInput.value = '';
+                bodyInput.value = '';
+                linkInput.value = '';
             } catch (error) {
                 msg(`Error sending notification: ${error.message}`, 'danger');
             } finally {
                 hideLoading();
             }
         };
-        document.getElementById('sendNotificationButton').addEventListener('click', sendNotification);
-
+        document.getElementById('sendNotificationButton')?.addEventListener('click', sendNotification); // Optional chaining for safety
         // NEW: Website Homepage Notifications Management (replaces old homeAnnouncements)
         const websiteNotificationsRef = dbRef(db, 'notifications');
-
-        const addWebsiteNotification = async () => { /* */
+        const addWebsiteNotification = async () => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-            const title = document.getElementById('websiteNotificationTitle').value.trim();
-            const body = document.getElementById('websiteNotificationBody').value.trim();
-            const link = document.getElementById('websiteNotificationLink').value.trim();
+            const titleInput = document.getElementById('websiteNotificationTitle');
+            const bodyInput = document.getElementById('websiteNotificationBody');
+            const linkInput = document.getElementById('websiteNotificationLink');
 
-            if (!title || !body) { /* */
+            if (!titleInput || !bodyInput || !linkInput) { // Safety check
+                msg('Website Notification input fields not found!', 'danger');
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            const body = bodyInput.value.trim();
+            const link = linkInput.value.trim();
+
+            if (!title || !body) {
                 msg('Notification title and message are required!', 'warning');
-                return; /* */
+                return;
             }
 
             showLoading('Adding Homepage Notification...');
             try {
-                await push(websiteNotificationsRef, { /* */
-                    title: title, /* */
-                    body: body, /* */
+                await push(websiteNotificationsRef, {
+                    title: title,
+                    body: body,
                     link: link || null,
-                    timestamp: serverTimestamp() /* */
+                    timestamp: serverTimestamp()
                 });
                 msg('Homepage Notification added successfully!', 'success');
-                document.getElementById('websiteNotificationTitle').value = '';
-                document.getElementById('websiteNotificationBody').value = '';
-                document.getElementById('websiteNotificationLink').value = '';
+                titleInput.value = '';
+                bodyInput.value = '';
+                linkInput.value = '';
             } catch (error) {
                 msg(`Error adding Homepage Notification: ${error.message}`, 'danger');
             } finally {
@@ -1294,28 +1339,30 @@
             }
         };
 
-        const loadWebsiteNotifications = () => { /* */
-            onValue(websiteNotificationsRef, (snapshot) => { /* */
-                const notifications = snapshot.val() || {}; /* */
-                renderWebsiteNotifications(notifications); /* */
+        const loadWebsiteNotifications = () => {
+            onValue(websiteNotificationsRef, (snapshot) => {
+                const notifications = snapshot.val() || {};
+                renderWebsiteNotifications(notifications);
             }, (error) => {
                 msg(`Error loading homepage notifications: ${error.message}`, 'danger');
             });
         };
 
-        const renderWebsiteNotifications = (notifications) => { /* */
+        const renderWebsiteNotifications = (notifications) => {
             const listContainer = document.getElementById('websiteNotificationsList');
+            if (!listContainer) return; // Safety check
+
             listContainer.innerHTML = '';
-            if (Object.keys(notifications).length === 0) { /* */
+            if (Object.keys(notifications).length === 0) {
                 listContainer.innerHTML = '<p class="text-muted fst-italic">No homepage notifications added yet.</p>';
-                return; /* */
+                return;
             }
 
             const sortedNotifications = Object.entries(notifications).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0));
-            sortedNotifications.forEach(([id, notification]) => { /* */
-                const itemDiv = document.createElement('div'); /* */
-                itemDiv.className = 'home-announcement-item card card-body mb-2'; /* */
-                itemDiv.dataset.id = id; /* */
+            sortedNotifications.forEach(([id, notification]) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'home-announcement-item card card-body mb-2';
+                itemDiv.dataset.id = id;
 
                 itemDiv.innerHTML = `
                     <p><strong>Title:</strong> <span contenteditable="true" data-field="title">${notification.title || 'Untitled'}</span></p>
@@ -1330,11 +1377,11 @@
                 itemDiv.querySelector('[contenteditable][data-field="title"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'title', e.target.textContent));
                 itemDiv.querySelector('[contenteditable][data-field="body"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'body', e.target.textContent));
                 itemDiv.querySelector('input[type="url"][data-field="link"]')?.addEventListener('change', (e) => updateWebsiteNotification(id, 'link', e.target.value));
-                itemDiv.querySelector('.delete-website-notification').addEventListener('click', () => deleteWebsiteNotification(id));
+                itemDiv.querySelector('.delete-website-notification')?.addEventListener('click', () => deleteWebsiteNotification(id));
             });
         };
 
-        const updateWebsiteNotification = async (id, field, value) => { /* */
+        const updateWebsiteNotification = async (id, field, value) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             showLoading('Updating notification...');
             try {
@@ -1347,10 +1394,10 @@
             }
         };
 
-        const deleteWebsiteNotification = async (id) => { /* */
+        const deleteWebsiteNotification = async (id) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             const confirm = await showConfirm('Are you sure you want to delete this homepage notification?');
-            if (confirm) { /* */
+            if (confirm) {
                 showLoading('Deleting notification...');
                 try {
                     await remove(dbRef(db, `notifications/${id}`));
@@ -1362,47 +1409,50 @@
                 }
             }
         };
-
-        // NEW: Website Analytics Live Data Listener
         const websiteStatsRef = dbRef(db, 'websiteStats');
+        const listenForWebsiteStats = () => {
+            onValue(websiteStatsRef, (snapshot) => {
+                const stats = snapshot.val() || { activeUsers: {}, totalVisits: 0 }; // Default activeUsers to empty object
+                const activeUsersCount = stats.activeUsers ? Object.keys(stats.activeUsers).length : 0; // Correctly count active users
+                
+                const activeUsersSpan = document.getElementById('activeUsersCount');
+                const totalVisitsSpan = document.getElementById('totalVisitsCount');
 
-        const listenForWebsiteStats = () => { /* */
-            onValue(websiteStatsRef, (snapshot) => { /* */
-                const stats = snapshot.val() || { activeUsers: 0, totalVisits: 0 }; /* */
-                document.getElementById('activeUsersCount').textContent = stats.activeUsers || 0; /* */
-                document.getElementById('totalVisitsCount').textContent = stats.totalVisits || 0;
+                if (activeUsersSpan) activeUsersSpan.textContent = activeUsersCount;
+                if (totalVisitsSpan) totalVisitsSpan.textContent = stats.totalVisits || 0;
             }, (error) => {
-                console.error("Error listening for website stats:", error); /* */
-                document.getElementById('activeUsersCount').textContent = 'N/A'; /* */
-                document.getElementById('totalVisitsCount').textContent = 'N/A'; /* */
+                console.error("Error listening for website stats:", error);
+                const activeUsersSpan = document.getElementById('activeUsersCount');
+                const totalVisitsSpan = document.getElementById('totalVisitsCount');
+                if (activeUsersSpan) activeUsersSpan.textContent = 'N/A';
+                if (totalVisitsSpan) totalVisitsSpan.textContent = 'N/A';
             });
         };
 
         // --- Request Courses Post Management ---
         const requestCoursesRef = dbRef(db, 'requestCourses');
-
-        const loadRequestCourses = () => { /* */
-            onValue(requestCoursesRef, (snapshot) => { /* */
-                const requests = snapshot.val() || {}; /* */
-                renderRequestCourses(requests); /* */
+        const loadRequestCourses = () => {
+            onValue(requestCoursesRef, (snapshot) => {
+                const requests = snapshot.val() || {};
+                renderRequestCourses(requests);
             }, (error) => {
                 msg(`Error loading request courses: ${error.message}`, 'danger');
             });
         };
-
-        const renderRequestCourses = (requests) => { /* */
+        const renderRequestCourses = (requests) => {
             const listContainer = document.getElementById('requestCoursesAdminList');
+            if (!listContainer) return; // Safety check
+
             listContainer.innerHTML = '';
-            if (Object.keys(requests).length === 0) { /* */
+            if (Object.keys(requests).length === 0) {
                 listContainer.innerHTML = '<p class="text-muted fst-italic">No request course posts added yet.</p>';
-                return; /* */
+                return;
             }
 
-            // Sort by timestamp descending (newest first)
             const sortedRequests = Object.entries(requests).sort(([, a], [, b]) => (b.timestamp || 0) - (a.timestamp || 0));
-            sortedRequests.forEach(([requestId, request]) => { /* */
-                const requestItem = document.createElement('div'); /* */
-                requestItem.className = 'card mb-2'; /* */
+            sortedRequests.forEach(([requestId, request]) => {
+                const requestItem = document.createElement('div');
+                requestItem.className = 'card mb-2';
                 requestItem.innerHTML = `
                     <div class="card-body py-2">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1434,44 +1484,54 @@
                 listContainer.appendChild(requestItem);
 
                 // Attach event listeners for inline editing and deletion
-                requestItem.querySelector('.request-title').addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent));
-                requestItem.querySelector('.request-description').addEventListener('blur', (e) => updateRequestCourse(requestId, 'description', e.target.value));
-                requestItem.querySelector('.request-image-url').addEventListener('change', (e) => updateRequestCourse(requestId, 'imageUrl', e.target.value));
-                requestItem.querySelector('.request-button-text').addEventListener('blur', (e) => updateRequestCourse(requestId, 'buttonText', e.target.value));
-                requestItem.querySelector('.request-button-link').addEventListener('change', (e) => updateRequestCourse(requestId, 'buttonLink', e.target.value));
-                requestItem.querySelector('.delete-request').addEventListener('click', () => deleteRequestCourse(requestId));
+                requestItem.querySelector('.request-title')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent));
+                requestItem.querySelector('.request-description')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'description', e.target.value));
+                requestItem.querySelector('.request-image-url')?.addEventListener('change', (e) => updateRequestCourse(requestId, 'imageUrl', e.target.value));
+                requestItem.querySelector('.request-button-text')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'buttonText', e.target.value));
+                requestItem.querySelector('.request-button-link')?.addEventListener('change', (e) => updateRequestCourse(requestId, 'buttonLink', e.target.value));
+                requestItem.querySelector('.delete-request')?.addEventListener('click', () => deleteRequestCourse(requestId));
             });
         };
-
-        const addRequestCourse = async () => { /* */
+        const addRequestCourse = async () => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
-            const title = document.getElementById('requestCourseTitle').value.trim();
-            const description = document.getElementById('requestCourseDescription').value.trim();
-            const imageUrl = document.getElementById('requestCourseImageUrl').value.trim();
-            const buttonText = document.getElementById('requestCourseButtonText').value.trim();
-            const buttonLink = document.getElementById('requestCourseButtonLink').value.trim();
+            const titleInput = document.getElementById('requestCourseTitle');
+            const descriptionInput = document.getElementById('requestCourseDescription');
+            const imageUrlInput = document.getElementById('requestCourseImageUrl');
+            const buttonTextInput = document.getElementById('requestCourseButtonText');
+            const buttonLinkInput = document.getElementById('requestCourseButtonLink');
+
+            if (!titleInput || !descriptionInput || !imageUrlInput || !buttonTextInput || !buttonLinkInput) { // Safety check
+                msg('Request Course input fields not found!', 'danger');
+                return;
+            }
+
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+            const imageUrl = imageUrlInput.value.trim();
+            const buttonText = buttonTextInput.value.trim();
+            const buttonLink = buttonLinkInput.value.trim();
             if (!title) { msg('Request Course Title is required!', 'warning'); return; }
 
             showLoading('Adding request course...');
             try {
                 const newRef = push(requestCoursesRef);
-                await set(newRef, { /* */
-                    title, /* */
-                    description: description || null, /* */
-                    imageUrl: imageUrl || null, /* */
+                await set(newRef, {
+                    title,
+                    description: description || null,
+                    imageUrl: imageUrl || null,
                     buttonText: buttonText || null,
-                    buttonLink: buttonLink || null, /* */
-                    timestamp: serverTimestamp(), /* */
+                    buttonLink: buttonLink || null,
+                    timestamp: serverTimestamp(),
                     reactions: { "❤️": 0, "😂": 0, "👍": 0, "🌟": 0 }
                 });
                 msg('Request course added successfully!', 'success');
                 // Clear fields after successful addition
-                document.getElementById('requestCourseTitle').value = '';
-                document.getElementById('requestCourseDescription').value = '';
-                document.getElementById('requestCourseImageUrl').value = '';
-                document.getElementById('requestCourseButtonText').value = '';
-                document.getElementById('requestCourseButtonLink').value = '';
+                titleInput.value = '';
+                descriptionInput.value = '';
+                imageUrlInput.value = '';
+                buttonTextInput.value = '';
+                buttonLinkInput.value = '';
             } catch (error) {
                 msg(`Error adding request course: ${error.message}`, 'danger');
             } finally {
@@ -1479,7 +1539,7 @@
             }
         };
 
-        const updateRequestCourse = async (requestId, field, value) => { /* */
+        const updateRequestCourse = async (requestId, field, value) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             showLoading('Updating request course...');
             try {
@@ -1493,7 +1553,7 @@
             }
         };
 
-        const deleteRequestCourse = async (requestId) => { /* */
+        const deleteRequestCourse = async (requestId) => {
             if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
             const confirmDelete = await showConfirm('Are you sure you want to delete this request course post?');
             if (confirmDelete) {
@@ -1508,7 +1568,7 @@
                 }
             }
         };
-        document.getElementById('addRequestCourse').addEventListener('click', addRequestCourse);
+        document.getElementById('addRequestCourse')?.addEventListener('click', addRequestCourse);
 
 
         // Load and display categories
@@ -1524,6 +1584,8 @@
 
         const renderCategories = (cats) => {
             const container = document.getElementById('categoriesList');
+            if (!container) return; // Safety check
+
             container.innerHTML = '';
             if (Object.keys(cats).length === 0) {
                 container.innerHTML = '<p class="text-muted fst-italic">No categories added yet. Start by creating one above!</p>';
@@ -1557,43 +1619,50 @@
 
         const setupCategoryEvents = (card, catId, currentImageUrl) => {
             const nameEl = card.querySelector('.cat-name');
-            nameEl.addEventListener('blur', async () => {
-                if (!isAuthenticated) { // Check authentication before allowing changes
-                    msg('You must be logged in to make changes!', 'danger');
-                    nameEl.textContent = nameEl.dataset.originalName; // Revert changes
-                    return;
-                }
-                const newName = nameEl.textContent.trim();
-                if (newName && newName !== nameEl.dataset.originalName) {
-                    try {
-                        await update(dbRef(db, `categories/${catId}`), { name: newName });
-                        msg('Category name updated', 'info');
-                    } catch (error) {
-                        msg(`Error updating category name: ${error.message}`, 'danger');
+            if (nameEl) { // Safety check
+                nameEl.addEventListener('blur', async () => {
+                    if (!isAuthenticated) { // Check authentication before allowing changes
+                        msg('You must be logged in to make changes!', 'danger');
+                        if (nameEl.dataset.originalName) { // Check if originalName exists
+                            nameEl.textContent = nameEl.dataset.originalName;
+                        }
+                        return;
                     }
-                }
-                nameEl.dataset.originalName = newName;
-            });
+                    const newName = nameEl.textContent.trim();
+                    if (newName && newName !== nameEl.dataset.originalName) {
+                        try {
+                            await update(dbRef(db, `categories/${catId}`), { name: newName });
+                            msg('Category name updated', 'info');
+                        } catch (error) {
+                            msg(`Error updating category name: ${error.message}`, 'danger');
+                        }
+                    }
+                    nameEl.dataset.originalName = newName;
+                });
+            }
 
             const imageUrlInput = card.querySelector('.category-image-url');
-            imageUrlInput.addEventListener('change', async (e) => {
-                if (!isAuthenticated) { // Check authentication before allowing changes
-                    msg('You must be logged in to make changes!', 'danger');
-                    e.target.value = currentImageUrl; // Revert changes
-                    return;
-                }
-                const newImageUrl = e.target.value.trim();
-                try {
-                    await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl });
-                    msg('Category image URL updated successfully!', 'success');
-                } catch (error) {
-                    msg(`Error updating category image URL: ${error.message}`, 'danger');
-                }
-            });
-            card.querySelector('.delete-cat').addEventListener('click', async (e) => {
+            if (imageUrlInput) { // Safety check
+                imageUrlInput.addEventListener('change', async (e) => {
+                    if (!isAuthenticated) { // Check authentication before allowing changes
+                        msg('You must be logged in to make changes!', 'danger');
+                        e.target.value = currentImageUrl; // Revert changes
+                        return;
+                    }
+                    const newImageUrl = e.target.value.trim();
+                    try {
+                        await update(dbRef(db, `categories/${catId}`), { imageUrl: newImageUrl });
+                        msg('Category image URL updated successfully!', 'success');
+                    } catch (error) {
+                        msg(`Error updating category image URL: ${error.message}`, 'danger');
+                    }
+                });
+            }
+            
+            card.querySelector('.delete-cat')?.addEventListener('click', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
-                if (confirmDelete) { // Changed 'confirm' to 'confirmDelete' for consistency
+                if (confirmDelete) {
                     try {
                         showLoading('Deleting category and content...');
                         await remove(dbRef(db, `categories/${catId}`));
@@ -1605,7 +1674,8 @@
                     }
                 }
             });
-            card.querySelector('.add-batch').onclick = async () => {
+
+            card.querySelector('.add-batch')?.addEventListener('click', async () => { // Optional chaining
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
                 const batchTypeChoice = await showConfirm('Is this a Direct Link Batch? (OK for Direct Link, Cancel for Regular Modules/Lectures)');
@@ -1650,6 +1720,8 @@
                     discountedPrice = 0;
                 }
 
+                // NEW: isPublic property for batches, default to true
+                const isPublic = await showConfirm('Should this batch be Public (visible on website)? (OK for Public, Cancel for Private)');
                 try {
                     showLoading('Adding batch...');
                     const newRef = push(dbRef(db, `categories/${catId}/batches`));
@@ -1660,10 +1732,12 @@
                         originalPrice: originalPrice,
                         discountedPrice: discountedPrice,
                         isFree: isFree,
-                        isNew: true,
+                        isNew: true, // This is key for 'new' notification on website
                         isContentDirectLink: isContentDirectLink,
                         modules: modules,
-                        directDriveLink: directDriveLink
+                        directDriveLink: directDriveLink,
+                        isPublic: isPublic, // NEW: Add isPublic property
+                        timestamp: serverTimestamp() // This is key for sorting and detecting 'new' or 'updated'
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -1671,28 +1745,30 @@
                 } finally {
                     hideLoading();
                 }
-            };
+            });
 
             const batchesListContainer = card.querySelector(`#batches-list-${catId}`);
-            onValue(dbRef(db, `categories/${catId}/batches`), (snapshot) => {
-                batchesListContainer.innerHTML = '';
-                const batchData = snapshot.val() || {};
-                if (Object.keys(batchData).length === 0) {
-                    batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
-                }
-                Object.entries(batchData).forEach(([bId, batch]) => {
-                    const item = createBatchItem(catId, bId, batch);
-                    batchesListContainer.append(item);
+            if (batchesListContainer) { // Safety check
+                onValue(dbRef(db, `categories/${catId}/batches`), (snapshot) => {
+                    batchesListContainer.innerHTML = '';
+                    const batchData = snapshot.val() || {};
+                    if (Object.keys(batchData).length === 0) {
+                        batchesListContainer.innerHTML = '<p class="text-muted fst-italic">No batches in this category.</p>';
+                    }
+                    Object.entries(batchData).forEach(([bId, batch]) => {
+                        const item = createBatchItem(catId, bId, batch);
+                        batchesListContainer.append(item);
+                    });
+                },
+                (error) => {
+                    msg(`Error loading batches: ${error.message}`, 'danger');
                 });
-            },
-            (error) => {
-                msg(`Error loading batches: ${error.message}`, 'danger');
-            });
+            }
         };
 
         const setupBatchEvents = (card, catId, bId, currentBatch) => {
             // Batch title editing
-            card.querySelector('.batch-title').addEventListener('blur', async (e) => {
+            card.querySelector('.batch-title')?.addEventListener('blur', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentBatch.title; return; }
                 const newTitle = e.target.textContent.trim();
                 if (newTitle && newTitle !== currentBatch.title) {
@@ -1705,7 +1781,7 @@
                 }
             });
             // Batch thumbnail URL
-            card.querySelector('.batch-thumbnail-url').addEventListener('change', async (e) => {
+            card.querySelector('.batch-thumbnail-url')?.addEventListener('change', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.thumbnail; return; }
                 const newThumbnail = e.target.value.trim();
                 try {
@@ -1716,7 +1792,7 @@
                 }
             });
             // Batch description
-            card.querySelector('.batch-description').addEventListener('blur', async (e) => {
+            card.querySelector('.batch-description')?.addEventListener('blur', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.description; return; }
                 const newDescription = e.target.value.trim();
                 if (newDescription && newDescription !== currentBatch.description) {
@@ -1729,7 +1805,7 @@
                 }
             });
             // Batch original price
-            card.querySelector('.batch-original-price').addEventListener('change', async (e) => {
+            card.querySelector('.batch-original-price')?.addEventListener('change', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.originalPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
@@ -1740,7 +1816,7 @@
                 }
             });
             // Batch discounted price
-            card.querySelector('.batch-discounted-price').addEventListener('change', async (e) => {
+            card.querySelector('.batch-discounted-price')?.addEventListener('change', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.discountedPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
@@ -1750,28 +1826,29 @@
                     msg(`Error updating discounted price: ${error.message}`, 'danger');
                 }
             });
-            // Toggle isNew status
-            card.querySelector('.toggle-isnew').addEventListener('click', async (e) => {
-                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
-                const newValue = !currentBatch.isNew;
-                try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isNew: newValue });
-                    msg(`Batch status changed to ${newValue ? 'NEW' : 'OLD'}`, 'info');
-                } catch (error) {
-                    msg(`Error updating isNew status: ${error.message}`, 'danger');
+            
+            // "Batch Updated" Button:
+            card.querySelector('.update-batch-notification')?.addEventListener('click', async () => { // Optional chaining
+                if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+                const confirmUpdate = await showConfirm('Are you sure you want to send an "Updated" notification for this batch?');
+                if (confirmUpdate) {
+                    showLoading('Sending update notification...');
+                    try {
+                        // Ensure isNew is false when manually sending an update notification
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
+                            isNew: false, // Mark as NOT new for update notification
+                            timestamp: serverTimestamp() // Update timestamp to trigger "updated" notification
+                        });
+                        msg('Batch update notification sent!', 'success');
+                    } catch (error) {
+                        msg(`Error sending update notification: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
                 }
             });
-            // Toggle isFree status
-            card.querySelector('.toggle-isfree').addEventListener('click', async (e) => {
-                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
-                const newValue = !currentBatch.isFree;
-                try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { isFree: newValue });
-                    msg(`Batch status changed to ${newValue ? 'FREE' : 'PAID'}`, 'info');
-                } catch (error) {
-                    msg(`Error updating isFree status: ${error.message}`, 'danger');
-                }
-            });
+
+
             // Toggle isContentDirectLink status
             const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
             if (toggleIsContentDirectLink) {
@@ -1801,13 +1878,59 @@
                 });
             }
 
+            // NEW: Toggle isPublic status for batches
+            const toggleIsPublic = card.querySelector('.toggle-ispublic');
+            if (toggleIsPublic) {
+                toggleIsPublic.addEventListener('click', async () => {
+                    if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
+                    const newValue = !currentBatch.isPublic;
+                    const confirmMsg = newValue 
+                        ? 'Are you sure you want to make this batch PUBLIC? It will become visible on the website.'
+                        : 'Are you sure you want to make this batch PRIVATE? It will be hidden from the website.';
+                    const confirm = await showConfirm(confirmMsg);
+                    if (confirm) {
+                        showLoading('Updating batch visibility...');
+                        try {
+                            const updates = { isPublic: newValue };
+                            
+                            // Logic for Homepage Batch Notification based on Public/Private toggle
+                            if (newValue === true && currentBatch.isPublic === false) { // If making public AND it was previously private
+                                // If it was just added as new, keep it new. Else, mark as updated.
+                                if (currentBatch.isNew !== true) { // If it's NOT already explicitly new, treat as update
+                                    updates.isNew = false; // Ensure it's not marked as "new" for public batch notification
+                                    updates.timestamp = serverTimestamp(); // Update timestamp to trigger "updated" notification
+                                } else { // It's a new batch made public. Timestamp should be updated.
+                                    updates.timestamp = serverTimestamp(); 
+                                }
+                            } else if (newValue === false && currentBatch.isPublic === true) { // If making private
+                                updates.isNew = false; // When private, it's definitely not "new" for public display
+                                // Timestamp is not critical here, as it's hidden.
+                            } else if (newValue === true && currentBatch.isPublic === true && currentBatch.isNew === true) {
+                                // If it's already public AND still marked as new (meaning it was just added publically),
+                                // and admin clicks again (e.g., to make private then public quickly),
+                                // we can reset isNew to false so it doesn't keep showing as NEW every time.
+                                updates.isNew = false;
+                            }
+
+                            await update(dbRef(db, `categories/${catId}/batches/${bId}`), updates);
+                            msg(`Batch visibility changed to ${newValue ? 'PUBLIC' : 'PRIVATE'}!`, 'info');
+                        } catch (error) {
+                            msg(`Error updating batch visibility: ${error.message}`, 'danger');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                });
+            }
+
+
             // Delete Batch
-            card.querySelector('.delete-batch').addEventListener('click', async (e) => {
+            card.querySelector('.delete-batch')?.addEventListener('click', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures?');
                 if (confirmDelete) {
+                    showLoading('Deleting batch and content...');
                     try {
-                        showLoading('Deleting batch and content...');
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}`));
                         msg('Batch and its contents deleted!', 'danger');
                     } catch (error) {
@@ -1839,10 +1962,17 @@
                 const moduleName = prompt('Enter Module Name:');
                 if (!moduleName) { msg('Module name is required!', 'warning'); return; }
 
+                // NEW: Ask for public/private status for new modules
+                const isModulePublic = await showConfirm('Should this module be Public (visible on website)? (OK for Public, Cancel for Private)');
+
                 showLoading('Adding module...');
                 try {
                     const newModuleRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
-                    await set(newModuleRef, { name: moduleName, lectures: {} });
+                    await set(newModuleRef, { 
+                        name: moduleName, 
+                        lectures: {},
+                        isPublic: isModulePublic // NEW: Add isPublic property for modules
+                    });
                     msg('Module added successfully!', 'success');
                 } catch (error) {
                     msg(`Error adding module: ${error.message}`, 'danger');
@@ -1852,12 +1982,11 @@
             });
             // Listen for changes in modules for NORMAL batches
             const modulesListContainer = card.querySelector(`#modules-list-${bId}`);
-            if (modulesListContainer) { // Ensure element exists before attaching listener
+            if (modulesListContainer) { // Safety check
                 onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules`), (snapshot) => {
                     modulesListContainer.innerHTML = '';
                     const modulesData = snapshot.val() || {};
-                    if (Object.keys(modulesData).length === 0)
-                    {
+                    if (Object.keys(modulesData).length === 0) {
                         modulesListContainer.innerHTML = '<p class="text-muted fst-italic">No modules in this batch.</p>';
                     }
                     Object.entries(modulesData).forEach(([modId, module]) => {
@@ -1870,7 +1999,7 @@
 
         const createBatchItem = (catId, bId, batch) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 bg-light';
+            div.className = 'card mb-2 bg-dark'; // Changed bg-light to bg-dark
 
             const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ?
                 '<span class="fw-bold text-success">FREE</span>' :
@@ -1878,96 +2007,127 @@
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
             const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
             const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
+            
+            // Batch Type Tag (Free/Paid) - NEWLY ADDED
+            const batchTypeTag = batch.isFree ? 
+                                `<span class="badge bg-success ms-2">FREE</span>` :
+                                (batch.discountedPrice !== null && batch.discountedPrice === 0 ? // If discounted price is 0, also show FREE
+                                `<span class="badge bg-success ms-2">FREE</span>` :
+                                `<span class="badge bg-danger ms-2">PAID</span>`); // Otherwise, it's paid
 
-            let dynamicContentHtml = '';
-            if (batch.isContentDirectLink) {
-                dynamicContentHtml = `
-                    <div class="mb-3 direct-link-container" style="display: ${directLinkSectionDisplay};">
-                        <label for="directDriveLink-${bId}-input" class="form-label">Direct Link:</label>
-                        <input type="url" class="form-control form-control-sm direct-drive-link"
-                            id="directDriveLink-${bId}-input" data-cat="${catId}" data-bid="${bId}" value="${batch.directDriveLink || ''}" placeholder="e.g., https://example.com/your-content-link">
-                        <small class="form-text text-muted">User will be redirected to this link when they click "LET'S ROAR".</small>
+            // Check if isNew is explicitly true
+            const isNewBadge = batch.isNew === true ?
+                '<span class="badge bg-warning ms-2">NEW!</span>' : '';
+
+            // Check if batch is public or private
+            const isPublicBadge = batch.isPublic === true ?
+                '<span class="badge bg-success ms-2">PUBLIC</span>' : 
+                '<span class="badge bg-secondary ms-2">PRIVATE</span>';
+            const batchItem = `
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="batch-title flex-grow-1 me-2" contenteditable="true">${batch.title || 'Untitled Batch'}</h6>
+                    <div>
+                        ${batchTypeTag} ${isNewBadge}
+                        ${isPublicBadge}
+                        <button class="btn btn-sm btn-outline-info toggle-ispublic" data-id="${bId}" data-public="${batch.isPublic}">
+                            ${batch.isPublic ? 'Make Private' : 'Make Public'}
+                        </button>
                     </div>
-                `;
-            } else {
-                dynamicContentHtml = `
-                    <div class="mb-3 normal-content-sections" style="display: ${normalContentSectionDisplay};">
-                        <label for="telegramCourseLink-${bId}" class="form-label">Telegram Course Link (Optional):</label>
-                        <input type="url" class="form-control form-control-sm mb-2 telegram-course-link" id="telegramCourseLink-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.telegramCourseLink || ''}" placeholder="e.g., https://t.me/your_course_channel">
-                        <small class="form-text text-muted">If this is not a free batch, the "Let's Roar" button will open this link.</small>
-                        <h6 class="mt-3 mb-2 text-muted">Modules:</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="${batch.thumbnail || 'https://via.placeholder.com/100x70?text=No+Thumb'}" alt="Thumbnail" class="thumbnail-preview">
                         <div>
-                            <button class="btn btn-secondary btn-sm mb-2 add-module" data-id="${catId}" data-bid="${bId}">+ Add Module</button>
-                            <div class="modules-list" id="modules-list-${bId}"></div>
+                            <small class="text-muted">Thumbnail URL:</small>
+                            <input type="url" class="form-control form-control-sm batch-thumbnail-url" value="${batch.thumbnail || ''}" placeholder="Image URL">
                         </div>
                     </div>
-                `;
-            }
-
-            div.innerHTML = `
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 contenteditable="true" data-cat="${catId}" data-id="${bId}" class="batch-title flex-grow-1 me-2">${batch.title}</h6>
-                        <span class="badge ${batch.isNew ? 'bg-success' : 'bg-secondary'} me-2 toggle-isnew" style="cursor:pointer;"
-                            data-cat="${catId}" data-bid="${bId}">${batch.isNew ? 'NEW' : 'OLD'}</span>
-                        <span class="badge ${batch.isFree ? 'bg-info' : 'bg-warning'} me-2 toggle-isfree" style="cursor:pointer;"
-                            data-cat="${catId}" data-bid="${bId}">${batch.isFree ? 'FREE' : 'PAID'}</span>
-                        <button class="btn btn-danger btn-sm delete-batch" data-id="${bId}">Delete Batch</button>
-                    </div>
                     <div class="mb-3">
-                        <label for="batchThumbnailUrl-${bId}" class="form-label">Thumbnail URL:</label>
-                        <img src="${batch.thumbnail}" alt="Batch Thumbnail" class="thumbnail-preview">
-                        <input type="url" class="form-control form-control-sm mt-2 batch-thumbnail-url" id="batchThumbnailUrl-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.thumbnail || ''}" placeholder="e.g., https://example.com/thumbnail.jpg">
-                    </div>
-                    <div class="mb-3">
-                        <label for="batchDescription-${bId}" class="form-label">Description:</label>
-                        <textarea class="form-control form-control-sm batch-description" id="batchDescription-${bId}" rows="2" data-cat="${catId}" data-bid="${bId}">${batch.description || ''}</textarea>
+                        <small class="text-muted">Description:</small>
+                        <textarea class="form-control form-control-sm batch-description" rows="2" placeholder="Batch Description (max 100 words)">${batch.description || ''}</textarea>
                     </div>
                     <div class="row mb-3">
                         <div class="col">
-                            <label for="batchOriginalPrice-${bId}" class="form-label">Original Price:</label>
-                            <input type="number" class="form-control form-control-sm batch-original-price" id="batchOriginalPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
+                            <small class="text-muted">Original Price:</small>
+                            <input type="number" step="0.01" class="form-control form-control-sm batch-original-price" value="${batch.originalPrice !== null ? batch.originalPrice : ''}" placeholder="e.g., 999">
                         </div>
                         <div class="col">
-                            <label for="batchDiscountedPrice-${bId}" class="form-label">Discounted Price:</label>
-                            <input type="number" class="form-control form-control-sm batch-discounted-price" id="batchDiscountedPrice-${bId}" data-cat="${catId}" data-bid="${bId}" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for Free)">
+                            <small class="text-muted">Discounted Price:</small>
+                            <input type="number" step="0.01" class="form-control form-control-sm batch-discounted-price" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for Free)">
                         </div>
                     </div>
-                    <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input toggle-iscontentdirectlink" type="checkbox" role="switch"
-                            id="isContentDirectLink-${bId}" data-cat="${catId}" data-bid="${bId}" ${batch.isContentDirectLink ? 'checked' : ''}>
-                        <label class="form-check-label" for="isContentDirectLink-${bId}">Is Direct Link Batch (No Modules)</label>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="btn btn-sm btn-info toggle-iscontentdirectlink">
+                            ${batch.isContentDirectLink ? 'Change to Modules' : 'Change to Direct Link'}
+                        </button>
+                        <button class="btn btn-sm btn-primary update-batch-notification" data-id="${bId}">Send Update Notification</button> <button class="btn btn-sm btn-danger delete-batch" data-id="${bId}">Delete Batch</button>
                     </div>
-                    ${dynamicContentHtml}
-                </div>`;
+
+                    <div style="display: ${directLinkSectionDisplay};">
+                        <hr>
+                        <h6 class="mb-2 text-muted">Direct Content Link:</h6>
+                        <input type="url" class="form-control form-control-sm direct-drive-link" value="${batch.directDriveLink || ''}" placeholder="Google Drive/External Link">
+                    </div>
+
+                    <div style="display: ${normalContentSectionDisplay};">
+                        <hr>
+                        <h6 class="mb-2 text-muted">Modules:</h6>
+                        <button class="btn btn-secondary btn-sm mb-2 add-module" data-id="${bId}">+ Add Module</button>
+                        <div class="modules-list" id="modules-list-${bId}"></div>
+                    </div>
+                </div>
+            `;
+            div.innerHTML = batchItem;
             setupBatchEvents(div, catId, bId, batch);
             return div;
         };
-
-
+        
         const createModuleItem = (catId, bId, modId, module) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 bg-secondary';
+            div.className = 'card mb-2 ms-3'; // Indent modules
+            
+            // Filter lectures for display (only public ones)
+            // Note: This filtering is for website, not admin panel. Admin panel shows all.
+            const lecturesCount = Object.values(module.lectures || {}).filter(item => item.type === 'lecture').length;
+            const resourcesCount = Object.values(module.lectures || {}).filter(item => item.type === 'resource').length;
+            let countsText = '';
+            if (lecturesCount > 0 && resourcesCount > 0) {
+                countsText = `<span>${lecturesCount} Lectures</span> | <span>${resourcesCount} Resources</span>`;
+            } else if (lecturesCount > 0) {
+                countsText = `<span>${lecturesCount} Lectures</span>`;
+            } else if (resourcesCount > 0) {
+                countsText = `<span>${resourcesCount} Resources</span>`;
+            } else {
+                countsText = `<span>No Content</span>`;
+            }
 
+            const isPublicBadge = module.isPublic === true ?
+                '<span class="badge bg-success ms-2">PUBLIC</span>' : 
+                '<span class="badge bg-secondary ms-2">PRIVATE</span>';
             div.innerHTML = `
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" class="module-name flex-grow-1 me-2">${module.name}</h6>
-                        <button class="btn btn-danger btn-sm delete-module" data-id="${modId}">Delete Module</button>
-                    </div>
-                    <hr>
-                    <h6 class="mb-2 text-muted">Lectures & Resources:</h6>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="module-name flex-grow-1 me-2" contenteditable="true">${module.name || 'Untitled Module'}</h6>
                     <div>
-                        <button class="btn btn-secondary btn-sm mb-2 add-lecture-resource" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}">+ Add Content</button>
-                        <div class="lectures-list" id="lectures-list-${modId}"></div>
+                        ${isPublicBadge}
+                        <button class="btn btn-sm btn-outline-info toggle-ispublic-module" data-id="${modId}" data-public="${module.isPublic}">
+                            ${module.isPublic ? 'Make Private' : 'Make Public'}
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-module" data-id="${modId}">Delete Module</button>
                     </div>
-                </div>`;
+                </div>
+                <div class="card-body">
+                    <p class="text-muted fst-italic">Content: ${countsText}</p>
+                    <button class="btn btn-primary btn-sm mb-2 add-lecture" data-id="${modId}">+ Add Lecture/Resource</button>
+                    <div class="lectures-list" id="lectures-list-${modId}"></div>
+                </div>
+            `;
             setupModuleEvents(div, catId, bId, modId, module);
             return div;
         };
 
         const setupModuleEvents = (card, catId, bId, modId, currentModule) => {
-            card.querySelector('.module-name').addEventListener('blur', async (e) => {
+            // Module name editing
+            card.querySelector('.module-name')?.addEventListener('blur', async (e) => {
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentModule.name; return; }
                 const newName = e.target.textContent.trim();
                 if (newName && newName !== currentModule.name) {
@@ -1979,8 +2139,28 @@
                     }
                 }
             });
-
-            card.querySelector('.delete-module').addEventListener('click', async () => {
+            // NEW: Toggle isPublic status for modules
+            card.querySelector('.toggle-ispublic-module')?.addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
+                const newValue = !currentModule.isPublic;
+                const confirmMsg = newValue 
+                    ? 'Are you sure you want to make this module PUBLIC? It will become visible on the website.'
+                    : 'Are you sure you want to make this module PRIVATE? It will be hidden from the website.';
+                const confirm = await showConfirm(confirmMsg);
+                if (confirm) {
+                    showLoading('Updating module visibility...');
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`), { isPublic: newValue });
+                        msg(`Module visibility changed to ${newValue ? 'PUBLIC' : 'PRIVATE'}!`, 'info');
+                    } catch (error) {
+                        msg(`Error updating module visibility: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+            // Delete Module
+            card.querySelector('.delete-module')?.addEventListener('click', async (e) => {
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this module and all its lectures/resources?');
                 if (confirmDelete) {
@@ -1995,263 +2175,223 @@
                     }
                 }
             });
-
-            card.querySelector('.add-lecture-resource').addEventListener('click', async () => {
+            // Add Lecture/Resource
+            card.querySelector('.add-lecture')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-
                 const contentType = await showLectureResourceModal();
-                if (!contentType) { msg('Content addition cancelled.', 'info'); return; }
+                if (!contentType) return; // User cancelled
 
-                const itemName = prompt(`Enter ${contentType === 'lecture' ? 'Lecture' : 'Resource'} Name:`);
-                if (!itemName) { msg('Name is required!', 'warning'); return; }
+                const name = prompt(`Enter ${contentType === 'lecture' ? 'Lecture Title' : 'Resource Name'}:`);
+                if (!name) { msg('Name is required!', 'warning'); return; }
 
-                const itemUrl = prompt(`Enter ${contentType === 'lecture' ? 'Video' : 'File'} URL:`);
-                if (!itemUrl) { msg('URL is required!', 'warning'); return; }
+                const url = prompt(`Enter ${contentType === 'lecture' ? 'YouTube/Drive Video URL' : 'File/Link URL'}:`);
+                if (!url) { msg('URL is required!', 'warning'); return; }
+
+                // NEW: Ask for public/private status for new lectures/resources
+                const isLectureResourcePublic = await showConfirm(`Should this ${contentType} be Public (visible on website)? (OK for Public, Cancel for Private)`);
 
                 showLoading(`Adding ${contentType}...`);
                 try {
-                    const newItemRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
-                    await set(newItemRef, { name: itemName, url: itemUrl, type: contentType });
-                    msg(`${contentType === 'lecture' ? 'Lecture' : 'Resource'} added successfully!`, 'success');
+                    const newRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`));
+                    await set(newRef, { 
+                        name: name, 
+                        url: url, 
+                        type: contentType,
+                        isPublic: isLectureResourcePublic // NEW: Add isPublic property
+                    });
+                    msg(`${contentType} added successfully!`, 'success');
                 } catch (error) {
                     msg(`Error adding ${contentType}: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
             });
-
+            // Listen for changes in lectures for current module
             const lecturesListContainer = card.querySelector(`#lectures-list-${modId}`);
-            onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`), (snapshot) => {
-                lecturesListContainer.innerHTML = '';
-                const lecturesData = snapshot.val() || {};
-                if (Object.keys(lecturesData).length === 0) {
-                    lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No content in this module.</p>';
-                }
-                Object.entries(lecturesData).forEach(([itemId, item]) => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'card card-body mb-2';
-                    const itemTypeClass = item.type === 'lecture' ? 'bg-primary' : 'bg-info';
-                    let itemIcon = item.type === 'lecture' ? 'fas fa-video' : 'fas fa-file-alt'; // Default
-
-                    if (item.type === 'resource') {
-                        const fileExtension = getFileExtension(item.url, item.name).toLowerCase();
-                        if (fileExtension === 'pdf') {
-                            itemIcon = 'fas fa-file-pdf';
-                        } else if (['zip', 'rar', '7z'].includes(fileExtension)) {
-                            itemIcon = 'fas fa-file-archive';
-                        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                            itemIcon = 'fas fa-image';
-                        } else if (fileExtension === 'gem') {
-                            itemIcon = 'fas fa-gem';
-                        }
+            if (lecturesListContainer) { // Safety check
+                onValue(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures`), (snapshot) => {
+                    lecturesListContainer.innerHTML = '';
+                    const lecturesData = snapshot.val() || {};
+                    if (Object.keys(lecturesData).length === 0) {
+                        lecturesListContainer.innerHTML = '<p class="text-muted fst-italic">No lectures or resources in this module.</p>';
                     }
-
-                    itemDiv.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 contenteditable="true" data-cat="${catId}" data-bid="${bId}" data-modid="${modId}" data-id="${itemId}" data-field="name" class="item-name flex-grow-1 me-2">${item.name}</h6>
-                            <span class="badge ${itemTypeClass} me-2">${item.type}</span>
-                            <button class="btn btn-danger btn-sm delete-item" data-id="${itemId}">Delete</button>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">URL:</label>
-                            <input type="url" class="form-control form-control-sm item-url" data-id="${itemId}" data-field="url" value="${item.url || ''}" placeholder="Content URL">
-                        </div>
-                    `;
-                    lecturesListContainer.append(itemDiv);
-
-                    itemDiv.querySelector('.item-name').addEventListener('blur', (e) => updateLectureResource(catId, bId, modId, itemId, 'name', e.target.textContent));
-                    itemDiv.querySelector('.item-url').addEventListener('change', (e) => updateLectureResource(catId, bId, modId, itemId, 'url', e.target.value));
-                    itemDiv.querySelector('.delete-item').addEventListener('click', () => deleteLectureResource(catId, bId, modId, itemId));
+                    Object.entries(lecturesData).forEach(([itemId, item]) => {
+                        const lectureItem = createLectureResourceItem(catId, bId, modId, itemId, item);
+                        lecturesListContainer.append(lectureItem);
+                    });
                 });
+            }
+        };
+
+        const createLectureResourceItem = (catId, bId, modId, itemId, item) => {
+            const div = document.createElement('div');
+            div.className = 'card mb-2 ms-4'; // Indent lectures/resources further
+
+            const typeBadgeClass = item.type === 'lecture' ? 'bg-primary' : 'bg-info';
+            const typeText = item.type === 'lecture' ? 'Lecture' : 'Resource';
+
+            const isPublicBadge = item.isPublic === true ?
+                '<span class="badge bg-success ms-2">PUBLIC</span>' : 
+                '<span class="badge bg-secondary ms-2">PRIVATE</span>';
+            div.innerHTML = `
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="item-name flex-grow-1 me-2" contenteditable="true">${item.name || 'Untitled Item'}</h6>
+                        <div>
+                            <span class="badge ${typeBadgeClass}">${typeText}</span>
+                            ${isPublicBadge}
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">URL:</small>
+                        <input type="url" class="form-control form-control-sm item-url" value="${item.url || ''}" placeholder="Content URL">
+                    </div>
+                    <div class="item-controls d-flex justify-content-end gap-2">
+                        <button class="btn btn-sm btn-outline-info toggle-ispublic-item" data-id="${itemId}" data-public="${item.isPublic}">
+                            ${item.isPublic ? 'Make Private' : 'Make Public'}
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-item" data-id="${itemId}">Delete</button>
+                    </div>
+                </div>
+            `;
+            setupLectureResourceEvents(div, catId, bId, modId, itemId, item);
+            return div;
+        };
+        const setupLectureResourceEvents = (card, catId, bId, modId, itemId, currentItem) => {
+            // Item name editing
+            card.querySelector('.item-name')?.addEventListener('blur', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentItem.name; return; }
+                const newName = e.target.textContent.trim();
+                if (newName && newName !== currentItem.name) {
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { name: newName });
+                        msg('Item name updated', 'info');
+                    } catch (error) {
+                        msg(`Error updating item name: ${error.message}`, 'danger');
+                    }
+                }
+            });
+            // Item URL editing
+            card.querySelector('.item-url')?.addEventListener('change', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentItem.url; return; }
+                const newUrl = e.target.value.trim();
+                try {
+                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { url: newUrl });
+                    msg('Item URL updated', 'info');
+                } catch (error) {
+                    msg(`Error updating item URL: ${error.message}`, 'danger');
+                }
+            });
+
+            // NEW: Toggle isPublic status for lecture/resource items
+            card.querySelector('.toggle-ispublic-item')?.addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
+                const newValue = !currentItem.isPublic;
+                const confirmMsg = newValue 
+                    ? `Are you sure you want to make this ${currentItem.type} PUBLIC? It will become visible on the website.`
+                    : `Are you sure you want to make this ${currentItem.type} PRIVATE? It will be hidden from the website.`;
+                const confirm = await showConfirm(confirmMsg);
+                if (confirm) {
+                    showLoading(`Updating ${currentItem.type} visibility...`);
+                    try {
+                        await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { isPublic: newValue });
+                        msg(`${currentItem.type} visibility changed to ${newValue ? 'PUBLIC' : 'PRIVATE'}!`, 'info');
+                    } catch (error) {
+                        msg(`Error updating ${currentItem.type} visibility: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+            // Delete Item
+            card.querySelector('.delete-item')?.addEventListener('click', async (e) => {
+                if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
+                const confirmDelete = await showConfirm(`Are you sure you want to delete this ${currentItem.type}?`);
+                if (confirmDelete) {
+                    showLoading(`Deleting ${currentItem.type}...`);
+                    try {
+                        await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
+                        msg(`${currentItem.type} deleted!`, 'danger');
+                    } catch (error) {
+                        msg(`Error deleting ${currentItem.type}: ${error.message}`, 'danger');
+                    } finally {
+                        hideLoading();
+                    }
+                }
             });
         };
 
-        const addCategory = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const categoryName = document.getElementById('categoryName').value.trim();
-            const categoryImageUrl = document.getElementById('categoryImageUrl').value.trim();
 
-            if (!categoryName) {
-                msg('Category name is required!', 'warning');
+        // Firebase Authentication State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                isAuthenticated = true;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainWrapper').style.display = 'flex';
+                document.getElementById('bottomNavbar').style.display = 'flex';
+                loadCategories();
+                loadSiteConfig();
+                setupSiteConfigEvents();
+                // Initially show home section and analytics
+                showSection('home-section');
+            } else {
+                isAuthenticated = false;
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('mainWrapper').style.display = 'none';
+                document.getElementById('bottomNavbar').style.display = 'none';
+            }
+        });
+        document.getElementById('loginButton')?.addEventListener('click', async () => {
+            const email = document.getElementById('adminEmail')?.value;
+            const password = document.getElementById('adminPassword')?.value;
+            const loginAlerts = document.getElementById('loginAlerts');
+            if(!loginAlerts) return; // Safety check
+
+            loginAlerts.style.display = 'none';
+
+            if (!email || !password) {
+                loginAlerts.textContent = 'Please enter both email and password!';
+                loginAlerts.style.display = 'block';
                 return;
             }
 
-            showLoading('Adding category...');
+            showLoading('Logging in...');
             try {
-                const newCatRef = push(dbRef(db, 'categories'));
-                await set(newCatRef, {
-                    name: categoryName,
-                    imageUrl: categoryImageUrl || null,
-                    batches: {}
-                });
-                msg('Category added successfully!', 'success');
-                document.getElementById('categoryName').value = '';
-                document.getElementById('categoryImageUrl').value = '';
+                await signInWithEmailAndPassword(auth, email, password);
+                msg('Logged in successfully!', 'success', 'loginAlerts');
+                // The onAuthStateChanged listener will handle UI update
             } catch (error) {
-                msg(`Error adding category: ${error.message}`, 'danger');
+                loginAlerts.textContent = `Login failed: ${error.message}`;
+                loginAlerts.style.display = 'block';
+                console.error("Login Error:", error);
             } finally {
                 hideLoading();
             }
-        };
-        document.getElementById('addCategory').addEventListener('click', addCategory);
+        });
 
-        const updateLectureResource = async (catId, bId, modId, itemId, field, value) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            showLoading('Updating content...');
-            try {
-                await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { [field]: value });
-                msg('Content updated!', 'info');
-            } catch (error) {
-                msg(`Error updating content: ${error.message}`, 'danger');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        const deleteLectureResource = async (catId, bId, modId, itemId) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
-            const confirmDelete = await showConfirm('Are you sure you want to delete this content item?');
-            if (confirmDelete) {
-                showLoading('Deleting content...');
+        document.getElementById('logoutButton')?.addEventListener('click', async () => {
+            const confirmLogout = await showConfirm('Are you sure you want to log out?');
+            if (confirmLogout) {
+                showLoading('Logging out...');
                 try {
-                    await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
-                    msg('Content item deleted!', 'danger');
+                    await signOut(auth);
+                    msg('Logged out successfully!', 'info');
+                    // The onAuthStateChanged listener will handle UI update
                 } catch (error) {
-                    msg(`Error deleting content: ${error.message}`, 'danger');
+                    msg(`Logout failed: ${error.message}`, 'danger');
                 } finally {
                     hideLoading();
                 }
             }
-        };
-
-        // Login/Logout Logic
-        const loginScreen = document.getElementById('loginScreen');
-        const mainWrapper = document.getElementById('mainWrapper');
-        const bottomNavbar = document.getElementById('bottomNavbar');
-        const adminEmailInput = document.getElementById('adminEmail'); // New email input
-        const adminPasswordInput = document.getElementById('adminPassword');
-        const loginButton = document.getElementById('loginButton');
-        const logoutButton = document.getElementById('logoutButton');
-        const loginAlerts = document.getElementById('loginAlerts');
-
-        let reauthTimer = null;
-
-        const setReauthTimer = () => {
-            if (reauthTimer) clearTimeout(reauthTimer);
-            reauthTimer = setTimeout(() => {
-                logoutUser();
-                msg('For security, please re-login.', 'warning', 'loginAlerts');
-            }, REAUTHENTICATION_INTERVAL);
-        };
-
-        const loginUser = async () => {
-            const email = adminEmailInput.value;
-            const password = adminPasswordInput.value;
-
-            if (!email || !password) {
-                loginAlerts.textContent = 'Please enter both email and password.';
-                loginAlerts.style.display = 'block';
-                return;
-            }
-
-            try {
-                showLoading('Logging in...');
-                await signInWithEmailAndPassword(auth, email, password);
-                // On successful login, Firebase onAuthStateChanged listener will handle UI update
-            } catch (error) {
-                hideLoading();
-                let errorMessage = 'Login Failed. Invalid credentials.';
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    errorMessage = 'Invalid email or password.';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'Too many login attempts. Please try again later.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Invalid email format.';
-                } else {
-                    errorMessage = `Login error: ${error.message}`;
-                }
-                loginAlerts.textContent = errorMessage;
-                loginAlerts.style.display = 'block';
-                console.error("Login Error:", error);
-            }
-        };
-
-        const logoutUser = async () => {
-            try {
-                await signOut(auth);
-                // On successful logout, Firebase onAuthStateChanged listener will handle UI update
-            } catch (error) {
-                console.error("Logout Error:", error);
-                msg(`Logout failed: ${error.message}`, 'danger', 'loginAlerts');
-            }
-        };
-
-        loginButton.addEventListener('click', loginUser);
-        adminEmailInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginUser();
-            }
         });
-        adminPasswordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginUser();
-            }
-        });
-        logoutButton.addEventListener('click', logoutUser);
-
-        const initAdminPanel = () => {
-            updateHomePageQuote();
-            setInterval(updateHomePageQuote, 60 * 60 * 1000); // Update quote every hour
-            loadSiteConfig();
-            setupSiteConfigEvents();
-            loadCategories();
-            showSection('home-section'); // Default to home section on login
-            listenForWebsiteStats(); // Start listening for stats once logged in
-        };
-
-        // Firebase Auth State Listener
-        // This listener automatically runs when the page loads and whenever the user's login state changes.
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in
-                isAuthenticated = true;
-                loginScreen.classList.add('hidden');
-                mainWrapper.style.display = 'flex';
-                bottomNavbar.style.display = 'flex';
-                adminEmailInput.value = ''; // Clear fields on successful login
-                adminPasswordInput.value = '';
-                loginAlerts.style.display = 'none'; // Hide login errors
-                initAdminPanel(); // Initialize the admin panel features
-                setReauthTimer(); // Start/reset re-authentication timer
-                hideLoading(); // Hide loading after successful login
-            } else {
-                // User is signed out or not authenticated
-                isAuthenticated = false;
-                loginScreen.classList.remove('hidden'); // Show login screen
-                mainWrapper.style.display = 'none'; // Hide main content
-                bottomNavbar.style.display = 'none'; // Hide bottom nav
-                adminEmailInput.value = ''; // Clear fields on logout
-                adminPasswordInput.value = '';
-                
-                // Show a re-login message if they were previously logged in but session expired
-                // This check is a bit tricky with onAuthStateChanged as it fires on first load too.
-                // A better session management would involve tokens or a flag in localStorage.
-                // For now, if onAuthStateChanged indicates logged out, assume re-login needed.
-                msg('Please log in to access the admin panel.', 'info', 'loginAlerts');
-                
-                localStorage.removeItem('adminLoggedIn'); // Ensure local storage is clean
-                localStorage.removeItem('lastLoginTime');
-                if (reauthTimer) clearTimeout(reauthTimer); // Clear any running re-auth timer
-                hideLoading(); // Ensure loading is hidden on logout/initial unauthenticated state
-            }
-        });
-
-        // Initial loading state when the page first loads
+        // Initial setup calls
         document.addEventListener('DOMContentLoaded', () => {
-            // Show a loading spinner until Firebase determines auth state via onAuthStateChanged
-            showLoading('Checking authentication...');
+            // No need to call loadCategories, loadSiteConfig, setupSiteConfigEvents here
+            // as onAuthStateChanged handles it after successful login.
+            // But we can setup default quote
+            updateHomePageQuote();
+            setInterval(updateHomePageQuote, 5000); // Update quote every 5 seconds
         });
-
     </script>
 </body>
 </html>
