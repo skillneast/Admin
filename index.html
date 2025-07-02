@@ -114,20 +114,30 @@
             transition: all 0.2s ease-in-out;
         }
 
-        .btn-primary { background-color: var(--accent-blue); border-color: var(--accent-blue); }
-        .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; transform: translateY(-2px); }
+        .btn-primary { background-color: var(--accent-blue);
+        border-color: var(--accent-blue); }
+        .btn-primary:hover { background-color: #0056b3; border-color: #0056b3; transform: translateY(-2px);
+        }
 
-        .btn-success { background-color: var(--accent-green); border-color: var(--accent-green); }
-        .btn-success:hover { background-color: #1e7e34; border-color: #1e7e34; transform: translateY(-2px); }
+        .btn-success { background-color: var(--accent-green); border-color: var(--accent-green);
+        }
+        .btn-success:hover { background-color: #1e7e34; border-color: #1e7e34; transform: translateY(-2px);
+        }
 
-        .btn-danger { background-color: var(--accent-red); border-color: var(--accent-red); }
-        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; transform: translateY(-2px); }
+        .btn-danger { background-color: var(--accent-red); border-color: var(--accent-red);
+        }
+        .btn-danger:hover { background-color: #c82333; border-color: #bd2130; transform: translateY(-2px);
+        }
 
-        .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
-        .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; transform: translateY(-2px); }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d;
+        }
+        .btn-secondary:hover { background-color: #5a6268; border-color: #545b62; transform: translateY(-2px);
+        }
 
-        .btn-info { background-color: var(--accent-teal); border-color: var(--accent-teal); }
-        .btn-info:hover { background-color: #00939b; border-color: var(--accent-teal); transform: translateY(-2px); }
+        .btn-info { background-color: var(--accent-teal); border-color: var(--accent-teal);
+        }
+        .btn-info:hover { background-color: #00939b; border-color: var(--accent-teal); transform: translateY(-2px);
+        }
 
 
         .alert {
@@ -137,10 +147,14 @@
             border-color: var(--accent-teal);
             color: var(--text-light);
         }
-        .alert-danger { background-color: rgba(220, 53, 69, 0.2); border-color: var(--accent-red); }
-        .alert-success { background-color: rgba(40, 167, 69, 0.2); border-color: var(--accent-green); }
-        .alert-info { background-color: rgba(0, 123, 255, 0.2); border-color: var(--accent-blue); }
-        .alert-warning { background-color: rgba(255, 193, 7, 0.2); border-color: #FFC107; color: #FFC107; }
+        .alert-danger { background-color: rgba(220, 53, 69, 0.2); border-color: var(--accent-red);
+        }
+        .alert-success { background-color: rgba(40, 167, 69, 0.2); border-color: var(--accent-green);
+        }
+        .alert-info { background-color: rgba(0, 123, 255, 0.2); border-color: var(--accent-blue);
+        }
+        .alert-warning { background-color: rgba(255, 193, 7, 0.2); border-color: #FFC107; color: #FFC107;
+        }
 
 
         .card {
@@ -191,8 +205,10 @@
             font-size: 0.8em;
             font-weight: 700;
         }
-        .item-type-badge.bg-primary { background-color: var(--accent-blue) !important; }
-        .item-type-badge.bg-info { background-color: var(--accent-teal) !important; }
+        .item-type-badge.bg-primary { background-color: var(--accent-blue) !important;
+        }
+        .item-type-badge.bg-info { background-color: var(--accent-teal) !important;
+        }
 
         /* Login Screen Styles */
         .login-screen {
@@ -248,7 +264,7 @@
 
         /* Home Section Styles */
         .home-section {
-            display: flex;
+            /* display: flex; is now handled by JS */
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -270,13 +286,18 @@
             animation: bounce 1.5s infinite ease-in-out;
         }
         @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0;
+            transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1);
+            }
         }
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0); }
+            0%, 100% { transform: translateY(0);
+            }
+            50% { transform: translateY(-15px);
+            }
+            100% { transform: translateY(0);
+            }
         }
 
         .home-quote-section {
@@ -436,8 +457,10 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: rotate(0deg);
+            }
+            100% { transform: rotate(360deg);
+            }
         }
 
         /* Bottom Navigation Bar Styles */
@@ -533,7 +556,8 @@
             <div id="loginAlerts" class="alert alert-danger" style="display: none;"></div>
             <div class="mb-3">
                 <input type="email" class="form-control" id="adminEmail" placeholder="Enter Admin Email">
-            </div>
+       
+             </div>
             <div class="mb-3">
                 <input type="password" class="form-control" id="adminPassword" placeholder="Enter Admin Password">
             </div>
@@ -543,18 +567,21 @@
 
     <div class="main-wrapper" id="mainWrapper" style="display: none;">
         <div class="content" id="content">
-            <div id="home-section" class="section active home-section">
+   
+          <div id="home-section" class="section active home-section">
                 <span class="emoji-icon">🚀</span>
                 <h1>Welcome SkillNeast Admin Panel</h1>
                 <p class="text-muted">Manage your courses, content, and users effortlessly.</p>
 
                 <div class="home-quote-section">
+           
                     <p class="quote-text" id="homeQuoteText"></p>
                     <p class="quote-author" id="homeQuoteAuthor"></p>
                 </div>
 
                 <div class="website-stats-section">
                     <h5>Website Analytics</h5>
+             
                     <p>Real-time Active Users: <span id="activeUsersCount">0</span></p>
                     <p>Total Website Visits: <span id="totalVisitsCount">0</span></p>
                 </div>
@@ -563,13 +590,15 @@
             </div>
 
             <div id="site-config-section" class="section">
-                <h5>Site Configuration (Global Settings)</h5>
+   
+                 <h5>Site Configuration (Global Settings)</h5>
                 <div id="alerts"></div> 
 
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h5>Telegram Channels Banner (WE NEED) Controls</h5>
                 <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input site-config-input" type="checkbox" role="switch" id="telegramBannerVisible" data-key="telegramBannerVisible">
+       
+                     <input class="form-check-input site-config-input" type="checkbox" role="switch" id="telegramBannerVisible" data-key="telegramBannerVisible">
                     <label class="form-check-label" for="telegramBannerVisible">Show "WE NEED" Banner</label>
                 </div>
                 <div class="mb-3">
@@ -578,6 +607,7 @@
                     <input type="text" class="form-control site-config-input" id="telegramBannerTitle" placeholder="e.g., JOIN OUR OFFICIAL <br> TELEGRAM CHANNELS" data-key="telegramBannerTitle">
                 </div>
                 <div class="mb-3">
+    
                     <label for="telegramBannerChannelList" class="form-label">Telegram Channels List (Pipe separated | for new line, supports HTML/emojis)</label>
                     <textarea class="form-control site-config-input" id="telegramBannerChannelList" rows="4" placeholder="e.g., • Study Ratna ✨|• RATNA Official 📣|• Anime Speaks 🐉|• Code with RATNA 💻" data-key="telegramBannerChannelList"></textarea>
                 </div>
@@ -589,7 +619,8 @@
                 <div class="mb-3">
                     <label for="telegramBannerButtonLink" class="form-label">Telegram Banner Button Link (Main Telegram Group)</label>
                     <input type="url" class="form-control site-config-input" id="telegramBannerButtonLink" placeholder="e.g., https://t.me/your_main_group" data-key="telegramBannerButtonLink">
-                </div>
+            
+            </div>
                 <div class="mb-3">
                     <label for="telegramBannerSupportText" class="form-label">Telegram Banner Support Text</label>
                     <input type="text" class="form-control site-config-input" id="telegramBannerSupportText" placeholder="e.g., YOUR SUPPORT !!" data-key="telegramBannerSupportText">
@@ -598,107 +629,125 @@
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h5>Discover Notice (Namo Buddhaya Everyone) Controls</h5>
                 <div class="mb-3 form-check form-switch">
-                    <input class="form-check-input site-config-input" type="checkbox" role="switch" id="discoverNoticeVisible" data-key="discoverNoticeVisible">
+                    <input class="form-check-input site-config-input" type="checkbox" role="switch"  id="discoverNoticeVisible" data-key="discoverNoticeVisible">
                     <label class="form-check-label" for="discoverNoticeVisible">Show Discover Notice</label>
                 </div>
                 <div class="mb-3">
                     <label for="discoverNoticeHeaderEmoji" class="form-label">Discover Notice Header Emoji (e.g., 🙏)</label>
+               
                     <input type="text" class="form-control site-config-input" id="discoverNoticeHeaderEmoji" placeholder="e.g., 🙏" data-key="discoverNoticeHeaderEmoji">
                 </div>
                  <div class="mb-3">
                     <label for="discoverNoticeImageUrl" class="form-label">Discover Notice Image URL (Optional)</label>
                     <input type="url" class="form-control site-config-input" id="discoverNoticeImageUrl" placeholder="e.g., https://example.com/image.jpg" data-key="discoverNoticeImageUrl">
+ 
                     <small class="form-text text-muted">Image will appear below the header.</small>
                 </div>
                 <div class="mb-3">
                     <label for="discoverNoticeTitle" class="form-label">Discover Notice Main Title</label>
+                
                     <input type="text" class="form-control site-config-input" id="discoverNoticeTitle" placeholder="e.g., DISCOVER OUR APP'S DELIGHTS!" data-key="discoverNoticeTitle">
                 </div>
                 <div class="mb-3">
                     <label for="discoverNoticePoints" class="form-label">Discover Notice Points (Pipe separated | for new point, supports HTML/emojis)</label>
-                    <textarea class="form-control site-config-input" id="discoverNoticePoints" rows="5" placeholder="e.g., 🚫 Don't buy this App from AnyOne...|🤝 Join Us on Telegram..." data-key="discoverNoticePoints"></textarea>
+                    <textarea class="form-control site-config-input" id="discoverNoticePoints" rows="5" placeholder="e.g., 🚫 Don't buy this App from AnyOne...|🤝 Join Us  on Telegram..." data-key="discoverNoticePoints"></textarea>
                 </div>
 
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h5>How to Use App Videos (Tutorials) Controls</h5>
                 <div class="mb-3">
                     <label for="howToUseVideoTitle" class="form-label">Video Title</label>
+ 
                     <input type="text" class="form-control" id="howToUseVideoTitle" placeholder="e.g., App Tutorial Part 1">
                 </div>
                 <div class="mb-3">
                     <label for="howToUseVideoUrl" class="form-label">YouTube/Drive Video URL</label>
+                
                     <input type="url" class="form-control" id="howToUseVideoUrl" placeholder="e.g., https://www.youtube.com/watch?v=VIDEO_ID or https://drive.google.com/file/d/FILE_ID/view">
                 </div>
                 <div class="mb-3">
                     <label for="howToUseVideoDescription" class="form-label">Video Description</label>
                     <textarea class="form-control" id="howToUseVideoDescription" rows="3" placeholder="Short description of the video."></textarea>
+     
                 </div>
                 <button id="addHowToUseVideo" class="btn btn-primary mt-2 w-100">Add Video</button>
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h6 class="mb-3 text-muted">Existing How-To App Videos:</h6>
                 <div id="howToUseVideosList">
-                    <p class="text-muted fst-italic">No videos added yet.</p>
+          
+                   <p class="text-muted fst-italic">No videos added yet.</p>
                 </div>
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <div class="mb-3">
                     <label for="surpriseButtonLink" class="form-label">Today's Surprise Link</label>
-                    <input type="url" class="form-control site-config-input" id="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise" data-key="surpriseButtonLink">
+         
+                   <input type="url" class="form-control site-config-input" id="surpriseButtonLink" placeholder="e.g., https://skillneast.com/surprise" data-key="surpriseButtonLink">
                     <small class="form-text text-muted">Link for the "Today's Surprise!" button on the homepage.</small>
                 </div>
                 <div class="mb-3">
                     <label for="telegramChannelLink" class="form-label">Telegram Channel Link</label>
                     <input type="url" class="form-control site-config-input" id="telegramChannelLink" placeholder="e.g., https://t.me/your_channel" data-key="telegramChannelLink">
-                </div>
+             
+               </div>
                 <div class="mb-3">
                     <label for="telegramGroupLink" class="form-label">Telegram Group Link</label>
                     <input type="url" class="form-control site-config-input" id="telegramGroupLink" placeholder="e.g., https://t.me/your_group" data-key="telegramGroupLink">
                 </div>
-                <div class="mb-3">
+             
+                  <div class="mb-3">
                     <label for="youtubeLink" class="form-label">YouTube Link (About Me)</label>
                     <input type="url" class="form-control site-config-input" id="youtubeLink" placeholder="e.g., https://www.youtube.com/yourchannel" data-key="youtubeLink">
                 </div>
                 <div class="mb-3">
-                    <label for="instagramLink" class="form-label">Instagram Link (About Me)</label>
+           
+                     <label for="instagramLink" class="form-label">Instagram Link (About Me)</label>
                     <input type="url" class="form-control site-config-input" id="instagramLink" placeholder="e.g., https://instagram.com/your_profile" data-key="instagramLink">
                 </div>
                 <div class="mb-3">
                     <label for="requestCoursesLink" class="form-label">Request Courses Link</label>
+  
                     <input type="url" class="form-control site-config-input" id="requestCoursesLink" placeholder="e.g., https://forms.google.com/your_form" data-key="requestCoursesLink">
                 </div>
                 <div class="mb-3">
                     <label for="profilePictureUrl" class="form-label">About Me Profile Picture URL</label>
+                
                     <input type="url" class="form-control site-config-input" id="profilePictureUrl" placeholder="e.g., https://example.com/profile.jpg" data-key="profilePictureUrl">
                 </div>
                 <div class="mb-3">
                     <label for="skillNeastLogoUrl" class="form-label">SkillNeast Logo URL (Top Navbar)</label>
                     <input type="url" class="form-control site-config-input" id="skillNeastLogoUrl" placeholder="e.g., https://example.com/logo.png" data-key="skillNeastLogoUrl">
+   
                 </div>
                 <div class="mb-3">
                     <label for="sliderHeaderPictureUrl" class="form-label">Slider Menu Header Picture URL</label>
                     <input type="url" class="form-control site-config-input" id="sliderHeaderPictureUrl" placeholder="e.g., https://example.com/slider_header.png" data-key="sliderHeaderPictureUrl">
                 </div>
-                <div class="mb-3">
+ 
+                               <div class="mb-3">
                     <label for="pwLogoUrl" class="form-label">PW Logo URL (if applicable)</label>
                     <input type="url" class="form-control site-config-input" id="pwLogoUrl" placeholder="e.g., https://example.com/pw_logo.png" data-key="pwLogoUrl">
                 </div>
 
+               
                 <hr class="my-4" style="border-color: var(--border-color);">
                 <h5>Website Homepage Notifications</h5>
                 <div id="website-notification-alerts"></div>
 
                 <div class="mb-3">
                     <label for="websiteNotificationTitle" class="form-label">Notification Title</label>
-                    <input type="text" class="form-control" id="websiteNotificationTitle" placeholder="e.g., Important Update!">
+                    <input  type="text" class="form-control" id="websiteNotificationTitle" placeholder="e.g., Important Update!">
                 </div>
                 <div class="mb-3">
                     <label for="websiteNotificationBody" class="form-label">Notification Message</label>
                     <textarea class="form-control" id="websiteNotificationBody" rows="3" placeholder="e.g., Check out our new features!"></textarea>
-                </div>
+          
+              </div>
                 <div class="mb-3">
                     <label for="websiteNotificationLink" class="form-label">Notification Link (Optional)</label>
                     <input type="url" class="form-control" id="websiteNotificationLink" placeholder="e.g., https://skillneast.com/latest-news">
                 </div>
             
+ 
                 <button id="addWebsiteNotificationButton" class="btn btn-primary mt-2 w-100">Add Homepage Notification</button>
                 <small class="form-text text-muted mt-3">
                     These notifications will appear on your website's homepage, in the notification bell popup.
@@ -708,13 +757,15 @@
                 <div id="websiteNotificationsList" class="mt-3">
                     <p class="text-muted fst-italic">No homepage notifications added yet.</p>
                 </div>
-            </div>
+ 
+               </div>
 
             <div id="notifications-section" class="section">
                 <h5>Send Push Notification to all Users</h5>
                 <div class="mb-3">
                     <label for="notificationTitle" class="form-label">Notification Title</label>
-                    <input type="text" class="form-control" id="notificationTitle" placeholder="e.g., New Course Alert!">
+              
+                  <input type="text" class="form-control" id="notificationTitle" placeholder="e.g., New Course Alert!">
                 </div>
                 <div class="mb-3">
                     <label for="notificationBody" class="form-label">Notification Body</label>
@@ -723,7 +774,8 @@
                 <div class="mb-3">
                     <label for="notificationLink" class="form-label">Link (Optional - where to redirect user)</label>
                     <input type="url" class="form-control" id="notificationLink" placeholder="e.g., https://skillneast.com/new-course">
-                </div>
+             
+               </div>
                 <button id="sendNotificationButton" class="btn btn-success mt-2 w-100">Send Notification</button>
                 <small class="form-text text-muted mt-3">
                     *Push notifications require Firebase Cloud Messaging (FCM) setup and server-side logic (e.g., Firebase Functions) to reach all users. This button only triggers a client-side function to initiate the process.
@@ -734,18 +786,21 @@
                 <h5>Create New Category</h5>
                 <div class="mb-3">
                     <label for="categoryName" class="form-label">Category Name</label>
+                
                     <input id="categoryName" type="text" class="form-control" placeholder="e.g., JEE Mains, NEET, Editing">
                 </div>
                 <div class="mb-3">
                     <label for="categoryImageUrl" class="form-label">Category Image URL</label>
                     <input type="url" class="form-control" id="categoryImageUrl" placeholder="e.g., https://example.com/image.jpg">
-                </div>
+      
+                      </div>
                 <button id="addCategory" class="btn btn-primary mt-2 w-100">Add Category</button>
 
                 <hr class="my-4" style="border-color: var(--border-color);">
 
                 <h5>Existing Categories & Batches</h5>
                 <div id="categoriesList" class="mt-4">
+            
                     <p class="text-muted fst-italic">Loading categories...</p>
                 </div>
             </div>
@@ -753,31 +808,38 @@
             <div id="request-courses-section" class="section">
                 <h5>Create New Request Course Post</h5>
                 <div id="request-courses-add-section">
-                    <div class="mb-3">
+          
+                      <div class="mb-3">
                         <label for="requestCourseTitle" class="form-label">Request Course Post Title</label>
                         <input type="text" class="form-control" id="requestCourseTitle" placeholder="e.g., New Course Idea: Python Basics">
                     </div>
-                    <div class="mb-3">
+       
+                         <div class="mb-3">
                         <label for="requestCourseDescription" class="form-label">Request Course Post Description</label>
                         <textarea class="form-control" id="requestCourseDescription" rows="3" placeholder="Describe the course you want."></textarea>
                     </div>
-                    <div class="mb-3">
+     
+                                   <div class="mb-3">
                         <label for="requestCourseImageUrl" class="form-label">Request Course Post Image URL (Optional)</label>
                         <input type="url" class="form-control" id="requestCourseImageUrl" placeholder="e.g., https://example.com/course_idea.jpg">
                     </div>
-                    <div class="mb-3">
+    
+                                    <div class="mb-3">
                         <label for="requestCourseButtonText" class="form-label">Request Course Post Button Text (Optional)</label>
                         <input type="text" class="form-control" id="requestCourseButtonText" placeholder="e.g., Vote for this course">
-                    </div>
+                    
+ </div>
                     <div class="mb-3">
                         <label for="requestCourseButtonLink" class="form-label">Request Course Post Button Link (Optional)</label>
                         <input type="url" class="form-control" id="requestCourseButtonLink" placeholder="e.g., https://forms.google.com/vote">
+                   
                     </div>
                     <button id="addRequestCourse" class="btn btn-primary mt-2 w-100">Add Request Course Post</button>
                 </div>
 
                 <h6 class="mt-4 text-muted">Existing Request Course Posts:</h6>
                 <div id="requestCoursesAdminList" class="mt-3">
+                
                     <p class="text-muted fst-italic">Loading user requests...</p>
                 </div>
             </div>
@@ -788,7 +850,8 @@
         <div class="custom-modal-content">
             <h5 id="customConfirmMessage"></h5>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="customConfirmCancel">Cancel</button>
+           
+                 <button type="button" class="btn btn-secondary" id="customConfirmCancel">Cancel</button>
                 <button type="button" class="btn btn-primary" id="customConfirmOK">OK</button>
             </div>
         </div>
@@ -798,12 +861,14 @@
         <div class="custom-modal-content">
             <h5 id="addLectureResourceMessage">Select Content Type</h5>
             <div class="modal-body">
+    
                 <p>Would you like to add a Lecture or a Resource?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="addLectureButton"><i class="fas fa-video me-2"></i> Lecture</button>
                 <button type="button" class="btn btn-info" id="addResourceButton"><i class="fas fa-file-alt me-2"></i> Resource</button>
-                <button type="button" class="btn btn-secondary" id="cancelAddLectureResource">Cancel</button>
+      
+                      <button type="button" class="btn btn-secondary" id="cancelAddLectureResource">Cancel</button>
             </div>
         </div>
     </div>
@@ -816,7 +881,8 @@
     <div class="bottom-navbar" id="bottomNavbar" style="display: none;">
         <a href="#" class="nav-item" data-section="categories-section">
             <i class="fas fa-th-large"></i>
-            Batches
+ 
+           Batches
         </a>
         <a href="#" class="nav-item" data-section="site-config-section">
             <i class="fas fa-cog"></i> Settings
@@ -825,7 +891,8 @@
             <i class="fas fa-home"></i> Home
         </a>
         <a href="#" class="nav-item" data-section="request-courses-section">
-            <i class="fas fa-hand-paper"></i> Requests
+ 
+           <i class="fas fa-hand-paper"></i> Requests
         </a>
         <a href="#" class="nav-item" data-section="notifications-section">
             <i class="fas fa-users"></i> Users
@@ -834,9 +901,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref as dbRef, push, set, update, remove, onValue, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; // 'increment' added here
+        import { getDatabase, ref as dbRef, push, set, update, remove, onValue, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        // 'increment' added here
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
         // Replace with your actual Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
@@ -853,7 +920,8 @@
         const auth = getAuth(app);
         let isAuthenticated = false;
         let activeSection = 'home-section';
-        const REAUTHENTICATION_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+        const REAUTHENTICATION_INTERVAL = 4 * 60 * 60 * 1000;
+        // 4 hours in milliseconds
 
         const homePageQuotes = [
             { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -960,7 +1028,6 @@
                 loadingOverlay.classList.add('active');
             }
         };
-
         const hideLoading = () => {
             const loadingOverlay = document.getElementById('loadingOverlay');
             if (loadingOverlay) { // Safety check
@@ -987,28 +1054,36 @@
             quoteTextEl.textContent = `"${quote.quote}"`;
             quoteAuthorEl.textContent = `- ${quote.author}`;
         };
-        // Show specific section and highlight bottom nav
+        
+        // --- FIXED: Show specific section and highlight bottom nav ---
         const showSection = (sectionId) => {
+            // Hide all sections first by setting their display to 'none'
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
+                section.style.display = 'none'; // This ensures sections are hidden regardless of other styles
             });
+            
+            // Find and display the target section
             const targetSection = document.getElementById(sectionId);
-            if (targetSection) { // Safety check
+            if (targetSection) {
                 targetSection.classList.add('active');
+                // Use 'flex' for the home section for its layout, 'block' for others
+                if (sectionId === 'home-section') {
+                    targetSection.style.display = 'flex';
+                } else {
+                    targetSection.style.display = 'block';
+                }
             }
+            
             activeSection = sectionId;
-
+            
+            // Update the active state of the bottom navigation bar
             document.querySelectorAll('.bottom-navbar .nav-item').forEach(item => {
                 item.classList.remove('active');
                 if (item.dataset.section === sectionId) {
                     item.classList.add('active');
                 }
             });
-            if (sectionId === 'home-section') {
-                if (targetSection) targetSection.style.display = 'flex';
-            } else {
-                if (targetSection) targetSection.style.display = 'block';
-            }
 
             // Load data specific to the section when it becomes active
             if (sectionId === 'site-config-section') {
@@ -1027,7 +1102,7 @@
                 event.preventDefault();
                 const targetSectionId = item.dataset.section;
                 showSection(targetSectionId);
-            });
+           });
         });
         // Get file extension from URL or name
         function getFileExtension(url, name) {
@@ -1060,7 +1135,7 @@
                 document.querySelectorAll('.site-config-input').forEach(input => {
                     const key = input.dataset.key;
                     if (input.type === 'checkbox') {
-                        input.checked = config.hasOwnProperty(key) ? config[key] : false;
+                         input.checked = config.hasOwnProperty(key) ? config[key] : false;
                     } else {
                         if (config.hasOwnProperty(key) && config[key] !== null) {
                             input.value = config[key];
@@ -1082,11 +1157,11 @@
                         if (!isAuthenticated) { // Check authentication before allowing changes
                             msg('You must be logged in to make changes!', 'danger', 'alerts');
                             e.target.checked = !e.target.checked; // Revert checkbox if not authenticated
-                            return;
+                           return;
                         }
                         const key = e.target.dataset.key;
                         let value;
-                        if (e.target.type === 'checkbox') {
+                         if (e.target.type === 'checkbox') {
                             value = e.target.checked;
                         } else {
                             value = e.target.value.trim();
@@ -1106,7 +1181,8 @@
                 }
             });
 
-            document.getElementById('addWebsiteNotificationButton')?.addEventListener('click', addWebsiteNotification); // Optional chaining
+            document.getElementById('addWebsiteNotificationButton')?.addEventListener('click', addWebsiteNotification);
+            // Optional chaining
         };
         // --- How to Use App Videos Management ---
         const howToUseVideosRef = dbRef(db, 'siteConfig/howToUseVideos');
@@ -1129,7 +1205,7 @@
                     videoItem.className = 'how-to-use-video-item card card-body mb-2';
                     videoItem.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div>
+                         <div>
                                 <strong>Title:</strong> <span contenteditable="true" data-id="${videoId}" data-field="title" class="video-title">${video.title || 'Untitled Video'}</span><br>
                                 <strong>URL:</strong> <a href="${video.url}" target="_blank">${video.url || 'No URL'}</a><br>
                                 <strong>Description:</strong> <span contenteditable="true" data-id="${videoId}" data-field="description" class="video-description">${video.description || 'No description'}</span>
@@ -1142,12 +1218,14 @@
                     `;
                     listContainer.appendChild(videoItem);
 
-                    videoItem.querySelector('.video-title')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent)); // Optional chaining for safety
-                    videoItem.querySelector('.video-description')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent)); // Optional chaining for safety
+                    videoItem.querySelector('.video-title')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'title', e.target.textContent));
+                    // Optional chaining for safety
+                    videoItem.querySelector('.video-description')?.addEventListener('blur', (e) => updateHowToUseVideo(videoId, 'description', e.target.textContent));
+                    // Optional chaining for safety
                     videoItem.querySelector('.edit-how-to-use-video')?.addEventListener('click', () => { // Optional chaining for safety
                         const newUrl = prompt('Enter new video URL:', video.url);
                         if (newUrl !== null) {
-                            updateHowToUseVideo(videoId, 'url', newUrl.trim());
+                           updateHowToUseVideo(videoId, 'url', newUrl.trim());
                         }
                     });
                     videoItem.querySelector('.delete-how-to-use-video')?.addEventListener('click', () => deleteHowToUseVideo(videoId)); // Optional chaining for safety
@@ -1159,7 +1237,8 @@
 
         // Add how-to-use video
         const addHowToUseVideo = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             const titleInput = document.getElementById('howToUseVideoTitle');
             const urlInput = document.getElementById('howToUseVideoUrl');
             const descriptionInput = document.getElementById('howToUseVideoDescription');
@@ -1195,7 +1274,8 @@
 
         // Update how-to-use video
         const updateHowToUseVideo = async (videoId, field, value) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             showLoading('Updating video...');
             try {
                 await update(dbRef(db, `siteConfig/howToUseVideos/${videoId}`), { [field]: value });
@@ -1209,7 +1289,8 @@
 
         // Delete how-to-use video
         const deleteHowToUseVideo = async (videoId) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             const confirm = await showConfirm('Are you sure you want to delete this video?');
             if (confirm) {
                 showLoading('Deleting video...');
@@ -1227,7 +1308,8 @@
 
         // --- Push Notification Management (for bell icon notifications sent to all users) ---
         const sendNotification = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
 
             const titleInput = document.getElementById('notificationTitle');
             const bodyInput = document.getElementById('notificationBody');
@@ -1268,11 +1350,13 @@
                 hideLoading();
             }
         };
-        document.getElementById('sendNotificationButton')?.addEventListener('click', sendNotification); // Optional chaining for safety
+        document.getElementById('sendNotificationButton')?.addEventListener('click', sendNotification);
+        // Optional chaining for safety
         // NEW: Website Homepage Notifications Management (replaces old homeAnnouncements)
         const websiteNotificationsRef = dbRef(db, 'notifications');
         const addWebsiteNotification = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
 
             const titleInput = document.getElementById('websiteNotificationTitle');
             const bodyInput = document.getElementById('websiteNotificationBody');
@@ -1319,7 +1403,6 @@
                 msg(`Error loading homepage notifications: ${error.message}`, 'danger');
             });
         };
-
         const renderWebsiteNotifications = (notifications) => {
             const listContainer = document.getElementById('websiteNotificationsList');
             if (!listContainer) return; // Safety check
@@ -1337,7 +1420,8 @@
                 itemDiv.dataset.id = id;
 
                 itemDiv.innerHTML = `
-                    <p><strong>Title:</strong> <span contenteditable="true" data-field="title">${notification.title || 'Untitled'}</span></p>
+                    <p><strong>Title:</strong> 
+ <span contenteditable="true" data-field="title">${notification.title || 'Untitled'}</span></p>
                     <p><strong>Message:</strong> <span contenteditable="true" data-field="body">${notification.body || 'No message'}</span></p>
                     <p><strong>Link:</strong> <input type="url" class="form-control form-control-sm mt-1 mb-1" data-field="link" value="${notification.link || ''}" placeholder="Optional Link"></p>
                     <div class="announcement-controls mt-2">
@@ -1345,7 +1429,6 @@
                     </div>
                 `;
                 listContainer.appendChild(itemDiv);
-
                 itemDiv.querySelector('[contenteditable][data-field="title"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'title', e.target.textContent));
                 itemDiv.querySelector('[contenteditable][data-field="body"]')?.addEventListener('blur', (e) => updateWebsiteNotification(id, 'body', e.target.textContent));
                 itemDiv.querySelector('input[type="url"][data-field="link"]')?.addEventListener('change', (e) => updateWebsiteNotification(id, 'link', e.target.value));
@@ -1354,7 +1437,8 @@
         };
 
         const updateWebsiteNotification = async (id, field, value) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             showLoading('Updating notification...');
             try {
                 await update(dbRef(db, `notifications/${id}`), { [field]: value || null });
@@ -1368,7 +1452,8 @@
         };
 
         const deleteWebsiteNotification = async (id) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             const confirm = await showConfirm('Are you sure you want to delete this homepage notification?');
             if (confirm) {
                 showLoading('Deleting notification...');
@@ -1387,7 +1472,6 @@
             onValue(websiteStatsRef, (snapshot) => {
                 const stats = snapshot.val() || { activeUsers: {}, totalVisits: 0 }; // Default activeUsers to empty object
                 const activeUsersCount = stats.activeUsers ? Object.keys(stats.activeUsers).length : 0; // Correctly count active users
-                
                 const activeUsersSpan = document.getElementById('activeUsersCount');
                 const totalVisitsSpan = document.getElementById('totalVisitsCount');
 
@@ -1428,25 +1512,25 @@
                 requestItem.className = 'card mb-2';
                 requestItem.innerHTML = `
                     <div class="card-body py-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                     <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 contenteditable="true" data-id="${requestId}" data-field="title" class="request-title flex-grow-1 me-2">${request.title || 'Untitled Request'}</h6>
                             <button class="btn btn-danger btn-sm delete-request" data-id="${requestId}">Delete</button>
-                        </div>
+                   </div>
                         ${request.imageUrl ? `<img src="${request.imageUrl}" alt="Request Image" class="thumbnail-preview mb-2">` : ''}
                         <div class="mb-2">
                             <label class="form-label">Description:</label>
-                            <textarea class="form-control form-control-sm request-description" rows="2" data-id="${requestId}" data-field="description">${request.description || ''}</textarea>
+                                  <textarea class="form-control form-control-sm request-description" rows="2" data-id="${requestId}" data-field="description">${request.description || ''}</textarea>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Image URL:</label>
-                            <input type="url" class="form-control form-control-sm request-image-url" data-id="${requestId}" data-field="imageUrl" value="${request.imageUrl || ''}" placeholder="Image URL">
+                       <input type="url" class="form-control form-control-sm request-image-url" data-id="${requestId}" data-field="imageUrl" value="${request.imageUrl || ''}" placeholder="Image URL">
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Button Text:</label>
-                            <input type="text" class="form-control form-control-sm request-button-text" data-id="${requestId}" data-field="buttonText" value="${request.buttonText || ''}" placeholder="Button Text (e.g., Vote Here)">
+                                     <input type="text" class="form-control form-control-sm request-button-text" data-id="${requestId}" data-field="buttonText" value="${request.buttonText || ''}" placeholder="Button Text (e.g., Vote Here)">
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Button Link:</label>
+                                <label class="form-label">Button Link:</label>
                             <input type="url" class="form-control form-control-sm request-button-link" data-id="${requestId}" data-field="buttonLink" value="${request.buttonLink || ''}" placeholder="Button Link">
                         </div>
                         <div class="mt-2 text-muted">
@@ -1457,7 +1541,7 @@
                 listContainer.appendChild(requestItem);
 
                 // Attach event listeners for inline editing and deletion
-                requestItem.querySelector('.request-title')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent));
+                               requestItem.querySelector('.request-title')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'title', e.target.textContent));
                 requestItem.querySelector('.request-description')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'description', e.target.value));
                 requestItem.querySelector('.request-image-url')?.addEventListener('change', (e) => updateRequestCourse(requestId, 'imageUrl', e.target.value));
                 requestItem.querySelector('.request-button-text')?.addEventListener('blur', (e) => updateRequestCourse(requestId, 'buttonText', e.target.value));
@@ -1466,14 +1550,14 @@
             });
         };
         const addRequestCourse = async () => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
 
             const titleInput = document.getElementById('requestCourseTitle');
             const descriptionInput = document.getElementById('requestCourseDescription');
             const imageUrlInput = document.getElementById('requestCourseImageUrl');
             const buttonTextInput = document.getElementById('requestCourseButtonText');
             const buttonLinkInput = document.getElementById('requestCourseButtonLink');
-
             if (!titleInput || !descriptionInput || !imageUrlInput || !buttonTextInput || !buttonLinkInput) { // Safety check
                 msg('Request Course input fields not found!', 'danger');
                 return;
@@ -1484,7 +1568,8 @@
             const imageUrl = imageUrlInput.value.trim();
             const buttonText = buttonTextInput.value.trim();
             const buttonLink = buttonLinkInput.value.trim();
-            if (!title) { msg('Request Course Title is required!', 'warning'); return; }
+            if (!title) { msg('Request Course Title is required!', 'warning'); return;
+            }
 
             showLoading('Adding request course...');
             try {
@@ -1494,7 +1579,7 @@
                     description: description || null,
                     imageUrl: imageUrl || null,
                     buttonText: buttonText || null,
-                    buttonLink: buttonLink || null,
+                   buttonLink: buttonLink || null,
                     timestamp: serverTimestamp(),
                     reactions: { "❤️": 0, "😂": 0, "👍": 0, "🌟": 0 }
                 });
@@ -1513,7 +1598,8 @@
         };
 
         const updateRequestCourse = async (requestId, field, value) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             showLoading('Updating request course...');
             try {
                 // Firebase sets null for empty strings when using update, which is fine.
@@ -1527,7 +1613,8 @@
         };
 
         const deleteRequestCourse = async (requestId) => {
-            if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
+            if (!isAuthenticated) { msg('Please authenticate first!', 'danger');
+                return; }
             const confirmDelete = await showConfirm('Are you sure you want to delete this request course post?');
             if (confirmDelete) {
                 showLoading('Deleting request course...');
@@ -1569,22 +1656,23 @@
                 card.className = "card mb-3";
                 card.innerHTML = `
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                          <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 contenteditable="true" data-id="${catId}" class="cat-name flex-grow-1 me-2">${cat.name}</h5>
                             <button class="btn btn-danger btn-sm delete-cat" data-id="${catId}">Delete Category</button>
-                        </div>
+                                     </div>
                         <div class="mb-3">
                             <label for="categoryImageUrl-${catId}" class="form-label">Category Image URL:</label>
-                            ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
+                              ${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="Category Image" class="thumbnail-preview">` : '<p class="text-muted">No image selected.</p>'}
                             <input type="url" class="form-control form-control-sm mt-2 category-image-url" id="categoryImageUrl-${catId}" data-id="${catId}" value="${cat.imageUrl || ''}" placeholder="e.g., https://example.com/image.jpg">
                         </div>
                         <hr>
                         <h6 class="mb-2 text-muted">Batches:</h6>
+                        
                         <div>
                             <button class="btn btn-secondary btn-sm mb-2 add-batch" data-id="${catId}">+ Add Batch</button>
                             <div class="batches-list" id="batches-list-${catId}"></div>
                         </div>
-                    </div>`;
+                   </div>`;
                 setupCategoryEvents(card, catId, cat.imageUrl);
                 container.append(card);
             });
@@ -1592,7 +1680,7 @@
 
         const setupCategoryEvents = (card, catId, currentImageUrl) => {
             const nameEl = card.querySelector('.cat-name');
-            if (nameEl) { // Safety check
+                   if (nameEl) { // Safety check
                 nameEl.addEventListener('blur', async () => {
                     if (!isAuthenticated) { // Check authentication before allowing changes
                         msg('You must be logged in to make changes!', 'danger');
@@ -1619,7 +1707,7 @@
                 imageUrlInput.addEventListener('change', async (e) => {
                     if (!isAuthenticated) { // Check authentication before allowing changes
                         msg('You must be logged in to make changes!', 'danger');
-                        e.target.value = currentImageUrl; // Revert changes
+                         e.target.value = currentImageUrl; // Revert changes
                         return;
                     }
                     const newImageUrl = e.target.value.trim();
@@ -1635,32 +1723,32 @@
             card.querySelector('.delete-cat')?.addEventListener('click', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this category and all its contents (batches, modules, lectures)?');
-                if (confirmDelete) {
+                           if (confirmDelete) {
                     try {
                         showLoading('Deleting category and content...');
                         await remove(dbRef(db, `categories/${catId}`));
-                        msg('Category and its contents deleted!', 'danger');
+                       msg('Category and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting category: ${error.message}`, 'danger');
                     } finally {
-                        hideLoading();
+                         hideLoading();
                     }
                 }
             });
-
             card.querySelector('.add-batch')?.addEventListener('click', async () => { // Optional chaining
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
                 const batchTypeChoice = await showConfirm('Is this a Direct Link Batch? (OK for Direct Link, Cancel for Regular Modules/Lectures)');
                 let title = prompt('Enter Batch title:');
-                if (!title) { msg('Batch title is required!', 'warning'); return; }
+                 if (!title) { msg('Batch title is required!', 'warning'); return; }
 
                 const thumbnailUrl = prompt('Enter Thumbnail URL (e.g., https://via.placeholder.com/150):');
                 if (!thumbnailUrl) { msg('Thumbnail URL is required!', 'warning'); return; }
 
                 const description = prompt('Enter Batch description (max 100 words):');
                 if (!description) { msg('Batch description is required!', 'warning'); return; }
-                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return; }
+                if (description.split(/\s+/).length > 100) { msg('Description exceeds 100 words! Please re-enter.', 'warning'); return;
+                }
 
                 let isContentDirectLink = batchTypeChoice;
                 let directDriveLink = null;
@@ -1706,11 +1794,11 @@
                         discountedPrice: discountedPrice,
                         isFree: isFree,
                         isNew: true, // This is key for 'new' notification on website
-                        isContentDirectLink: isContentDirectLink,
+                         isContentDirectLink: isContentDirectLink,
                         modules: modules,
                         directDriveLink: directDriveLink,
                         isPublic: isPublic, // NEW: Add isPublic property
-                        timestamp: serverTimestamp() // This is key for sorting and detecting 'new' or 'updated'
+                                         timestamp: serverTimestamp() // This is key for sorting and detecting 'new' or 'updated'
                     });
                     msg('Batch added successfully!', 'success');
                 } catch (error) {
@@ -1740,6 +1828,27 @@
         };
 
         const setupBatchEvents = (card, catId, bId, currentBatch) => {
+            // --- NEW: Collapse/Expand Logic ---
+            const toggleBtn = card.querySelector('.toggle-batch-details');
+            const contentDiv = card.querySelector('.batch-details-content');
+
+            if (toggleBtn && contentDiv) {
+                // Start collapsed by default
+                contentDiv.style.display = 'none';
+                toggleBtn.textContent = '↓';
+
+                toggleBtn.addEventListener('click', () => {
+                    const isCollapsed = contentDiv.style.display === 'none';
+                    if (isCollapsed) {
+                        contentDiv.style.display = 'block'; // Show content
+                        toggleBtn.textContent = '↑'; // Change button to "collapse"
+                    } else {
+                        contentDiv.style.display = 'none'; // Hide content
+                        toggleBtn.textContent = '↓'; // Change button to "expand"
+                    }
+                });
+            }
+
             // Batch title editing
             card.querySelector('.batch-title')?.addEventListener('blur', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentBatch.title; return; }
@@ -1758,22 +1867,22 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.thumbnail; return; }
                 const newThumbnail = e.target.value.trim();
                 try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { thumbnail: newThumbnail });
+                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { thumbnail: newThumbnail });
                     msg('Batch thumbnail updated', 'info');
                 } catch (error) {
                     msg(`Error updating batch thumbnail: ${error.message}`, 'danger');
-                }
+              }
             });
             // Batch description
             card.querySelector('.batch-description')?.addEventListener('blur', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.description; return; }
                 const newDescription = e.target.value.trim();
                 if (newDescription && newDescription !== currentBatch.description) {
-                    try {
+                          try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { description: newDescription });
                         msg('Batch description updated', 'info');
                     } catch (error) {
-                        msg(`Error updating batch description: ${error.message}`, 'danger');
+                                       msg(`Error updating batch description: ${error.message}`, 'danger');
                     }
                 }
             });
@@ -1782,7 +1891,7 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.originalPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
+                                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { originalPrice: newPrice });
                     msg('Original price updated', 'info');
                 }  catch (error) {
                     msg(`Error updating original price: ${error.message}`, 'danger');
@@ -1793,26 +1902,25 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.discountedPrice || ''; return; }
                 const newPrice = e.target.value === '' ? null : parseFloat(e.target.value);
                 try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}`), { discountedPrice: newPrice });
+                                     await update(dbRef(db, `categories/${catId}/batches/${bId}`), { discountedPrice: newPrice });
                     msg('Discounted price updated', 'info');
                 } catch (error) {
                     msg(`Error updating discounted price: ${error.message}`, 'danger');
-                }
+               }
             });
-            
             // "Batch Updated" Button:
             card.querySelector('.update-batch-notification')?.addEventListener('click', async () => { // Optional chaining
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
                 const confirmUpdate = await showConfirm('Are you sure you want to send an "Updated" notification for this batch?');
                 if (confirmUpdate) {
-                    showLoading('Sending update notification...');
+                                    showLoading('Sending update notification...');
                     try {
                         // Ensure isNew is false when manually sending an update notification
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
                             isNew: false, // Mark as NOT new for update notification
                             timestamp: serverTimestamp() // Update timestamp to trigger "updated" notification
                         });
-                        msg('Batch update notification sent!', 'success');
+                                             msg('Batch update notification sent!', 'success');
                     } catch (error) {
                         msg(`Error sending update notification: ${error.message}`, 'danger');
                     } finally {
@@ -1820,16 +1928,15 @@
                     }
                 }
             });
-
             // Mark as New/Old buttons (NEWLY ADDED Logic)
             card.querySelector('.mark-as-new-batch')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
                 const confirmMark = await showConfirm('Are you sure you want to mark this batch as NEW? This will display a "NEW!" tag and potentially trigger a notification on the website.');
-                if (confirmMark) {
+               if (confirmMark) {
                     showLoading('Marking batch as NEW...');
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
-                            isNew: true, 
+                         isNew: true, 
                             timestamp: serverTimestamp() // Update timestamp to make it appear newest
                         });
                         msg('Batch marked as NEW!', 'success');
@@ -1840,7 +1947,6 @@
                     }
                 }
             });
-
             card.querySelector('.mark-as-old-batch')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
                 const confirmMark = await showConfirm('Are you sure you want to mark this batch as OLD? This will remove the "NEW!" tag on the website.');
@@ -1853,51 +1959,48 @@
                         msg('Batch marked as OLD!', 'info');
                     } catch (error) {
                         msg(`Error marking batch as old: ${error.message}`, 'danger');
-                    } finally {
+                                     } finally {
                         hideLoading();
                     }
                 }
             });
-
             // Mark as Free/Paid buttons (NEWLY ADDED Logic)
             card.querySelector('.mark-as-free-batch')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
                 const confirmMark = await showConfirm('Are you sure you want to mark this batch as FREE?');
                 if (confirmMark) {
-                    showLoading('Marking batch as FREE...');
+                                   showLoading('Marking batch as FREE...');
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
                             isFree: true,
-                            discountedPrice: 0, // Set discounted price to 0 if free
+                                                        discountedPrice: 0, // Set discounted price to 0 if free
                             originalPrice: null // Clear original price if free
                         });
-                        msg('Batch marked as FREE!', 'success');
+                                        msg('Batch marked as FREE!', 'success');
                     } catch (error) {
                         msg(`Error marking batch as free: ${error.message}`, 'danger');
                     } finally {
-                        hideLoading();
+                                           hideLoading();
                     }
                 }
             });
-
             card.querySelector('.mark-as-paid-batch')?.addEventListener('click', async () => {
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
                 const confirmMark = await showConfirm('Are you sure you want to mark this batch as PAID?');
                 if (confirmMark) {
                     showLoading('Marking batch as PAID...');
-                    try {
+                                       try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { 
                             isFree: false // Set to false if paid
-                        });
+                       });
                         msg('Batch marked as PAID!', 'info');
                     } catch (error) {
                         msg(`Error marking batch as paid: ${error.message}`, 'danger');
-                    } finally {
+                   } finally {
                         hideLoading();
                     }
                 }
             });
-
             // Toggle isContentDirectLink status
             const toggleIsContentDirectLink = card.querySelector('.toggle-iscontentdirectlink');
             if (toggleIsContentDirectLink) {
@@ -1908,13 +2011,13 @@
                     if (confirm) {
                         showLoading('Updating batch type...');
                         try {
-                            const updates = {
+                                                        const updates = {
                                 isContentDirectLink: newValue,
                                 modules: null,
-                                directDriveLink: null,
+                                                         directDriveLink: null,
                                 originalPrice: null,
                                 discountedPrice: 0,
-                                isFree: true
+                                                         isFree: true
                             };
                             await update(dbRef(db, `categories/${catId}/batches/${bId}`), updates);
                             msg('Batch type updated and content reset. Please re-enter details.', 'info');
@@ -1940,23 +2043,29 @@
                     if (confirm) {
                         showLoading('Updating batch visibility...');
                         try {
-                            const updates = { isPublic: newValue };
+                         const updates = { isPublic: newValue };
                             
                             // Logic for Homepage Batch Notification based on Public/Private toggle
-                            if (newValue === true && currentBatch.isPublic === false) { // If making public AND it was previously private
-                                // If it was just added as new, keep it new. Else, mark as updated.
+                         if (newValue === true && currentBatch.isPublic === false) { // If making public AND it was previously private
+                                // If it was just added as new, keep it new.
+                                // Else, mark as updated.
                                 if (currentBatch.isNew !== true) { // If it's NOT already explicitly new, treat as update
-                                    updates.isNew = false; // Ensure it's not marked as "new" for public batch notification
-                                    updates.timestamp = serverTimestamp(); // Update timestamp to trigger "updated" notification
-                                } else { // It's a new batch made public. Timestamp should be updated.
+                                    updates.isNew = false;
+                                    // Ensure it's not marked as "new" for public batch notification
+                                    updates.timestamp = serverTimestamp();
+                                    // Update timestamp to trigger "updated" notification
+                                } else { // It's a new batch made public.
+                                    // Timestamp should be updated.
                                     updates.timestamp = serverTimestamp(); 
                                 }
                             } else if (newValue === false && currentBatch.isPublic === true) { // If making private
-                                updates.isNew = false; // When private, it's definitely not "new" for public display
+                                updates.isNew = false;
+                                // When private, it's definitely not "new" for public display
                                 // Timestamp is not critical here, as it's hidden.
                             } else if (newValue === true && currentBatch.isPublic === true && currentBatch.isNew === true) {
                                 // If it's already public AND still marked as new (meaning it was just added publically),
-                                // and admin clicks again (e.g., to make private then public quickly),
+                                // and admin clicks again (e.g., to 
+                                // make private then public quickly),
                                 // we can reset isNew to false so it doesn't keep showing as NEW every time.
                                 updates.isNew = false;
                             }
@@ -1977,11 +2086,11 @@
             card.querySelector('.delete-batch')?.addEventListener('click', async (e) => { // Optional chaining
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this batch and all its modules/lectures?');
-                if (confirmDelete) {
+                          if (confirmDelete) {
                     showLoading('Deleting batch and content...');
                     try {
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}`));
-                        msg('Batch and its contents deleted!', 'danger');
+                       msg('Batch and its contents deleted!', 'danger');
                     } catch (error) {
                         msg(`Error deleting batch: ${error.message}`, 'danger');
                     } finally {
@@ -1995,7 +2104,7 @@
                 directDriveLinkInput.addEventListener('change', async (e) => {
                     if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentBatch.directDriveLink || ''; return; }
                     const newLink = e.target.value.trim();
-                    try {
+                   try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}`), { directDriveLink: newLink });
                         msg('Direct Link updated!', 'info');
                     } catch (error) {
@@ -2009,6 +2118,7 @@
                 if (!isAuthenticated) { msg('Please authenticate first!', 'danger'); return; }
 
                 const moduleName = prompt('Enter Module Name:');
+                // FIXED: Removed the erroneous newline character '\n' from the message string.
                 if (!moduleName) { msg('Module name is required!', 'warning'); return; }
 
                 // NEW: Ask for public/private status for new modules
@@ -2016,11 +2126,11 @@
 
                 showLoading('Adding module...');
                 try {
-                    const newModuleRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
+                                   const newModuleRef = push(dbRef(db, `categories/${catId}/batches/${bId}/modules`));
                     await set(newModuleRef, { 
                         name: moduleName, 
                         lectures: {},
-                        isPublic: isModulePublic // NEW: Add isPublic property for modules
+                                         isPublic: isModulePublic // NEW: Add isPublic property for modules
                     });
                     msg('Module added successfully!', 'success');
                 } catch (error) {
@@ -2048,7 +2158,8 @@
 
         const createBatchItem = (catId, bId, batch) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 bg-dark'; // Changed bg-light to bg-dark
+            // Added 'batch-item' class for the collapse functionality
+            div.className = 'card mb-2 bg-dark batch-item'; 
 
             const displayPrice = (batch.isFree || (batch.originalPrice === null && batch.discountedPrice === null)) ?
                 '<span class="fw-bold text-success">FREE</span>' :
@@ -2056,34 +2167,30 @@
             const originalPriceStrikethrough = (batch.originalPrice !== null && batch.discountedPrice !== null && batch.discountedPrice < batch.originalPrice) ? `<s class="text-muted ms-2">₹${batch.originalPrice}</s>` : '';
             const normalContentSectionDisplay = (!batch.isContentDirectLink) ? 'block' : 'none';
             const directLinkSectionDisplay = (batch.isContentDirectLink) ? 'block' : 'none';
-            
-            // Batch Type Tag (Free/Paid) - NEWLY ADDED for website visibility
-            const batchTypeTag = batch.isFree ? 
-                                `<span class="badge bg-success ms-2">FREE</span>` :
-                                (batch.discountedPrice !== null && batch.discountedPrice === 0 ? // If discounted price is 0, also show FREE
-                                `<span class="badge bg-success ms-2">FREE</span>` :
-                                `<span class="badge bg-danger ms-2">PAID</span>`); // Otherwise, it's paid
-
-            // Check if isNew is explicitly true
+            const batchTypeTag = batch.isFree ?
+                `<span class="badge bg-success ms-2">FREE</span>` :
+                (batch.discountedPrice !== null && batch.discountedPrice === 0 ?
+                `<span class="badge bg-success ms-2">FREE</span>` :
+                `<span class="badge bg-danger ms-2">PAID</span>`);
             const isNewBadge = batch.isNew === true ?
                 '<span class="badge bg-warning ms-2">NEW!</span>' : '';
 
-            // Check if batch is public or private
             const isPublicBadge = batch.isPublic === true ?
                 '<span class="badge bg-success ms-2">PUBLIC</span>' : 
                 '<span class="badge bg-secondary ms-2">PRIVATE</span>';
+
             const batchItem = `
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h6 class="batch-title flex-grow-1 me-2" contenteditable="true">${batch.title || 'Untitled Batch'}</h6>
                     <div>
-                        ${batchTypeTag} ${isNewBadge}
-                        ${isPublicBadge}
+                        ${batchTypeTag} ${isNewBadge} ${isPublicBadge}
                         <button class="btn btn-sm btn-outline-info toggle-ispublic" data-id="${bId}" data-public="${batch.isPublic}">
                             ${batch.isPublic ? 'Make Private' : 'Make Public'}
                         </button>
+                        <button class="btn btn-sm btn-outline-secondary toggle-batch-details" title="Toggle Details">↓</button>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body batch-details-content">
                     <div class="d-flex align-items-center mb-3">
                         <img src="${batch.thumbnail || 'https://via.placeholder.com/100x70?text=No+Thumb'}" alt="Thumbnail" class="thumbnail-preview">
                         <div>
@@ -2105,21 +2212,22 @@
                             <input type="number" step="0.01" class="form-control form-control-sm batch-discounted-price" value="${batch.discountedPrice !== null ? batch.discountedPrice : ''}" placeholder="e.g., 499 (0 for Free)">
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap"> <button class="btn btn-sm btn-info toggle-iscontentdirectlink mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                        <button class="btn btn-sm btn-info toggle-iscontentdirectlink mb-2">
                             ${batch.isContentDirectLink ? 'Change to Modules' : 'Change to Direct Link'}
                         </button>
                         <button class="btn btn-sm btn-primary update-batch-notification mb-2" data-id="${bId}">Send Update Notification</button>
                         <button class="btn btn-sm btn-primary mark-as-new-batch mb-2" data-id="${bId}">Mark as NEW</button>
                         <button class="btn btn-sm btn-warning mark-as-old-batch mb-2" data-id="${bId}">Mark as OLD</button>
-                        <button class="btn btn-sm btn-success mark-as-free-batch mb-2" data-id="${bId}">Mark as FREE</button> <button class="btn btn-sm btn-info mark-as-paid-batch mb-2" data-id="${bId}">Mark as PAID</button> <button class="btn btn-sm btn-danger delete-batch mb-2" data-id="${bId}">Delete Batch</button>
+                        <button class="btn btn-sm btn-success mark-as-free-batch mb-2" data-id="${bId}">Mark as FREE</button>
+                        <button class="btn btn-sm btn-info mark-as-paid-batch mb-2" data-id="${bId}">Mark as PAID</button>
+                        <button class="btn btn-sm btn-danger delete-batch mb-2" data-id="${bId}">Delete Batch</button>
                     </div>
-
                     <div style="display: ${directLinkSectionDisplay};">
                         <hr>
                         <h6 class="mb-2 text-muted">Direct Content Link:</h6>
                         <input type="url" class="form-control form-control-sm direct-drive-link" value="${batch.directDriveLink || ''}" placeholder="Google Drive/External Link">
                     </div>
-
                     <div style="display: ${normalContentSectionDisplay};">
                         <hr>
                         <h6 class="mb-2 text-muted">Modules:</h6>
@@ -2135,7 +2243,7 @@
         
         const createModuleItem = (catId, bId, modId, module) => {
             const div = document.createElement('div');
-            div.className = 'card mb-2 ms-3'; // Indent modules
+           div.className = 'card mb-2 ms-3'; // Indent modules
             
             // Filter lectures for display (only public ones)
             // Note: This filtering is for website, not admin panel. Admin panel shows all.
@@ -2161,16 +2269,16 @@
                     <div>
                         ${isPublicBadge}
                         <button class="btn btn-sm btn-outline-info toggle-ispublic-module" data-id="${modId}" data-public="${module.isPublic}">
-                            ${module.isPublic ? 'Make Private' : 'Make Public'}
+                       ${module.isPublic ? 'Make Private' : 'Make Public'}
                         </button>
                         <button class="btn btn-sm btn-danger delete-module" data-id="${modId}">Delete Module</button>
                     </div>
                 </div>
-                <div class="card-body">
+                               <div class="card-body">
                     <p class="text-muted fst-italic">Content: ${countsText}</p>
                     <button class="btn btn-primary btn-sm mb-2 add-lecture" data-id="${modId}">+ Add Lecture/Resource</button>
                     <div class="lectures-list" id="lectures-list-${modId}"></div>
-                </div>
+                    </div>
             `;
             setupModuleEvents(div, catId, bId, modId, module);
             return div;
@@ -2181,11 +2289,11 @@
             card.querySelector('.module-name')?.addEventListener('blur', async (e) => {
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentModule.name; return; }
                 const newName = e.target.textContent.trim();
-                if (newName && newName !== currentModule.name) {
+                               if (newName && newName !== currentModule.name) {
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`), { name: newName });
                         msg('Module name updated', 'info');
-                    } catch (error) {
+                                       } catch (error) {
                         msg(`Error updating module name: ${error.message}`, 'danger');
                     }
                 }
@@ -2195,9 +2303,10 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const newValue = !currentModule.isPublic;
                 const confirmMsg = newValue 
-                    ? 'Are you sure you want to make this module PUBLIC? It will become visible on the website.'
+                   ? 'Are you sure you want to make this module PUBLIC? It will become visible on the website.'
                     : 'Are you sure you want to make this module PRIVATE? It will be hidden from the website.';
                 const confirm = await showConfirm(confirmMsg);
+                
                 if (confirm) {
                     showLoading('Updating module visibility...');
                     try {
@@ -2215,15 +2324,15 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm('Are you sure you want to delete this module and all its lectures/resources?');
                 if (confirmDelete) {
-                    showLoading('Deleting module and content...');
+                                     showLoading('Deleting module and content...');
                     try {
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}`));
                         msg('Module and its contents deleted!', 'danger');
-                    } catch (error) {
+                                     } catch (error) {
                         msg(`Error deleting module: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
-                    }
+                                 }
                 }
             });
             // Add Lecture/Resource
@@ -2278,7 +2387,8 @@
             const div = document.createElement('div');
             div.className = 'card mb-2 ms-4'; // Indent lectures/resources further
 
-            const typeBadgeClass = item.type === 'lecture' ? 'bg-primary' : 'bg-info';
+            const typeBadgeClass = item.type === 'lecture' ?
+                'bg-primary' : 'bg-info';
             const typeText = item.type === 'lecture' ? 'Lecture' : 'Resource';
 
             const isPublicBadge = item.isPublic === true ?
@@ -2291,7 +2401,7 @@
                         <div>
                             <span class="badge ${typeBadgeClass}">${typeText}</span>
                             ${isPublicBadge}
-                        </div>
+                       </div>
                     </div>
                     <div class="mb-2">
                         <small class="text-muted">URL:</small>
@@ -2299,12 +2409,12 @@
                     </div>
                     <div class="item-controls d-flex justify-content-end gap-2">
                         <button class="btn btn-sm btn-outline-info toggle-ispublic-item" data-id="${itemId}" data-public="${item.isPublic}">
-                            ${item.isPublic ? 'Make Private' : 'Make Public'}
+                         ${item.isPublic ? 'Make Private' : 'Make Public'}
                         </button>
                         <button class="btn btn-sm btn-danger delete-item" data-id="${itemId}">Delete</button>
                     </div>
                 </div>
-            `;
+             `;
             setupLectureResourceEvents(div, catId, bId, modId, itemId, item);
             return div;
         };
@@ -2313,11 +2423,11 @@
             card.querySelector('.item-name')?.addEventListener('blur', async (e) => {
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.textContent = currentItem.name; return; }
                 const newName = e.target.textContent.trim();
-                if (newName && newName !== currentItem.name) {
+                 if (newName && newName !== currentItem.name) {
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { name: newName });
                         msg('Item name updated', 'info');
-                    } catch (error) {
+                         } catch (error) {
                         msg(`Error updating item name: ${error.message}`, 'danger');
                     }
                 }
@@ -2327,12 +2437,12 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); e.target.value = currentItem.url; return; }
                 const newUrl = e.target.value.trim();
                 try {
-                    await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { url: newUrl });
+                   await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { url: newUrl });
                     msg('Item URL updated', 'info');
                 } catch (error) {
                     msg(`Error updating item URL: ${error.message}`, 'danger');
                 }
-            });
+                });
 
             // NEW: Toggle isPublic status for lecture/resource items
             card.querySelector('.toggle-ispublic-item')?.addEventListener('click', async (e) => {
@@ -2342,11 +2452,11 @@
                     ? `Are you sure you want to make this ${currentItem.type} PUBLIC? It will become visible on the website.`
                     : `Are you sure you want to make this ${currentItem.type} PRIVATE? It will be hidden from the website.`;
                 const confirm = await showConfirm(confirmMsg);
-                if (confirm) {
+                          if (confirm) {
                     showLoading(`Updating ${currentItem.type} visibility...`);
                     try {
                         await update(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`), { isPublic: newValue });
-                        msg(`${currentItem.type} visibility changed to ${newValue ? 'PUBLIC' : 'PRIVATE'}!`, 'info');
+                         msg(`${currentItem.type} visibility changed to ${newValue ? 'PUBLIC' : 'PRIVATE'}!`, 'info');
                     } catch (error) {
                         msg(`Error updating ${currentItem.type} visibility: ${error.message}`, 'danger');
                     } finally {
@@ -2359,11 +2469,11 @@
                 if (!isAuthenticated) { msg('You must be logged in to make changes!', 'danger'); return; }
                 const confirmDelete = await showConfirm(`Are you sure you want to delete this ${currentItem.type}?`);
                 if (confirmDelete) {
-                    showLoading(`Deleting ${currentItem.type}...`);
+                         showLoading(`Deleting ${currentItem.type}...`);
                     try {
                         await remove(dbRef(db, `categories/${catId}/batches/${bId}/modules/${modId}/lectures/${itemId}`));
                         msg(`${currentItem.type} deleted!`, 'danger');
-                    } catch (error) {
+                       } catch (error) {
                         msg(`Error deleting ${currentItem.type}: ${error.message}`, 'danger');
                     } finally {
                         hideLoading();
@@ -2401,14 +2511,14 @@
             loginAlerts.style.display = 'none';
 
             if (!email || !password) {
-                loginAlerts.textContent = 'Please enter both email and password!';
+                       loginAlerts.textContent = 'Please enter both email and password!';
                 loginAlerts.style.display = 'block';
                 return;
             }
 
             showLoading('Logging in...');
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                  await signInWithEmailAndPassword(auth, email, password);
                 msg('Logged in successfully!', 'success', 'loginAlerts');
                 // The onAuthStateChanged listener will handle UI update
             } catch (error) {
@@ -2430,7 +2540,7 @@
                     // The onAuthStateChanged listener will handle UI update
                 } catch (error) {
                     msg(`Logout failed: ${error.message}`, 'danger');
-                } finally {
+                             } finally {
                     hideLoading();
                 }
             }
